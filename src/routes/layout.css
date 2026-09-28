@@ -1,0 +1,158 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@theme {
+	/* Brand Colors */
+	--color-brand-primary: #ed0714;
+	--color-brand-primary-hover: #c9000c;
+	--color-brand-secondary: #1559ef;
+	--color-brand-accent: #f2ae00;
+
+	/* Semantic Colors */
+	--color-success: #16834b;
+	--color-warning: #f2ae00;
+	--color-danger: #ed0714;
+	--color-info: #1559ef;
+
+	/* Neutral & Surface Colors */
+	--color-surface: #f5f8fc;
+	--color-surface-alt: #eef3fa;
+	--color-text-primary: #171b25;
+	--color-text-secondary: #697180;
+	--color-text-disabled: #a7adb7;
+	--color-border: #e9edf3;
+	--color-brand-subtle: #fff0f1;
+
+	/* Typography Families */
+	--font-display: 'Playfair Display', Georgia, serif;
+	--font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+	/* Typography Scale ergonomique et lisible (conforme WCAG AA/AAA) */
+	--text-xs: 12px;
+	--text-sm: 14px;
+	--text-md: 15px;
+	--text-base: 16px;
+	--text-lg: 18px;
+	--text-xl: 20px;
+	--text-2xl: 28px;
+	--text-3xl: 36px;
+	--text-4xl: 44px;
+	--text-hero: 64px;
+
+	/* Border Radius */
+	--radius-xs: 4px;
+	--radius-sm: 6px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 14px;
+	--radius-pill: 999px;
+
+	/* Elevation / Shadows */
+	--shadow-sm: 0 5px 18px rgba(26, 32, 44, 0.06);
+	--shadow-md: 0 12px 38px rgba(26, 32, 44, 0.09);
+	--shadow-lg: 0 20px 55px rgba(26, 32, 44, 0.14);
+
+	/* Motion Timing & Easing */
+	--ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+	/* Design System CSS variables fallback & explicit references */
+	--color-brand-primary: #ed0714;
+	--color-brand-primary-hover: #c9000c;
+	--color-brand-secondary: #1559ef;
+	--color-brand-accent: #f2ae00;
+
+	--color-success: #16834b;
+	--color-warning: #f2ae00;
+	--color-danger: #ed0714;
+	--color-info: #1559ef;
+
+	--color-white: #ffffff;
+	--color-background: #ffffff;
+	--color-surface: #f5f8fc;
+	--color-surface-alt: #eef3fa;
+	--color-text-primary: #171b25;
+	--color-text-secondary: #697180;
+	--color-text-disabled: #a7adb7;
+	--color-border: #e9edf3;
+	--color-brand-subtle: #fff0f1;
+
+	--font-display: 'Playfair Display', Georgia, serif;
+	--font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+	/* Spacing Scale */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-7: 32px;
+	--space-8: 40px;
+	--space-9: 48px;
+	--space-10: 56px;
+	--space-11: 64px;
+	--space-12: 72px;
+	--space-13: 80px;
+
+	/* Layout & Container */
+	--container-max-width: 1160px;
+	--gutter-desktop: 42px;
+	--gutter-mobile: 14px;
+
+	/* Motion Durations */
+	--duration-fast: 150ms;
+	--duration-normal: 250ms;
+	--duration-slow: 400ms;
+	--duration-reveal: 650ms;
+	--ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Base Body Styles */
+html {
+	font-family: var(--font-body);
+	font-size: 16px;
+	line-height: 1.5;
+	color: var(--color-text-primary);
+	background-color: var(--color-background);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessibility: Focus visible */
+:focus-visible {
+	outline: 2px solid rgba(21, 89, 239, 0.25);
+	outline-offset: 2px;
+	border-color: var(--color-brand-secondary);
+}
+
+/* Layout Container standard ECOFIP */
+.ecofip-container {
+	width: 100%;
+	max-width: var(--container-max-width);
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: var(--gutter-mobile);
+	padding-right: var(--gutter-mobile);
+}
+
+@media (min-width: 900px) {
+	.ecofip-container {
+		padding-left: var(--gutter-desktop);
+		padding-right: var(--gutter-desktop);
+	}
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
