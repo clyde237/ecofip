@@ -1,5 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { createAdminSession, verifyAdminCredentials } from '$lib/server/auth.js';
+import {
+	createAdminSession,
+	isAdminAuthConfigured,
+	verifyAdminCredentials
+} from '$lib/server/auth.js';
 import type { Actions, PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -13,7 +17,14 @@ export const actions: Actions = {
 	default: async ({ request, cookies, url }) => {
 		const formData = await request.formData();
 		const username = String(formData.get('username') ?? '').trim();
-		const password = String(formData.get('password') ?? '').trim();
+		const password = String(formData.get('password') ?? '');
+
+		if (!isAdminAuthConfigured()) {
+			return fail(503, {
+				error: 'La connexion administrateur n’est pas configurée sur ce déploiement.',
+				username
+			});
+		}
 
 		if (!username || !password) {
 			return fail(400, {
@@ -26,13 +37,13 @@ export const actions: Actions = {
 
 		if (!isValid) {
 			return fail(401, {
-				error: 'Identifiant ou mot de passe incorrect (par défaut : admin / admin).',
+				error: 'Identifiant ou mot de passe incorrect.',
 				username
 			});
 		}
 
 		createAdminSession(cookies, {
-			username: 'admin',
+			username: username.toLowerCase(),
 			name: 'Administrateur ECOFIP',
 			role: 'admin'
 		});

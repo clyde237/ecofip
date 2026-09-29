@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Lock, User, ArrowLeft, ShieldAlert, CheckCircle } from '@lucide/svelte';
+	import { Lock, User, ArrowLeft, ShieldAlert } from '@lucide/svelte';
 	import type { ActionData } from './$types.js';
 
 	let { form }: { form: ActionData } = $props();
 
-	let username = $state('admin');
-	let password = $state('admin');
+	let username = $state('');
+	let password = $state('');
 	let isSubmitting = $state(false);
 
 	$effect(() => {
@@ -54,20 +54,6 @@
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 		<div class="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-xl">
-			<!-- Indication des identifiants par défaut -->
-			<div
-				class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900"
-			>
-				<CheckCircle size={18} class="mt-0.5 shrink-0 text-amber-600" />
-				<div>
-					<p class="font-bold">Identifiants configurés par défaut :</p>
-					<p class="mt-0.5 font-mono text-[11px] text-amber-800">
-						Identifiant : <span class="font-bold underline">admin</span> | Mot de passe :
-						<span class="font-bold underline">admin</span>
-					</p>
-				</div>
-			</div>
-
 			<!-- Message d'erreur éventuel -->
 			{#if form?.error}
 				<div
@@ -106,7 +92,7 @@
 							bind:value={username}
 							required
 							autocomplete="username"
-							placeholder="admin"
+							placeholder="Identifiant administrateur"
 							class="h-11 w-full rounded-xl border border-border bg-white pr-4 pl-10 text-sm text-text-primary placeholder:text-text-disabled focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
 						/>
 					</div>
