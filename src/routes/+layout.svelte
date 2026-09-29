@@ -1,7 +1,6 @@
 <script lang="ts">
 	import './layout.css';
 	import { page } from '$app/state';
-	import favicon from '$lib/assets/favicon.svg';
 	import { Header, Footer, ToastContainer } from '$lib';
 
 	let { children } = $props();
@@ -10,7 +9,8 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" type="image/png" href="/logo_ecofip.png" />
+	<link rel="apple-touch-icon" href="/logo_ecofip.png" />
 </svelte:head>
 
 {#if isAdminRoute}
