@@ -38,7 +38,7 @@
 </script>
 
 <footer
-	class="bg-brand-primary font-body text-white selection:bg-white selection:text-brand-primary"
+	class="bg-brand-primary-dark font-body text-white selection:bg-white selection:text-brand-primary-dark"
 >
 	<Container class="pt-16 pb-10">
 		<!-- Top 4 Columns Grid avec typographie renforcée et lisible -->
