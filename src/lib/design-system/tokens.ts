@@ -7,6 +7,7 @@ export const colors = {
 	brand: {
 		primary: '#ED0714',
 		primaryHover: '#C9000C',
+		primaryDark: '#96000A',
 		secondary: '#1559EF',
 		accent: '#F2AE00',
 		subtle: '#FFF0F1'

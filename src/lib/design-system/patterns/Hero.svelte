@@ -16,6 +16,7 @@
 		secondaryCta = { label: 'En savoir plus', href: '/a-propos' },
 		tertiaryCta = { label: 'Nous rejoindre', href: '/nous-rejoindre' },
 		backgroundImage = '/hero-bg.jpg',
+		curvedBottom = true,
 		class: customClass = ''
 	}: {
 		eyebrow?: string;
@@ -25,6 +26,7 @@
 		secondaryCta?: CtaButton;
 		tertiaryCta?: CtaButton;
 		backgroundImage?: string;
+		curvedBottom?: boolean;
 		class?: string;
 	} = $props();
 </script>
@@ -51,7 +53,7 @@
 		aria-hidden="true"
 	></div>
 
-	<Container class="relative z-10 py-16 sm:py-20 lg:py-28">
+	<Container class="relative z-10 pt-16 pb-24 sm:pt-20 sm:pb-32 lg:pt-28 lg:pb-38">
 		<div class="max-w-3xl">
 			<!-- Eyebrow (Fade-up slow & smooth) -->
 			{#if eyebrow}
@@ -120,6 +122,23 @@
 			</div>
 		</div>
 	</Container>
+
+	<!-- Ligne / courbe d'intersection fluide avec la section suivante -->
+	{#if curvedBottom}
+		<div
+			class="pointer-events-none absolute right-0 bottom-0 left-0 z-10 w-full overflow-hidden leading-none select-none"
+			aria-hidden="true"
+		>
+			<svg
+				class="relative block h-10 w-full text-white sm:h-14 lg:h-20"
+				viewBox="0 0 1440 80"
+				preserveAspectRatio="none"
+				fill="currentColor"
+			>
+				<path d="M0,80 L0,50 Q720,0 1440,50 L1440,80 Z" />
+			</svg>
+		</div>
+	{/if}
 </section>
 
 <style>

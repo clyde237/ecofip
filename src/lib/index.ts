@@ -18,8 +18,19 @@ export { default as Avatar } from './design-system/components/Avatar.svelte';
 export { default as Alert } from './design-system/components/Alert.svelte';
 export { default as Modal } from './design-system/components/Modal.svelte';
 export { default as ToastContainer } from './design-system/components/ToastContainer.svelte';
+export { default as AdminSidebar } from './design-system/components/AdminSidebar.svelte';
+export { default as ImagePicker } from './design-system/components/ImagePicker.svelte';
 
 // Patterns
 export { default as Header } from './design-system/patterns/Header.svelte';
 export { default as Footer } from './design-system/patterns/Footer.svelte';
 export { default as Hero } from './design-system/patterns/Hero.svelte';
+export { default as StatsBar } from './design-system/patterns/StatsBar.svelte';
+export { default as AboutSection } from './design-system/patterns/AboutSection.svelte';
+export { default as EventsSection } from './design-system/patterns/EventsSection.svelte';
+export { default as TestimonialsSection } from './design-system/patterns/TestimonialsSection.svelte';
+export { default as VideoSection } from './design-system/patterns/VideoSection.svelte';
+export { default as MapSection } from './design-system/patterns/MapSection.svelte';
+export { default as Map } from './Map.svelte';
+export { default as NewsSection } from './design-system/patterns/NewsSection.svelte';
+export { default as DonationCtaSection } from './design-system/patterns/DonationCtaSection.svelte';
