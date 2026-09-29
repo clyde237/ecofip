@@ -9,8 +9,8 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" type="image/png" href="/logo_ecofip.png" />
-	<link rel="apple-touch-icon" href="/logo_ecofip.png" />
+	<link rel="icon" type="image/jpeg" href="/logo_ecofip.jpg" />
+	<link rel="apple-touch-icon" href="/logo_ecofip.jpg" />
 </svelte:head>
 
 {#if isAdminRoute}
