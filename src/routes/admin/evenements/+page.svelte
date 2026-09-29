@@ -1,6 +1,17 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Plus, MapPin, Clock, Trash2, CheckCircle2, Eye, EyeOff, X } from '@lucide/svelte';
+	import {
+		Plus,
+		MapPin,
+		Clock,
+		Trash2,
+		CheckCircle2,
+		Eye,
+		EyeOff,
+		X,
+		Calendar
+	} from '@lucide/svelte';
+	import { ImagePicker } from '$lib';
 	import type { PageData, ActionData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -15,7 +26,20 @@
 	let time = $state('18h00 – 21h30');
 	let location = $state('Douala, Cameroun');
 	let description = $state('');
+	let imageDataUrl = $state('');
 	let isPublished = $state(true);
+
+	function resetForm() {
+		title = '';
+		category = 'Croisade';
+		dateDay = '15';
+		dateMonthYear = 'NOV 2026';
+		time = '18h00 – 21h30';
+		location = 'Douala, Cameroun';
+		description = '';
+		imageDataUrl = '';
+		isPublished = true;
+	}
 </script>
 
 <div class="mx-auto max-w-7xl space-y-6">
@@ -32,7 +56,10 @@
 
 		<button
 			type="button"
-			onclick={() => (isCreateModalOpen = true)}
+			onclick={() => {
+				resetForm();
+				isCreateModalOpen = true;
+			}}
 			class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-brand-primary-hover hover:shadow-md sm:text-sm"
 		>
 			<Plus size={16} />
@@ -66,6 +93,15 @@
 							>{ev.dateMonthYear}</span
 						>
 					</div>
+
+					<!-- Image Miniature si disponible -->
+					{#if ev.imageUrl}
+						<div
+							class="hidden h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100 sm:block"
+						>
+							<img src={ev.imageUrl} alt={ev.title} class="h-full w-full object-cover" />
+						</div>
+					{/if}
 
 					<!-- Infos -->
 					<div>
@@ -158,7 +194,9 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<div class="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
+		<div
+			class="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
+		>
 			<div class="flex items-center justify-between border-b border-gray-100 pb-4">
 				<h3 class="font-display text-lg font-bold text-text-primary">Créer un nouvel événement</h3>
 				<button
@@ -262,6 +300,15 @@
 						class="mt-1 h-10 w-full rounded-xl border border-border px-3 text-text-primary focus:border-brand-primary focus:outline-none"
 					/>
 				</div>
+
+				<!-- CHAMP SÉLECTION IMAGE DEPUIS L'APPAREIL AVEC PRÉVISUALISATION -->
+				<ImagePicker
+					id="ev-image"
+					name="imageDataUrl"
+					label="Photo / Affiche de l’événement (depuis votre appareil)"
+					bind:value={imageDataUrl}
+					helpText="Sélectionnez une affiche ou photo depuis vos fichiers (JPG, PNG, WebP)"
+				/>
 
 				<div>
 					<label for="ev-desc" class="block font-semibold text-text-primary">Description</label>

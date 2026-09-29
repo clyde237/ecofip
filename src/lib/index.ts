@@ -18,6 +18,8 @@ export { default as Avatar } from './design-system/components/Avatar.svelte';
 export { default as Alert } from './design-system/components/Alert.svelte';
 export { default as Modal } from './design-system/components/Modal.svelte';
 export { default as ToastContainer } from './design-system/components/ToastContainer.svelte';
+export { default as AdminSidebar } from './design-system/components/AdminSidebar.svelte';
+export { default as ImagePicker } from './design-system/components/ImagePicker.svelte';
 
 // Patterns
 export { default as Header } from './design-system/patterns/Header.svelte';

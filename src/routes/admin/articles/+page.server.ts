@@ -71,6 +71,7 @@ export const actions: Actions = {
 		const excerpt = String(formData.get('excerpt') ?? '').trim();
 		const content = String(formData.get('content') ?? '').trim();
 		const readTime = String(formData.get('readTime') ?? '4 min').trim();
+		const imageDataUrl = String(formData.get('imageDataUrl') ?? '').trim();
 		const isPublished = formData.get('isPublished') === 'on';
 
 		if (!title || !content) {
@@ -84,6 +85,15 @@ export const actions: Actions = {
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/(^-|-$)+/g, '');
 
+		// Image uploadée depuis l'appareil ou image par défaut selon catégorie
+		const fallbackImage =
+			category === 'Témoignage'
+				? '/article-communaute.jpg'
+				: category === 'Évangélisation'
+					? '/article-evangelisation.jpg'
+					: '/article-bible.jpg';
+		const imageUrl = imageDataUrl || fallbackImage;
+
 		if (isDbConfigured && db) {
 			try {
 				await db.insert(articles).values({
@@ -92,7 +102,7 @@ export const actions: Actions = {
 					category,
 					excerpt: excerpt || title,
 					content,
-					imageUrl: '/article-bible.jpg',
+					imageUrl,
 					readTime: readTime || '4 min',
 					isPublished,
 					publishedAt: isPublished ? new Date() : null

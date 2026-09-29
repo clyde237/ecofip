@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Plus, Newspaper, Clock, Trash2, CheckCircle2, Eye, EyeOff, X } from '@lucide/svelte';
+	import { ImagePicker } from '$lib';
 	import type { PageData, ActionData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -13,7 +14,18 @@
 	let excerpt = $state('');
 	let content = $state('');
 	let readTime = $state('4 min');
+	let imageDataUrl = $state('');
 	let isPublished = $state(true);
+
+	function resetForm() {
+		title = '';
+		category = 'Mission';
+		excerpt = '';
+		content = '';
+		readTime = '4 min';
+		imageDataUrl = '';
+		isPublished = true;
+	}
 </script>
 
 <div class="mx-auto max-w-7xl space-y-6">
@@ -30,7 +42,10 @@
 
 		<button
 			type="button"
-			onclick={() => (isCreateModalOpen = true)}
+			onclick={() => {
+				resetForm();
+				isCreateModalOpen = true;
+			}}
 			class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-brand-primary-hover hover:shadow-md sm:text-sm"
 		>
 			<Plus size={16} />
@@ -156,7 +171,9 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<div class="w-full max-w-xl rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
+		<div
+			class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
+		>
 			<div class="flex items-center justify-between border-b border-gray-100 pb-4">
 				<h3 class="font-display text-lg font-bold text-text-primary">Rédiger un nouvel article</h3>
 				<button
@@ -224,6 +241,15 @@
 						/>
 					</div>
 				</div>
+
+				<!-- CHAMP SÉLECTION IMAGE DEPUIS L'APPAREIL AVEC PRÉVISUALISATION -->
+				<ImagePicker
+					id="art-image"
+					name="imageDataUrl"
+					label="Image de couverture (sélectionnez depuis votre appareil)"
+					bind:value={imageDataUrl}
+					helpText="Sélectionnez une photo de couverture depuis votre appareil (JPG, PNG, WebP)"
+				/>
 
 				<div>
 					<label for="art-excerpt" class="block font-semibold text-text-primary"

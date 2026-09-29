@@ -77,6 +77,7 @@ export const actions: Actions = {
 		const time = String(formData.get('time') ?? '').trim();
 		const location = String(formData.get('location') ?? '').trim();
 		const description = String(formData.get('description') ?? '').trim();
+		const imageDataUrl = String(formData.get('imageDataUrl') ?? '').trim();
 		const isPublished = formData.get('isPublished') === 'on';
 
 		if (!title || !location) {
@@ -90,6 +91,15 @@ export const actions: Actions = {
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/(^-|-$)+/g, '');
 
+		// Image uploadée depuis l'appareil ou image par défaut selon catégorie
+		const fallbackImage =
+			category === 'Camp Jeunes'
+				? '/event-camp.jpg'
+				: category === 'Séminaire'
+					? '/event-seminaire.jpg'
+					: '/event-croisade.jpg';
+		const imageUrl = imageDataUrl || fallbackImage;
+
 		if (isDbConfigured && db) {
 			try {
 				await db.insert(events).values({
@@ -101,7 +111,7 @@ export const actions: Actions = {
 					time: time || '18h00',
 					location,
 					description,
-					imageUrl: '/event-croisade.jpg',
+					imageUrl,
 					isPublished
 				});
 			} catch {
