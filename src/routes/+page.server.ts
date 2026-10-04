@@ -69,7 +69,13 @@ export const load: PageServerLoad = async () => {
 					imageAlt: ev.title,
 					status: target < new Date() ? 'past' : 'upcoming',
 					description: ev.description || '',
-					speakers: ['Pasteur Valéry Tchamekwen', 'Équipe Pastorale ECOFIP'],
+					speakers: ev.speakers
+						? ev.speakers
+								.split(',')
+								.map((s) => s.trim())
+								.filter(Boolean)
+						: ['Pasteur Valéry Tchamekwen', 'Équipe Pastorale ECOFIP'],
+					program: ev.program || null,
 					isFree: true,
 					isFeatured: true,
 					startDate: ev.startDate,

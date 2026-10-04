@@ -12,7 +12,9 @@
 		X,
 		Calendar,
 		CalendarDays,
-		Sparkles
+		Sparkles,
+		Users,
+		ListChecks
 	} from '@lucide/svelte';
 	import { ImagePicker } from '$lib';
 	import { formatEventSchedule } from '$lib/utils/eventDate.js';
@@ -41,6 +43,8 @@
 	let endTime = $state('21:30');
 	let location = $state('Douala, Cameroun');
 	let description = $state('');
+	let speakers = $state('');
+	let program = $state('');
 	let imageDataUrl = $state('');
 	let isPublished = $state(true);
 	let isFeatured = $state(false);
@@ -76,6 +80,8 @@
 		endTime = '21:30';
 		location = 'Douala, Cameroun';
 		description = '';
+		speakers = '';
+		program = '';
 		imageDataUrl = '';
 		isPublished = true;
 		isFeatured = false;
@@ -565,6 +571,59 @@
 						placeholder="Présentation des temps forts..."
 						class="mt-1 w-full rounded-xl border border-border p-3 text-text-primary focus:border-brand-primary focus:outline-none"
 					></textarea>
+				</div>
+
+				<!-- CHAMP ORATEURS & INTERVENANTS (OPTIONNEL) -->
+				<div>
+					<div class="flex items-center justify-between">
+						<label
+							for="ev-speakers"
+							class="flex items-center gap-1.5 text-xs font-semibold text-text-primary sm:text-sm"
+						>
+							<Users size={14} class="text-brand-primary" />
+							<span>Orateurs & Intervenants</span>
+							<span class="text-[11px] font-normal text-text-disabled">(Optionnel)</span>
+						</label>
+						<span class="text-[10px] text-text-disabled">Séparez par des virgules</span>
+					</div>
+					<input
+						id="ev-speakers"
+						name="speakers"
+						type="text"
+						bind:value={speakers}
+						placeholder="Ex: Pasteur Valéry Tchamekwen, Évangéliste Paul, Chorale Hosanna"
+						class="mt-1 h-10 w-full rounded-xl border border-border px-3 text-xs text-text-primary focus:border-brand-primary focus:outline-hidden sm:text-sm"
+					/>
+					<p class="mt-1 text-[11px] text-text-secondary">
+						Affiché sur les fiches d'événements et dans la section Intervenants de la page détail.
+					</p>
+				</div>
+
+				<!-- CHAMP ORGANISATION & DÉROULÉ (OPTIONNEL) -->
+				<div>
+					<div class="flex items-center justify-between">
+						<label
+							for="ev-program"
+							class="flex items-center gap-1.5 text-xs font-semibold text-text-primary sm:text-sm"
+						>
+							<ListChecks size={14} class="text-brand-primary" />
+							<span>Organisation & Déroulé de l'événement</span>
+							<span class="text-[11px] font-normal text-text-disabled">(Optionnel)</span>
+						</label>
+						<span class="text-[10px] text-text-disabled">1 étape par ligne</span>
+					</div>
+					<textarea
+						id="ev-program"
+						name="program"
+						bind:value={program}
+						rows={3}
+						placeholder="Ex:&#10;01. Accueil & Prière d'ouverture (17h30)&#10;02. Louange & Adoration vivante (18h00)&#10;03. Prédication de l'Évangile & Ministère pour les malades (19h30)&#10;04. Communion fraternelle & Distribution de bibles (21h00)"
+						class="mt-1 w-full rounded-xl border border-border p-3 font-mono text-xs text-text-primary focus:border-brand-primary focus:outline-hidden"
+					></textarea>
+					<p class="mt-1 text-[11px] text-text-secondary">
+						Chaque ligne sera automatiquement mise en forme comme étape numérotée dans le programme
+						de la page détail.
+					</p>
 				</div>
 
 				<!-- WIDGET SWITCH : METTRE EN AVANT SOUS LA HERO -->

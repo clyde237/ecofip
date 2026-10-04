@@ -1,8 +1,13 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
 import { sql } from 'drizzle-orm';
+import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	if (locals.admin?.role !== 'superadmin') {
+		throw redirect(303, '/admin');
+	}
+
 	let connectionTest = {
 		success: false,
 		message: 'Base non configurée. Veuillez ajouter votre DATABASE_URL Neon dans .env',
@@ -35,7 +40,11 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	test: async () => {
+	test: async ({ locals }) => {
+		if (locals.admin?.role !== 'superadmin') {
+			return fail(403, { error: 'Action réservée au Super Administrateur.' });
+		}
+
 		if (!isDbConfigured || !db) {
 			return {
 				success: false,

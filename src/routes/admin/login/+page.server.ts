@@ -1,9 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
-import {
-	createAdminSession,
-	isAdminAuthConfigured,
-	verifyAdminCredentials
-} from '$lib/server/auth.js';
+import { createAdminSession, isAdminAuthConfigured, authenticateUser } from '$lib/server/auth.js';
+import { isDbConfigured } from '$lib/server/db/index.js';
 import type { Actions, PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -19,7 +16,7 @@ export const actions: Actions = {
 		const username = String(formData.get('username') ?? '').trim();
 		const password = String(formData.get('password') ?? '');
 
-		if (!isAdminAuthConfigured()) {
+		if (!isAdminAuthConfigured() && !isDbConfigured) {
 			return fail(503, {
 				error: 'La connexion administrateur n’est pas configurée sur ce déploiement.',
 				username
@@ -33,20 +30,16 @@ export const actions: Actions = {
 			});
 		}
 
-		const isValid = verifyAdminCredentials(username, password);
+		const user = await authenticateUser(username, password);
 
-		if (!isValid) {
+		if (!user) {
 			return fail(401, {
 				error: 'Identifiant ou mot de passe incorrect.',
 				username
 			});
 		}
 
-		createAdminSession(cookies, {
-			username: username.toLowerCase(),
-			name: 'Administrateur ECOFIP',
-			role: 'admin'
-		});
+		createAdminSession(cookies, user);
 
 		const redirectTo = url.searchParams.get('redirectTo') || '/admin';
 		throw redirect(303, redirectTo);

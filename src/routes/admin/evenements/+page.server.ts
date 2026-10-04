@@ -79,6 +79,8 @@ export const actions: Actions = {
 		const category = String(formData.get('category') ?? 'Croisade').trim();
 		const location = String(formData.get('location') ?? '').trim();
 		const description = String(formData.get('description') ?? '').trim();
+		const speakers = String(formData.get('speakers') ?? '').trim();
+		const program = String(formData.get('program') ?? '').trim();
 		const imageDataUrl = String(formData.get('imageDataUrl') ?? '').trim();
 		const isPublished = formData.get('isPublished') === 'on';
 		const isFeatured = formData.get('isFeatured') === 'on' || formData.get('isFeatured') === 'true';
@@ -166,6 +168,8 @@ export const actions: Actions = {
 					time: schedule.time,
 					location,
 					description,
+					speakers: speakers || null,
+					program: program || null,
 					imageUrl,
 					isPublished,
 					isFeatured

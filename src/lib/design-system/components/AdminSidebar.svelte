@@ -7,6 +7,7 @@
 		Newspaper,
 		Film,
 		Database,
+		Users,
 		LogOut,
 		X
 	} from '@lucide/svelte';
@@ -19,41 +20,136 @@
 
 	let { admin = null, isDbConfigured = false, mobileOpen = $bindable(false) }: Props = $props();
 
-	const navItems = [
-		{
-			href: '/admin',
-			label: 'Tableau de bord',
-			icon: LayoutDashboard,
-			exact: true
-		},
-		{
-			href: '/admin/videos',
-			label: 'Vidéos & Temps forts',
-			icon: Film,
-			badge: 'Homepage'
-		},
-		{
-			href: '/admin/temoignages',
-			label: 'Témoignages visiteurs',
-			icon: MessageSquareHeart,
-			badge: 'Validation'
-		},
-		{
-			href: '/admin/evenements',
-			label: 'Événements & Projets',
-			icon: CalendarDays
-		},
-		{
-			href: '/admin/articles',
-			label: 'Articles & Actualités',
-			icon: Newspaper
-		},
-		{
-			href: '/admin/database',
-			label: 'Base de données Neon',
-			icon: Database
+	const roleLabelMap: Record<string, string> = {
+		superadmin: 'Super Admin',
+		admin: 'Administrateur',
+		events_manager: 'Gest. Événements',
+		articles_manager: 'Gest. Articles',
+		testimonials_manager: 'Gest. Témoignages'
+	};
+
+	let roleLabel = $derived(
+		admin?.role && roleLabelMap[admin.role] ? roleLabelMap[admin.role] : 'Administrateur'
+	);
+
+	let userInitials = $derived(
+		admin?.name
+			? admin.name
+					.split(' ')
+					.filter(Boolean)
+					.map((w) => w[0])
+					.slice(0, 2)
+					.join('')
+					.toUpperCase()
+			: 'AD'
+	);
+
+	// Navigation adaptée dynamiquement selon le rôle de l'utilisateur
+	let navItems = $derived.by(() => {
+		const role = admin?.role || 'admin';
+
+		// 1. Rôle spécialisé : Gestionnaire des événements uniquement
+		if (role === 'events_manager') {
+			return [
+				{
+					href: '/admin',
+					label: 'Tableau de bord',
+					icon: LayoutDashboard,
+					exact: true
+				},
+				{
+					href: '/admin/evenements',
+					label: 'Événements & Projets',
+					icon: CalendarDays
+				}
+			];
 		}
-	];
+
+		// 2. Rôle spécialisé : Gestionnaire des articles uniquement
+		if (role === 'articles_manager') {
+			return [
+				{
+					href: '/admin',
+					label: 'Tableau de bord',
+					icon: LayoutDashboard,
+					exact: true
+				},
+				{
+					href: '/admin/articles',
+					label: 'Articles & Actualités',
+					icon: Newspaper
+				}
+			];
+		}
+
+		// 3. Rôle spécialisé : Gestionnaire des témoignages uniquement
+		if (role === 'testimonials_manager') {
+			return [
+				{
+					href: '/admin',
+					label: 'Tableau de bord',
+					icon: LayoutDashboard,
+					exact: true
+				},
+				{
+					href: '/admin/temoignages',
+					label: 'Témoignages visiteurs',
+					icon: MessageSquareHeart,
+					badge: 'Validation'
+				}
+			];
+		}
+
+		// 4. Admin et Superadmin : accès étendu
+		const items = [
+			{
+				href: '/admin',
+				label: 'Tableau de bord',
+				icon: LayoutDashboard,
+				exact: true
+			},
+			{
+				href: '/admin/utilisateurs',
+				label: 'Gestion Utilisateurs',
+				icon: Users,
+				badge: 'Équipe'
+			},
+			{
+				href: '/admin/videos',
+				label: 'Vidéos & Temps forts',
+				icon: Film,
+				badge: 'Homepage'
+			},
+			{
+				href: '/admin/temoignages',
+				label: 'Témoignages visiteurs',
+				icon: MessageSquareHeart,
+				badge: 'Validation'
+			},
+			{
+				href: '/admin/evenements',
+				label: 'Événements & Projets',
+				icon: CalendarDays
+			},
+			{
+				href: '/admin/articles',
+				label: 'Articles & Actualités',
+				icon: Newspaper
+			}
+		];
+
+		// Base de données Neon : STRICTEMENT réservée au Superadmin !
+		// "l'admin aura acces à tous les onglet sauf base de données qui n'apparaitra pas dans sa sidebar"
+		if (role === 'superadmin') {
+			items.push({
+				href: '/admin/database',
+				label: 'Base de données Neon',
+				icon: Database
+			});
+		}
+
+		return items;
+	});
 
 	function isItemActive(href: string, exact = false) {
 		if (exact) {
@@ -123,7 +219,7 @@
 			<div
 				class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary text-xs font-bold text-white shadow-xs"
 			>
-				AD
+				{userInitials}
 			</div>
 			<div class="min-w-0 flex-1">
 				<p class="truncate text-xs font-bold text-text-primary">
@@ -131,7 +227,7 @@
 				</p>
 				<p class="flex items-center gap-1.5 truncate text-[10px] font-medium text-emerald-600">
 					<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>
-					Connecté (admin)
+					{roleLabel}
 				</p>
 			</div>
 		</div>

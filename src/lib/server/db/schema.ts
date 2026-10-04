@@ -43,6 +43,8 @@ export const events = pgTable('events', {
 	time: varchar('time', { length: 100 }),
 	location: varchar('location', { length: 255 }).notNull(),
 	description: text('description'),
+	speakers: text('speakers'),
+	program: text('program'),
 	imageUrl: text('image_url'),
 	isPublished: boolean('is_published').default(false).notNull(),
 	isFeatured: boolean('is_featured').default(false).notNull(),

@@ -450,23 +450,28 @@
 								<!-- WIDGET COMPTE À REBOURS FLIP SUR LA CARTE (À VENIR) -->
 								{#if item.status === 'upcoming'}
 									<div
-										class="mt-4 rounded-2xl border border-gray-200/90 bg-gradient-to-br from-[#0c1523] via-[#09121d] to-[#040811] p-3 text-white shadow-md"
+										class="mt-3.5 rounded-2xl border border-slate-200/90 bg-[#f8fafc] p-3 shadow-2xs"
 									>
 										<div
-											class="mb-2 flex items-center justify-between border-b border-white/10 pb-1.5"
+											class="mb-2 flex items-center justify-between border-b border-slate-200/60 pb-1.5"
 										>
 											<span
-												class="flex items-center gap-1.5 text-[10px] font-extrabold tracking-wider text-brand-accent uppercase"
+												class="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-brand-primary uppercase"
 											>
 												<Clock size={12} class="animate-pulse" />
 												<span>Compte à rebours</span>
 											</span>
-											<span class="text-[9px] font-bold text-white/50"> Direct </span>
+											<span
+												class="inline-flex items-center gap-1 rounded-full border border-emerald-200/70 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700"
+											>
+												<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+												<span>En direct</span>
+											</span>
 										</div>
 										<FlipCountdown
 											targetDate={item.targetDate || getEventTargetDate(item)}
 											size="card"
-											theme="dark"
+											theme="light"
 											showSummaryBanner={true}
 										/>
 									</div>
