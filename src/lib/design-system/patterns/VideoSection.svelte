@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
+	import LinkifiedText from '../components/LinkifiedText.svelte';
 	import {
 		Play,
 		Pause,
@@ -326,9 +327,14 @@
 								<h3 class="mt-1 font-display text-lg font-bold text-white sm:text-2xl lg:text-3xl">
 									{activeChapter.title}
 								</h3>
-								<p class="mt-1 font-body text-xs text-white/80 sm:text-sm">
-									{activeChapter.description}
-								</p>
+								{#if activeChapter.description}
+									<div class="mt-1 font-body text-xs text-white/90 sm:text-sm">
+										<LinkifiedText
+											text={activeChapter.description}
+											linkClass="text-amber-300 font-semibold underline underline-offset-2 hover:text-amber-200 break-all transition-colors"
+										/>
+									</div>
+								{/if}
 							</div>
 						</div>
 					</div>

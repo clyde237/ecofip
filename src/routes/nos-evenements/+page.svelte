@@ -13,6 +13,9 @@
 	import type { DetailedEventItem } from '$lib/design-system/types.js';
 	import { Heart, Calendar, CheckCircle2, Ticket } from '@lucide/svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
+	import type { PageData } from './$types.js';
+
+	let { data }: { data: PageData } = $props();
 
 	let isRegisterModalOpen = $state(false);
 	let selectedEvent = $state<DetailedEventItem | null>(null);
@@ -96,11 +99,13 @@
 	<!-- 1. Bannière d'introduction avec fil d'ariane et badges -->
 	<EventsHero />
 
-	<!-- 2. Événement Phare à la Une (Spotlight) -->
-	<EventsSpotlight onRegister={handleOpenRegisterModal} />
+	<!-- 2. Événement Phare à la Une (Section pleine largeur sous la Hero avec Grande Image & Compte à Rebours mécanique) -->
+	{#if data.featuredEvent}
+		<EventsSpotlight event={data.featuredEvent} onRegister={handleOpenRegisterModal} />
+	{/if}
 
 	<!-- 3. Catalogue complet avec filtres interactifs temporels et catégoriels -->
-	<EventsListSection onRegister={handleOpenRegisterModal} />
+	<EventsListSection events={data.events} onRegister={handleOpenRegisterModal} />
 
 	<!-- 4. Section Partenariat pour accueillir une mission locale -->
 	<EventsHostCta />

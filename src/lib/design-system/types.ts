@@ -475,8 +475,9 @@ export interface EventsSectionProps {
 // --- DETAILED EVENTS PAGE TYPES ---
 export interface DetailedEventItem {
 	id: string;
+	slug?: string;
 	title: string;
-	category: 'croisade' | 'formation' | 'jeunesse' | 'medical';
+	category: 'croisade' | 'formation' | 'jeunesse' | 'medical' | string;
 	categoryLabel: string;
 	dateDay: string;
 	dateMonth: string;
@@ -491,6 +492,9 @@ export interface DetailedEventItem {
 	speakers?: string[];
 	isFree?: boolean;
 	isFeatured?: boolean;
+	startDate?: Date | string | null;
+	eventDate?: Date | string | null;
+	targetDate?: Date | string | null;
 }
 
 export interface EventsHeroProps {

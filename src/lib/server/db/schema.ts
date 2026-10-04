@@ -1,4 +1,4 @@
-import { boolean, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // 1. Table des Administrateurs
 export const admins = pgTable('admins', {
@@ -31,14 +31,21 @@ export const events = pgTable('events', {
 	title: varchar('title', { length: 255 }).notNull(),
 	slug: varchar('slug', { length: 255 }).notNull(),
 	category: varchar('category', { length: 100 }).default('Croisade').notNull(),
-	dateDay: varchar('date_day', { length: 10 }),
-	dateMonthYear: varchar('date_month_year', { length: 30 }),
+	dateDay: varchar('date_day', { length: 50 }),
+	dateMonthYear: varchar('date_month_year', { length: 50 }),
 	eventDate: timestamp('event_date'),
+	startDate: timestamp('start_date'),
+	endDate: timestamp('end_date'),
+	startTime: varchar('start_time', { length: 20 }),
+	endTime: varchar('end_time', { length: 20 }),
+	isSingleDay: boolean('is_single_day').default(true).notNull(),
+	isAllDay: boolean('is_all_day').default(false).notNull(),
 	time: varchar('time', { length: 100 }),
 	location: varchar('location', { length: 255 }).notNull(),
 	description: text('description'),
 	imageUrl: text('image_url'),
 	isPublished: boolean('is_published').default(false).notNull(),
+	isFeatured: boolean('is_featured').default(false).notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
@@ -59,6 +66,22 @@ export const articles = pgTable('articles', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// 5. Table des Vidéos (Temps forts pour la homepage)
+export const videos = pgTable('videos', {
+	id: serial('id').primaryKey(),
+	title: varchar('title', { length: 255 }).notNull(),
+	slug: varchar('slug', { length: 255 }).notNull(),
+	duration: varchar('duration', { length: 50 }).default('03:00').notNull(),
+	location: varchar('location', { length: 255 }).default('Yaoundé, Cameroun').notNull(),
+	thumbnailUrl: text('thumbnail_url'),
+	videoUrl: text('video_url').notNull(),
+	description: text('description'),
+	isPublished: boolean('is_published').default(true).notNull(),
+	displayOrder: integer('display_order').default(0).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Export des types inférés Drizzle
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
@@ -71,3 +94,6 @@ export type NewEventRecord = typeof events.$inferInsert;
 
 export type ArticleRecord = typeof articles.$inferSelect;
 export type NewArticleRecord = typeof articles.$inferInsert;
+
+export type VideoRecord = typeof videos.$inferSelect;
+export type NewVideoRecord = typeof videos.$inferInsert;

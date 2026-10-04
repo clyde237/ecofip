@@ -17,6 +17,7 @@ const fallbackEvents = [
 		description: 'Soirée de louange, délivrance et proclamation de la Parole.',
 		imageUrl: '/event-croisade.jpg',
 		isPublished: true,
+		isFeatured: true,
 		createdAt: new Date('2026-09-20')
 	},
 	{
@@ -31,6 +32,7 @@ const fallbackEvents = [
 		description: 'Approfondissement des fondements de la foi chrétienne.',
 		imageUrl: '/event-seminaire.jpg',
 		isPublished: true,
+		isFeatured: false,
 		createdAt: new Date('2026-09-21')
 	},
 	{
@@ -45,6 +47,7 @@ const fallbackEvents = [
 		description: 'Rassemblement de réveil spirituel pour la jeunesse camerounaise.',
 		imageUrl: '/event-camp.jpg',
 		isPublished: false,
+		isFeatured: false,
 		createdAt: new Date('2026-09-22')
 	}
 ];
@@ -67,22 +70,62 @@ export const load: PageServerLoad = async () => {
 	};
 };
 
+import { formatEventSchedule } from '$lib/utils/eventDate.js';
+
 export const actions: Actions = {
 	create: async ({ request }) => {
 		const formData = await request.formData();
 		const title = String(formData.get('title') ?? '').trim();
 		const category = String(formData.get('category') ?? 'Croisade').trim();
-		const dateDay = String(formData.get('dateDay') ?? '').trim();
-		const dateMonthYear = String(formData.get('dateMonthYear') ?? '').trim();
-		const time = String(formData.get('time') ?? '').trim();
 		const location = String(formData.get('location') ?? '').trim();
 		const description = String(formData.get('description') ?? '').trim();
 		const imageDataUrl = String(formData.get('imageDataUrl') ?? '').trim();
 		const isPublished = formData.get('isPublished') === 'on';
+		const isFeatured = formData.get('isFeatured') === 'on' || formData.get('isFeatured') === 'true';
+
+		// Gestion des dates et horaires typés
+		const isSingleDay =
+			formData.get('isSingleDay') === 'on' || formData.get('isSingleDay') === 'true';
+		const isAllDay = formData.get('isAllDay') === 'on' || formData.get('isAllDay') === 'true';
+		const startDate = String(formData.get('startDate') ?? '').trim();
+		const endDate = String(formData.get('endDate') ?? '').trim();
+		const startTime = String(formData.get('startTime') ?? '').trim();
+		const endTime = String(formData.get('endTime') ?? '').trim();
 
 		if (!title || !location) {
 			return fail(400, { error: 'Le titre et le lieu sont obligatoires.' });
 		}
+
+		if (!startDate) {
+			return fail(400, { error: 'La date de début de l’événement est obligatoire.' });
+		}
+
+		if (!isSingleDay && !endDate) {
+			return fail(400, {
+				error: 'La date de fin est obligatoire pour un événement sur plusieurs jours.'
+			});
+		}
+
+		if (!isSingleDay && endDate && endDate < startDate) {
+			return fail(400, {
+				error: 'La date de fin ne peut pas être antérieure à la date de début.'
+			});
+		}
+
+		if (isSingleDay && startTime && endTime && endTime < startTime) {
+			return fail(400, {
+				error: 'L’heure de fin ne peut pas être antérieure à l’heure de début.'
+			});
+		}
+
+		const schedule = formatEventSchedule({
+			isSingleDay,
+			startDateStr: startDate,
+			endDateStr: isSingleDay ? undefined : endDate,
+			startTimeStr: startTime,
+			endTimeStr: endTime,
+			isAllDay
+		});
 
 		const slug = title
 			.toLowerCase()
@@ -102,24 +145,65 @@ export const actions: Actions = {
 
 		if (isDbConfigured && db) {
 			try {
+				if (isFeatured) {
+					// Si cet événement est mis en avant, retirer la mise en avant des autres
+					await db.update(events).set({ isFeatured: false });
+				}
+
 				await db.insert(events).values({
 					title,
 					slug: slug || `event-${Date.now()}`,
 					category,
-					dateDay: dateDay || '01',
-					dateMonthYear: dateMonthYear || 'OCT 2026',
-					time: time || '18h00',
+					dateDay: schedule.dateDay,
+					dateMonthYear: schedule.dateMonthYear,
+					eventDate: schedule.eventDate,
+					startDate: schedule.startDate,
+					endDate: schedule.endDate,
+					startTime: startTime || null,
+					endTime: endTime || null,
+					isSingleDay,
+					isAllDay,
+					time: schedule.time,
 					location,
 					description,
 					imageUrl,
-					isPublished
+					isPublished,
+					isFeatured
 				});
-			} catch {
+			} catch (err: unknown) {
+				console.error('Erreur création événement:', err);
 				return fail(500, { error: 'Erreur lors de la création de l’événement sur Neon.' });
 			}
 		}
 
 		return { success: true, message: 'Événement enregistré avec succès !' };
+	},
+
+	toggleFeatured: async ({ request }) => {
+		const formData = await request.formData();
+		const id = Number(formData.get('id'));
+		const currentStatus = formData.get('currentStatus') === 'true';
+
+		if (!id) return fail(400, { error: 'Identifiant invalide' });
+
+		if (isDbConfigured && db) {
+			try {
+				const nextFeatured = !currentStatus;
+				if (nextFeatured) {
+					// Un seul événement à la une à la fois pour un affichage optimal
+					await db.update(events).set({ isFeatured: false });
+				}
+				await db
+					.update(events)
+					.set({ isFeatured: nextFeatured, updatedAt: new Date() })
+					.where(eq(events.id, id));
+			} catch (err: unknown) {
+				console.error('Erreur mise en avant:', err);
+				return fail(500, { error: 'Erreur lors de la mise à jour de la mise en avant' });
+			}
+		}
+
+		return { success: true, message: 'Mise en avant mise à jour avec succès.' };
 	},
 
 	togglePublish: async ({ request }) => {

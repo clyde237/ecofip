@@ -7,7 +7,8 @@
 		CheckCircle,
 		AlertCircle,
 		Sparkles,
-		Database
+		Database,
+		Film
 	} from '@lucide/svelte';
 	import type { PageData } from './$types.js';
 
@@ -37,7 +38,7 @@
 	</div>
 
 	<!-- Grille des statistiques clés & Accès direct -->
-	<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+	<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 		<!-- 1. Témoignages -->
 		<a
 			href="/admin/temoignages"
@@ -59,7 +60,7 @@
 						{data.stats.pendingTestimonials}
 					</span>
 					<span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-600">
-						En attente de validation
+						En attente
 					</span>
 				</div>
 				<p class="mt-2 text-xs text-text-secondary">
@@ -92,7 +93,7 @@
 					<span class="font-display text-3xl font-bold text-text-primary">
 						{data.stats.totalEvents}
 					</span>
-					<span class="text-xs font-semibold text-text-secondary"> Événements répertoriés </span>
+					<span class="text-xs font-semibold text-text-secondary"> Événements </span>
 				</div>
 				<p class="mt-2 text-xs text-text-secondary">
 					Planifiez vos croisades, séminaires bibliques et camps de jeunes.
@@ -107,7 +108,7 @@
 		<!-- 3. Articles & Actualités -->
 		<a
 			href="/admin/articles"
-			class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-brand-primary/40 hover:shadow-md sm:col-span-2 lg:col-span-1"
+			class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-brand-primary/40 hover:shadow-md"
 		>
 			<div>
 				<div class="flex items-center justify-between">
@@ -127,7 +128,7 @@
 					<span
 						class="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600"
 					>
-						Articles enregistrés
+						Articles
 					</span>
 				</div>
 				<p class="mt-2 text-xs text-text-secondary">
@@ -136,6 +137,40 @@
 			</div>
 			<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-emerald-600">
 				<span>Rédiger un article</span>
+				<ArrowRight size={14} class="transition-transform group-hover:translate-x-1" />
+			</div>
+		</a>
+
+		<!-- 4. Vidéos & Cloudflare R2 -->
+		<a
+			href="/admin/videos"
+			class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-brand-primary/40 hover:shadow-md"
+		>
+			<div>
+				<div class="flex items-center justify-between">
+					<span class="text-xs font-bold tracking-wider text-text-secondary uppercase">
+						Vidéos & R2
+					</span>
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600"
+					>
+						<Film size={20} />
+					</div>
+				</div>
+				<div class="mt-4 flex items-baseline gap-2">
+					<span class="font-display text-3xl font-bold text-text-primary">
+						{data.stats.totalVideos}
+					</span>
+					<span class="rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-600">
+						Vidéos
+					</span>
+				</div>
+				<p class="mt-2 text-xs text-text-secondary">
+					Publiez vos temps forts en vidéo hébergés sur Cloudflare R2 pour la page d’accueil.
+				</p>
+			</div>
+			<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-purple-600">
+				<span>Gérer les vidéos</span>
 				<ArrowRight size={14} class="transition-transform group-hover:translate-x-1" />
 			</div>
 		</a>
@@ -187,11 +222,12 @@
 					class="rounded bg-gray-100 px-2 py-0.5 font-mono text-text-primary"
 					>src/lib/server/db/schema.ts</code
 				>
-				avec 4 tables dédiées :
+				avec 5 tables dédiées :
 				<strong class="text-text-primary">admins</strong>,
 				<strong class="text-text-primary">testimonials</strong>,
-				<strong class="text-text-primary">events</strong>
-				et <strong class="text-text-primary">articles</strong>.
+				<strong class="text-text-primary">events</strong>,
+				<strong class="text-text-primary">articles</strong>
+				et <strong class="text-text-primary">videos</strong>.
 			</p>
 
 			<div

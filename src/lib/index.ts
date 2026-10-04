@@ -20,6 +20,9 @@ export { default as Modal } from './design-system/components/Modal.svelte';
 export { default as ToastContainer } from './design-system/components/ToastContainer.svelte';
 export { default as AdminSidebar } from './design-system/components/AdminSidebar.svelte';
 export { default as ImagePicker } from './design-system/components/ImagePicker.svelte';
+export { default as LinkifiedText } from './design-system/components/LinkifiedText.svelte';
+export { default as FlipCard } from './design-system/components/FlipCard.svelte';
+export { default as FlipCountdown } from './design-system/components/FlipCountdown.svelte';
 
 // Patterns
 export { default as Header } from './design-system/patterns/Header.svelte';

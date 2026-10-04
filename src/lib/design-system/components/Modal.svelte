@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ModalProps } from '../types.js';
 	import { X } from '@lucide/svelte';
+	import LinkifiedText from './LinkifiedText.svelte';
 
 	let {
 		open = $bindable(false),
@@ -58,9 +59,12 @@
 					</h3>
 				{/if}
 				{#if description}
-					<p class="mt-1.5 text-sm leading-relaxed text-text-secondary sm:text-base">
-						{description}
-					</p>
+					<div class="mt-1.5 text-sm leading-relaxed text-text-secondary sm:text-base">
+						<LinkifiedText
+							text={description}
+							linkClass="text-brand-primary font-semibold underline underline-offset-2 hover:text-brand-primary-hover break-all"
+						/>
+					</div>
 				{/if}
 			</div>
 
