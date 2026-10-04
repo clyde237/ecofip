@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Container from '../components/Container.svelte';
 	import {
 		Calendar,
 		MapPin,
@@ -8,12 +7,17 @@
 		Users,
 		ArrowRight,
 		ShieldCheck,
-		HeartHandshake
+		HeartHandshake,
+		Sparkles,
+		Eye
 	} from '@lucide/svelte';
 	import type { DetailedEventItem, EventsSpotlightProps } from '../types.js';
+	import FlipCountdown from '../components/FlipCountdown.svelte';
+	import { getEventTargetDate } from '$lib/utils/eventDate.js';
 
 	const defaultFeaturedEvent: DetailedEventItem = {
 		id: 'croisade-nationale-yaounde-2026',
+		slug: 'croisade-nationale-yaounde-2026',
 		title: 'Grande Croisade Nationale d’Évangélisation, Foi & Guérison',
 		category: 'croisade',
 		categoryLabel: 'Événement Phare 2026',
@@ -24,10 +28,10 @@
 		location: 'Esplanade du Stade Ahmadou Ahidjo',
 		city: 'Yaoundé, Cameroun',
 		image: '/event-croisade.jpg',
-		imageAlt: 'Scène de la croisade d’évangélisation ECOFIP avec foule et louange',
+		imageAlt: 'Grande Croisade d’Évangélisation et de Réveil',
 		status: 'upcoming',
 		description:
-			'4 soirées exceptionnelles d’adoration, de prédication de la parole de Dieu, de miracles et de salut des âmes. Cliniques médicales gratuites offertes chaque matin de 09h00 à 15h00.',
+			'4 soirées exceptionnelles d’adoration, de proclamation de l’Évangile avec puissance, délivrances et guérisons. Cliniques médicales gratuites offertes chaque matin.',
 		speakers: ['Pasteur Valéry Tchamekwen', 'Évangélistes & Médecins missionnaires'],
 		isFree: true,
 		isFeatured: true
@@ -35,13 +39,17 @@
 
 	let {
 		event = defaultFeaturedEvent,
-		eyebrow = 'PROCHAIN GRAND RENDEZ-VOUS',
+		eyebrow = 'ÉVÉNEMENT À LA UNE',
 		onRegister,
 		class: customClass = ''
 	}: EventsSpotlightProps = $props();
 
 	let sectionEl: HTMLElement | null = $state(null);
 	let isVisible = $state(false);
+
+	let targetDate = $derived(
+		event?.targetDate || (event ? getEventTargetDate(event) : new Date('2026-10-15T18:00:00'))
+	);
 
 	onMount(() => {
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -65,7 +73,7 @@
 					}
 				}
 			},
-			{ threshold: 0.15 }
+			{ threshold: 0.1 }
 		);
 
 		observer.observe(sectionEl);
@@ -76,230 +84,227 @@
 	});
 </script>
 
+<!-- SECTION PLEINE LARGEUR D'ÉCRAN (W-FULL SOUS LA HERO) -->
 <section
 	id="a-la-une"
 	bind:this={sectionEl}
-	class="bg-white py-16 sm:py-20 lg:py-24 {customClass}"
+	class="relative w-full overflow-hidden bg-[#070e17] py-12 text-white sm:py-16 lg:py-20 {customClass}"
 	aria-labelledby="events-spotlight-heading"
 >
-	<Container>
-		<!-- Carte Grand Format Événement Phare -->
+	<!-- ARRIÈRE-PLAN AVEC MOTIF VISUEL SUBTIL ET DÉGRADÉ -->
+	<div
+		class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(139,30,30,0.35),rgba(255,255,255,0))]"
+		aria-hidden="true"
+	></div>
+
+	<!-- Halo lumineux d'ambiance -->
+	<div
+		class="pointer-events-none absolute top-1/4 -left-32 h-96 w-96 rounded-full bg-brand-primary/20 blur-3xl"
+		aria-hidden="true"
+	></div>
+	<div
+		class="pointer-events-none absolute -right-32 bottom-10 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl"
+		aria-hidden="true"
+	></div>
+
+	<!-- CONTENEUR PLEINE LARGEUR AVEC PADDING LATÉRAL ADAPTATIF -->
+	<div
+		class="relative z-10 mx-auto w-full max-w-[1536px] px-4 transition-all duration-700 ease-out sm:px-6 md:px-8 lg:px-12 {isVisible
+			? 'translate-y-0 opacity-100'
+			: 'translate-y-8 opacity-0'}"
+	>
+		<!-- EN-TÊTE DE LA SECTION PLEINE LARGEUR -->
 		<div
-			class="relative overflow-hidden rounded-3xl bg-[#0d1c1d] text-white shadow-2xl transition-all duration-700 ease-out {isVisible
-				? 'translate-y-0 opacity-100'
-				: 'translate-y-8 opacity-0'}"
+			class="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6 sm:mb-10"
 		>
-			<!-- Image d'arrière plan immersive avec dégradé sophistiqué -->
-			<div
-				class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity select-none"
-				style="background-image: url('{event.image}');"
-				aria-hidden="true"
-			></div>
-			<div
-				class="absolute inset-0 bg-gradient-to-t from-[#0d1c1d] via-[#0d1c1d]/90 to-transparent lg:bg-gradient-to-r lg:from-[#0d1c1d] lg:via-[#0d1c1d]/95 lg:to-transparent"
-				aria-hidden="true"
-			></div>
+			<div class="flex items-center gap-3">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/15 px-3.5 py-1 text-xs font-black tracking-widest text-amber-300 uppercase shadow-xs backdrop-blur-xs"
+				>
+					<Sparkles size={14} class="fill-amber-400 text-amber-400" />
+					<span>{eyebrow}</span>
+				</span>
+				<span class="hidden text-xs text-white/50 sm:inline">|</span>
+				<span class="hidden text-xs font-semibold text-white/70 sm:inline">
+					Prochain rassemblement majeur de l'Église
+				</span>
+			</div>
 
-			<!-- Halo lumineux d'accentuation bordeaux/rouge -->
-			<div
-				class="pointer-events-none absolute -top-20 -right-20 h-80 w-80 rounded-full bg-brand-primary/25 blur-3xl"
-				aria-hidden="true"
-			></div>
+			{#if event.isFree}
+				<div
+					class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1 text-xs font-bold text-emerald-300 backdrop-blur-xs"
+				>
+					<ShieldCheck size={14} />
+					<span>Accès 100% Libre & Gratuit</span>
+				</div>
+			{/if}
+		</div>
 
-			<div
-				class="relative z-10 grid grid-cols-1 gap-8 p-7 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-14"
-			>
-				<!-- Colonne de gauche (7 cols) : Détails et accroche -->
-				<div class="flex flex-col justify-between lg:col-span-7">
-					<div>
-						<!-- Badge et Surtitre -->
-						<div class="flex flex-wrap items-center gap-3">
+		<!-- GRILLE PRINCIPALE EN 2 COLONNES : GRANDE IMAGE BIEN VISIBLE & INFOS AVEC COUNTDOWN -->
+		<div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
+			<!-- COLONNE 1 : IMAGE DE L'ÉVÉNEMENT BIEN VISIBLE EN GRAND FORMAT (5 COLS SUR DESKTOP) -->
+			<div class="lg:col-span-5 xl:col-span-5">
+				<div
+					class="group relative overflow-hidden rounded-3xl border border-white/15 bg-white/5 p-2 shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-brand-primary/40"
+				>
+					<!-- Conteneur d'image grand format -->
+					<div
+						class="relative h-72 w-full overflow-hidden rounded-2xl sm:h-96 md:h-[420px] lg:h-[460px]"
+					>
+						<img
+							src={event.image}
+							alt={event.imageAlt || event.title}
+							class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+							loading="eager"
+						/>
+						<div
+							class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+						></div>
+
+						<!-- Badge Date Flottant sur l'image -->
+						<div
+							class="absolute top-4 left-4 flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-black/70 px-4 py-2.5 text-center shadow-lg backdrop-blur-md"
+						>
+							<span class="font-display text-2xl leading-none font-black text-brand-accent">
+								{event.dateDay}
+							</span>
+							<span class="mt-0.5 text-[10px] font-extrabold tracking-wider text-white uppercase">
+								{event.dateMonth}
+								{event.dateYear || ''}
+							</span>
+						</div>
+
+						<!-- Badge Catégorie en haut à droite -->
+						<div class="absolute top-4 right-4">
 							<span
-								class="inline-flex items-center gap-1.5 rounded-full bg-brand-primary px-3.5 py-1 font-body text-xs font-bold tracking-wider text-white uppercase shadow-xs"
+								class="rounded-full bg-brand-primary px-3 py-1 text-xs font-bold text-white uppercase shadow-md"
 							>
 								{event.categoryLabel}
 							</span>
-							{#if event.isFree}
-								<span
-									class="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-950/60 px-3 py-1 font-body text-xs font-semibold text-emerald-300 backdrop-blur-xs"
-								>
-									<ShieldCheck size={13} />
-									<span>Accès 100% Libre</span>
-								</span>
-							{/if}
 						</div>
 
-						<!-- Titre de l'événement en Playfair Display -->
-						<h2
-							id="events-spotlight-heading"
-							class="mt-5 font-display text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl lg:text-[40px] lg:leading-[1.18]"
+						<!-- Infos au bas de l'image -->
+						<div
+							class="absolute inset-x-4 bottom-4 flex items-center justify-between text-xs text-white/90"
 						>
-							{event.title}
-						</h2>
-
-						<!-- Description -->
-						<p class="mt-4 font-body text-sm leading-relaxed text-white/85 sm:text-base">
-							{event.description}
-						</p>
-
-						<!-- Métadonnées : Lieu, Heure, Orateurs -->
-						<div class="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<div
-								class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs"
-							>
-								<div
-									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/20 text-brand-accent"
-								>
-									<MapPin size={20} />
-								</div>
-								<div>
-									<span
-										class="block font-body text-[11px] font-semibold tracking-wider text-white/60 uppercase"
-									>
-										Lieu de rassemblement
-									</span>
-									<span class="font-body text-xs font-bold text-white sm:text-sm">
-										{event.location}, {event.city}
-									</span>
-								</div>
-							</div>
-
-							<div
-								class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs"
-							>
-								<div
-									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/20 text-brand-accent"
-								>
-									<Clock size={20} />
-								</div>
-								<div>
-									<span
-										class="block font-body text-[11px] font-semibold tracking-wider text-white/60 uppercase"
-									>
-										Horaires des sessions
-									</span>
-									<span class="font-body text-xs font-bold text-white sm:text-sm">
-										{event.time}
-									</span>
-								</div>
-							</div>
-						</div>
-
-						<!-- Orateurs -->
-						{#if event.speakers && event.speakers.length > 0}
-							<div class="mt-4 flex items-center gap-2 font-body text-xs text-white/80 sm:text-sm">
-								<Users size={16} class="shrink-0 text-brand-accent" />
-								<span>Avec la participation de :</span>
-								<strong class="text-white">{event.speakers.join(', ')}</strong>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Boutons d'action -->
-					<div class="mt-8 flex flex-wrap items-center gap-4 sm:mt-10">
-						<button
-							type="button"
-							onclick={() => onRegister?.(event)}
-							class="group inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-brand-primary px-6 py-3.5 font-body text-sm font-bold text-white shadow-md transition-all duration-200 hover:translate-y-[-1px] hover:bg-brand-primary-hover hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-base"
-						>
-							<HeartHandshake size={18} />
-							<span>S’inscrire gratuitement</span>
-							<ArrowRight
-								size={16}
-								class="transition-transform duration-200 group-hover:translate-x-1"
-							/>
-						</button>
-
-						<a
-							href="#agenda"
-							class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3.5 font-body text-sm font-semibold text-white backdrop-blur-xs transition-colors hover:border-white/40 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-white"
-						>
-							<span>Voir tous les autres rendez-vous</span>
-						</a>
-					</div>
-				</div>
-
-				<!-- Colonne de droite (5 cols) : Carte Date proéminente et photo événement -->
-				<div class="flex flex-col justify-center lg:col-span-5">
-					<div
-						class="overflow-hidden rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur-md sm:p-8"
-					>
-						<!-- Bloc Calendrier proéminent -->
-						<div class="flex items-center justify-between border-b border-white/15 pb-6">
-							<div>
-								<span
-									class="block font-body text-xs font-bold tracking-widest text-brand-accent uppercase"
-								>
-									DATES OFFICIELLES
-								</span>
-								<div class="mt-1 flex items-baseline gap-2">
-									<span class="font-display text-4xl font-extrabold text-white sm:text-5xl">
-										{event.dateDay}
-									</span>
-									<span class="font-display text-2xl font-bold text-white/90 sm:text-3xl">
-										{event.dateMonth}
-									</span>
-								</div>
-								<span class="font-body text-sm font-medium text-white/70">
-									Année {event.dateYear}
-								</span>
-							</div>
-
-							<div
-								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-lg"
-							>
-								<Calendar size={32} />
-							</div>
-						</div>
-
-						<!-- Programme détaillé en 3 points -->
-						<div class="mt-6 space-y-4">
-							<div class="flex items-start gap-3">
-								<span class="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-brand-accent"></span>
-								<div>
-									<strong
-										class="block font-body text-xs font-bold tracking-wider text-white uppercase"
-									>
-										Matinées Médicales (09h00 - 15h00)
-									</strong>
-									<p class="font-body text-xs text-white/70">
-										Consultations générales, ophtalmologie, dépistages et dons de médicaments.
-									</p>
-								</div>
-							</div>
-
-							<div class="flex items-start gap-3">
-								<span class="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-brand-accent"></span>
-								<div>
-									<strong
-										class="block font-body text-xs font-bold tracking-wider text-white uppercase"
-									>
-										Après-midis Jeunesse & Ateliers (15h30 - 17h30)
-									</strong>
-									<p class="font-body text-xs text-white/70">
-										Activités d'édification, témoignages vivants et musique avec les chorales
-										invitées.
-									</p>
-								</div>
-							</div>
-
-							<div class="flex items-start gap-3">
-								<span class="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-brand-accent"></span>
-								<div>
-									<strong
-										class="block font-body text-xs font-bold tracking-wider text-white uppercase"
-									>
-										Grandes Soirées de Croisade (18h00 - 22h00)
-									</strong>
-									<p class="font-body text-xs text-white/70">
-										Louange, proclamation de l’Évangile, prières pour les malades et salut des âmes.
-									</p>
-								</div>
+							<div class="flex items-center gap-1.5 font-semibold drop-shadow-sm">
+								<MapPin size={15} class="text-brand-accent" />
+								<span>{event.location}, {event.city}</span>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+
+			<!-- COLONNE 2 : INFOS DÉTAILLÉES & COMPTE À REBOURS À RABAT BIEN VISIBLE (7 COLS) -->
+			<div class="flex flex-col lg:col-span-7 xl:col-span-7">
+				<!-- Catégorie et Titre -->
+				<div>
+					<h2
+						id="events-spotlight-heading"
+						class="font-display text-2xl leading-[1.15] font-black tracking-tight text-white sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl"
+					>
+						{event.title}
+					</h2>
+
+					<!-- Description concise et percutante -->
+					<p class="mt-4 font-body text-sm leading-relaxed text-white/80 sm:text-base">
+						{event.description}
+					</p>
+				</div>
+
+				<!-- Métadonnées : Lieu, Heure, Orateurs -->
+				<div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+					<div
+						class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs"
+					>
+						<div
+							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/25 text-brand-accent"
+						>
+							<MapPin size={18} />
+						</div>
+						<div class="min-w-0">
+							<span class="block text-[10px] font-bold tracking-wider text-white/60 uppercase">
+								Lieu du rassemblement
+							</span>
+							<span class="block truncate font-body text-xs font-bold text-white sm:text-sm">
+								{event.location}, {event.city}
+							</span>
+						</div>
+					</div>
+
+					<div
+						class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs"
+					>
+						<div
+							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/25 text-brand-accent"
+						>
+							<Clock size={18} />
+						</div>
+						<div class="min-w-0">
+							<span class="block text-[10px] font-bold tracking-wider text-white/60 uppercase">
+								Horaires
+							</span>
+							<span class="block truncate font-body text-xs font-bold text-white sm:text-sm">
+								{event.time}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Orateurs si disponibles -->
+				{#if event.speakers && event.speakers.length > 0}
+					<div class="mt-3 flex items-center gap-2 text-xs text-white/75">
+						<Users size={14} class="shrink-0 text-brand-accent" />
+						<span>Orateurs :</span>
+						<strong class="text-white">{event.speakers.join(', ')}</strong>
+					</div>
+				{/if}
+
+				<!-- BLOC WIDGET COMPTE À REBOURS (CALENDRIER À RABAT DONT LA PAGE TOURNE EN SECONDES) -->
+				<div
+					class="mt-8 rounded-3xl border border-brand-accent/30 bg-gradient-to-br from-black/80 via-[#101b2b]/90 to-black/80 p-5 shadow-2xl backdrop-blur-md sm:p-7"
+				>
+					<div class="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+						<div class="flex items-center gap-2">
+							<Clock size={16} class="animate-pulse text-brand-accent" />
+							<span class="text-xs font-black tracking-widest text-white uppercase">
+								Compte à Rebours en Direct
+							</span>
+						</div>
+						<span class="text-[11px] font-bold text-brand-accent"> Temps réel (secondes) </span>
+					</div>
+
+					<!-- Widget Flip Countdown en taille hero -->
+					<FlipCountdown {targetDate} size="hero" theme="dark" showSummaryBanner={true} />
+				</div>
+
+				<!-- BOUTONS D'ACTION -->
+				<div class="mt-8 flex flex-wrap items-center gap-4">
+					<button
+						type="button"
+						onclick={() => onRegister?.(event)}
+						class="group inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-brand-primary px-6 py-3.5 font-body text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:bg-brand-primary-hover hover:shadow-xl focus-visible:outline-2 focus-visible:outline-white sm:text-base"
+					>
+						<HeartHandshake size={18} />
+						<span>Participer / S'inscrire</span>
+						<ArrowRight
+							size={16}
+							class="transition-transform duration-200 group-hover:translate-x-1"
+						/>
+					</button>
+
+					{#if event.slug || event.id}
+						<a
+							href="/nos-evenements/{event.slug || event.id}"
+							class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3.5 font-body text-sm font-semibold text-white backdrop-blur-xs transition-colors hover:border-white/40 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white"
+						>
+							<Eye size={16} />
+							<span>Détails & Programme complet</span>
+						</a>
+					{/if}
+				</div>
+			</div>
 		</div>
-	</Container>
+	</div>
 </section>

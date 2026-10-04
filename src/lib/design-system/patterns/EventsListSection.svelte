@@ -13,6 +13,8 @@
 		X
 	} from '@lucide/svelte';
 	import type { DetailedEventItem, EventsListProps } from '../types.js';
+	import FlipCountdown from '../components/FlipCountdown.svelte';
+	import { getEventTargetDate } from '$lib/utils/eventDate.js';
 
 	const defaultEvents: DetailedEventItem[] = [
 		{
@@ -413,7 +415,9 @@
 								<h3
 									class="font-display text-xl leading-snug font-bold tracking-tight text-text-primary transition-colors group-hover:text-brand-primary"
 								>
-									{item.title}
+									<a href="/nos-evenements/{item.slug || item.id}" class="hover:underline">
+										{item.title}
+									</a>
 								</h3>
 
 								<!-- Horaires & Lieu précis -->
@@ -442,26 +446,64 @@
 										<span class="line-clamp-1">Orateurs : {item.speakers.join(', ')}</span>
 									</div>
 								{/if}
+
+								<!-- WIDGET COMPTE À REBOURS FLIP SUR LA CARTE (À VENIR) -->
+								{#if item.status === 'upcoming'}
+									<div
+										class="mt-4 rounded-2xl border border-gray-200/90 bg-gradient-to-br from-[#0c1523] via-[#09121d] to-[#040811] p-3 text-white shadow-md"
+									>
+										<div
+											class="mb-2 flex items-center justify-between border-b border-white/10 pb-1.5"
+										>
+											<span
+												class="flex items-center gap-1.5 text-[10px] font-extrabold tracking-wider text-brand-accent uppercase"
+											>
+												<Clock size={12} class="animate-pulse" />
+												<span>Compte à rebours</span>
+											</span>
+											<span class="text-[9px] font-bold text-white/50"> Direct </span>
+										</div>
+										<FlipCountdown
+											targetDate={item.targetDate || getEventTargetDate(item)}
+											size="card"
+											theme="dark"
+											showSummaryBanner={true}
+										/>
+									</div>
+								{/if}
 							</div>
 						</div>
 
 						<!-- Pied de carte avec bouton d'action -->
 						<div class="border-t border-gray-100 p-5 pt-4">
 							{#if item.status === 'upcoming'}
-								<button
-									type="button"
-									onclick={() => onRegister?.(item)}
-									class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-primary py-2.5 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-md"
-								>
-									<span>Participer / S'inscrire</span>
-									<ArrowRight size={14} />
-								</button>
+								<div class="grid grid-cols-2 gap-2">
+									<a
+										href="/nos-evenements/{item.slug || item.id}"
+										class="flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-gray-50 py-2.5 font-body text-xs font-bold text-text-primary transition-all hover:bg-gray-100"
+									>
+										<span>Détails</span>
+									</a>
+									<button
+										type="button"
+										onclick={() => onRegister?.(item)}
+										class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-md"
+									>
+										<span>S'inscrire</span>
+										<ArrowRight size={13} />
+									</button>
+								</div>
 							{:else}
 								<div
 									class="flex items-center justify-between font-body text-xs text-text-secondary"
 								>
 									<span class="italic">Programme achevé</span>
-									<span class="font-semibold text-brand-primary">Voir les rapports</span>
+									<a
+										href="/nos-evenements/{item.slug || item.id}"
+										class="font-semibold text-brand-primary hover:underline"
+									>
+										Voir les détails
+									</a>
 								</div>
 							{/if}
 						</div>
