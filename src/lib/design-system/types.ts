@@ -718,3 +718,16 @@ export interface DonationCtaProps {
 	class?: string;
 	onCtaClick?: () => void;
 }
+
+// --- ADMIN ROLES & USER MANAGEMENT ---
+export type AdminRole =
+	'superadmin' | 'admin' | 'events_manager' | 'articles_manager' | 'testimonials_manager';
+
+export interface AdminUserItem {
+	id: number;
+	username: string;
+	name: string;
+	role: AdminRole;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+}

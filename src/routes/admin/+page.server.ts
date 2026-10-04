@@ -1,13 +1,14 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
-import { testimonials, events, articles, videos } from '$lib/server/db/schema.js';
+import { testimonials, events, articles, videos, admins } from '$lib/server/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
 	let pendingTestimonialsCount = 3;
 	let totalEventsCount = 3;
 	let totalArticlesCount = 3;
 	let totalVideosCount = 3;
+	let totalUsersCount = 1;
 
 	if (isDbConfigured && db) {
 		try {
@@ -25,6 +26,9 @@ export const load: PageServerLoad = async () => {
 
 			const [videosRes] = await db.select({ count: sql<number>`count(*)` }).from(videos);
 			totalVideosCount = Number(videosRes?.count ?? 0);
+
+			const [usersRes] = await db.select({ count: sql<number>`count(*)` }).from(admins);
+			totalUsersCount = Number(usersRes?.count ?? 0);
 		} catch {
 			// Si les tables n'ont pas encore été migrées avec drizzle-kit migrate
 		}
@@ -32,11 +36,13 @@ export const load: PageServerLoad = async () => {
 
 	return {
 		isDbConfigured,
+		admin: locals.admin,
 		stats: {
 			pendingTestimonials: pendingTestimonialsCount,
 			totalEvents: totalEventsCount,
 			totalArticles: totalArticlesCount,
-			totalVideos: totalVideosCount
+			totalVideos: totalVideosCount,
+			totalUsers: totalUsersCount
 		}
 	};
 };
