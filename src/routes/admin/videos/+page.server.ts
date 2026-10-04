@@ -3,7 +3,7 @@ import { videos } from '$lib/server/db/schema.js';
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
-import { isR2Configured } from '$lib/server/r2.js';
+import { isR2Configured, isR2PublicDomainConfigured, formatMediaUrl } from '$lib/server/r2.js';
 
 const fallbackVideos = [
 	{
@@ -62,9 +62,14 @@ export const load: PageServerLoad = async () => {
 
 			if (items.length > 0) {
 				return {
-					videos: items,
+					videos: items.map((v) => ({
+						...v,
+						videoUrl: formatMediaUrl(v.videoUrl),
+						thumbnailUrl: formatMediaUrl(v.thumbnailUrl)
+					})),
 					usingNeonDb: true,
-					isR2Configured
+					isR2Configured,
+					isR2PublicDomainConfigured
 				};
 			}
 		} catch (err) {
@@ -75,7 +80,8 @@ export const load: PageServerLoad = async () => {
 	return {
 		videos: fallbackVideos,
 		usingNeonDb: false,
-		isR2Configured
+		isR2Configured,
+		isR2PublicDomainConfigured
 	};
 };
 

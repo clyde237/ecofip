@@ -26,6 +26,7 @@
 	import Badge from '$lib/design-system/components/Badge.svelte';
 	import Alert from '$lib/design-system/components/Alert.svelte';
 	import Modal from '$lib/design-system/components/Modal.svelte';
+	import LinkifiedText from '$lib/design-system/components/LinkifiedText.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -207,13 +208,32 @@
 		}
 	}
 
+	function resolveMediaUrl(url: string | null | undefined): string {
+		if (!url) return '';
+		if (url.includes('.r2.cloudflarestorage.com')) {
+			const match = url.match(/\.r2\.cloudflarestorage\.com\/[^/]+\/(.+)$/);
+			if (match && match[1]) {
+				const encodedKey = match[1]
+					.split('/')
+					.map((seg) => encodeURIComponent(decodeURIComponent(seg)))
+					.join('/');
+				return `/api/media/${encodedKey}`;
+			}
+		}
+		return url;
+	}
+
 	function openPreviewModal(video: {
 		title: string;
 		url: string;
 		thumbnail?: string | null;
 		description?: string | null;
 	}) {
-		previewingVideo = video;
+		previewingVideo = {
+			...video,
+			url: resolveMediaUrl(video.url),
+			thumbnail: resolveMediaUrl(video.thumbnail)
+		};
 		previewModalOpen = true;
 	}
 </script>
@@ -234,6 +254,13 @@
 					<Cloud size={13} class="mr-1" />
 					<span>{data.isR2Configured ? 'R2 Connecté' : 'R2 Non Configuré'}</span>
 				</Badge>
+				{#if data.isR2Configured && !data.isR2PublicDomainConfigured}
+					<span
+						class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800"
+					>
+						Streaming interne actif
+					</span>
+				{/if}
 			</div>
 			<p class="mt-1 font-body text-sm text-text-secondary">
 				Publiez et organisez les reportages vidéo qui s’affichent dans la section immersive de la
@@ -287,12 +314,27 @@
 						<div>R2_PUBLIC_URL="https://&lt;votre-domaine-r2&gt;.r2.dev"</div>
 					</div>
 
-					<p class="text-xs text-blue-800">
-						💡 <em
-							>Si R2 n’est pas encore configuré, vous pouvez basculer sur l’onglet « URL Vidéo
-							Directe » pour insérer n'importe quel lien vidéo MP4 hébergé.</em
-						>
-					</p>
+					<div
+						class="space-y-1.5 rounded-xl border border-blue-200 bg-white/70 p-3 text-xs leading-relaxed text-blue-900"
+					>
+						<p class="font-bold text-blue-950">💡 Diffusion des vidéos (R2_PUBLIC_URL) :</p>
+						<p>
+							Cloudflare R2 sépare l’API de stockage (privée S3) de la diffusion publique. Pour un
+							chargement CDN ultra-rapide : dans votre console Cloudflare &gt; R2 &gt; votre bucket
+							<code>ecofip-media</code> &gt; <strong>Settings</strong> &gt;
+							<strong>Public access</strong>, activez le sous-domaine
+							<strong>R2.dev subdomain</strong>
+							(cliquer sur <em>Allow Access</em>) puis renseignez l’URL
+							<code>https://pub-xxxxxx.r2.dev</code>
+							dans
+							<code>R2_PUBLIC_URL</code>.
+						</p>
+						<p class="text-blue-800 italic">
+							En attendant ou en développement local, notre serveur prend le relais automatiquement
+							via le streaming interne (<code>/api/media/...</code>) pour que vos vidéos soient
+							immédiatement visibles.
+						</p>
+					</div>
 				</div>
 			</div>
 		</Card>
@@ -726,11 +768,14 @@
 								</div>
 
 								{#if video.description}
-									<p
+									<div
 										class="mt-2.5 line-clamp-2 font-body text-xs leading-relaxed text-text-secondary"
 									>
-										{video.description}
-									</p>
+										<LinkifiedText
+											text={video.description}
+											linkClass="text-brand-primary font-semibold underline underline-offset-2 hover:text-brand-primary-hover break-all"
+										/>
+									</div>
 								{/if}
 							</div>
 						</div>

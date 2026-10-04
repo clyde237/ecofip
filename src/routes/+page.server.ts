@@ -4,6 +4,8 @@ import { eq, asc, desc } from 'drizzle-orm';
 import type { PageServerLoad } from './$types.js';
 import type { VideoChapter } from '$lib/design-system/types.js';
 
+import { formatMediaUrl } from '$lib/server/r2.js';
+
 export const load: PageServerLoad = async () => {
 	let publishedVideos: VideoChapter[] = [];
 
@@ -21,8 +23,8 @@ export const load: PageServerLoad = async () => {
 					title: v.title,
 					duration: v.duration,
 					location: v.location,
-					thumbnail: v.thumbnailUrl || '/video-highlights-cover.jpg',
-					videoUrl: v.videoUrl,
+					thumbnail: formatMediaUrl(v.thumbnailUrl) || '/video-highlights-cover.jpg',
+					videoUrl: formatMediaUrl(v.videoUrl),
 					description: v.description ?? ''
 				}));
 			}

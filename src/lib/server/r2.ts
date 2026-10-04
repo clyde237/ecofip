@@ -25,20 +25,46 @@ export const r2Client = new S3Client({
 	}
 });
 
+export const isR2PublicDomainConfigured = Boolean(
+	env.R2_PUBLIC_URL &&
+	env.R2_PUBLIC_URL.trim().length > 0 &&
+	!env.R2_PUBLIC_URL.includes('<votre-domaine-r2>')
+);
+
 /**
- * Construit l'URL publique accessible pour un objet stocké dans le bucket R2
+ * Construit l'URL accessible pour un objet stocké dans le bucket R2.
+ * Si un domaine public (R2_PUBLIC_URL / r2.dev) est configuré, l'URL publique directe du CDN est utilisée.
+ * Sinon, l'URL bascule automatiquement sur la route interne /api/media/[...key]
+ * qui stream le fichier avec gestion complète des en-têtes HTTP Range.
  */
 export function getR2PublicUrl(key: string): string {
 	const cleanKey = key.replace(/^\/+/, '');
-	if (env.R2_PUBLIC_URL && env.R2_PUBLIC_URL.trim().length > 0) {
+	const encodedKey = cleanKey
+		.split('/')
+		.map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+		.join('/');
+
+	if (isR2PublicDomainConfigured && env.R2_PUBLIC_URL) {
 		const base = env.R2_PUBLIC_URL.replace(/\/+$/, '');
-		return `${base}/${cleanKey}`;
+		return `${base}/${encodedKey}`;
 	}
-	if (env.R2_ENDPOINT && env.R2_BUCKET_NAME) {
-		const base = env.R2_ENDPOINT.replace(/\/+$/, '');
-		return `${base}/${env.R2_BUCKET_NAME}/${cleanKey}`;
+	return `/api/media/${encodedKey}`;
+}
+
+/**
+ * Normalise une URL média. Si l'URL enregistrée est une URL interne S3 brute
+ * (ex: https://...r2.cloudflarestorage.com/bucket/key), elle est convertie
+ * automatiquement en URL lisible par le navigateur.
+ */
+export function formatMediaUrl(url: string | null | undefined): string {
+	if (!url) return '';
+	if (url.includes('.r2.cloudflarestorage.com')) {
+		const match = url.match(/\.r2\.cloudflarestorage\.com\/[^/]+\/(.+)$/);
+		if (match && match[1]) {
+			return getR2PublicUrl(match[1]);
+		}
 	}
-	return `/${cleanKey}`;
+	return url;
 }
 
 /**
