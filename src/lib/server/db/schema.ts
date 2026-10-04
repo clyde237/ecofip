@@ -1,4 +1,4 @@
-import { boolean, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // 1. Table des Administrateurs
 export const admins = pgTable('admins', {
@@ -59,6 +59,22 @@ export const articles = pgTable('articles', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// 5. Table des Vidéos (Temps forts pour la homepage)
+export const videos = pgTable('videos', {
+	id: serial('id').primaryKey(),
+	title: varchar('title', { length: 255 }).notNull(),
+	slug: varchar('slug', { length: 255 }).notNull(),
+	duration: varchar('duration', { length: 50 }).default('03:00').notNull(),
+	location: varchar('location', { length: 255 }).default('Yaoundé, Cameroun').notNull(),
+	thumbnailUrl: text('thumbnail_url'),
+	videoUrl: text('video_url').notNull(),
+	description: text('description'),
+	isPublished: boolean('is_published').default(true).notNull(),
+	displayOrder: integer('display_order').default(0).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Export des types inférés Drizzle
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
@@ -71,3 +87,6 @@ export type NewEventRecord = typeof events.$inferInsert;
 
 export type ArticleRecord = typeof articles.$inferSelect;
 export type NewArticleRecord = typeof articles.$inferInsert;
+
+export type VideoRecord = typeof videos.$inferSelect;
+export type NewVideoRecord = typeof videos.$inferInsert;

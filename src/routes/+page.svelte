@@ -14,6 +14,9 @@
 		Input,
 		toast
 	} from '$lib';
+	import type { PageData } from './$types.js';
+
+	let { data }: { data: PageData } = $props();
 
 	// État de la modale de don
 	let isModalOpen = $state(false);
@@ -54,7 +57,7 @@
 	<TestimonialsSection />
 
 	<!-- Section Vidéo Pleine Largeur (Temps forts, Rétrospective et Impact) -->
-	<VideoSection />
+	<VideoSection chapters={data.videos && data.videos.length > 0 ? data.videos : undefined} />
 
 	<!-- Section Carte Interactive Leaflet (Présence nationale, croisades et missions) -->
 	<MapSection />

@@ -5,6 +5,7 @@
 		MessageSquareHeart,
 		CalendarDays,
 		Newspaper,
+		Film,
 		Database,
 		LogOut,
 		X
@@ -24,6 +25,12 @@
 			label: 'Tableau de bord',
 			icon: LayoutDashboard,
 			exact: true
+		},
+		{
+			href: '/admin/videos',
+			label: 'Vidéos & Temps forts',
+			icon: Film,
+			badge: 'Homepage'
 		},
 		{
 			href: '/admin/temoignages',
