@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import FlipCard from './FlipCard.svelte';
-	import { Clock, Calendar, Sparkles } from '@lucide/svelte';
+	import { Clock, Sparkles } from '@lucide/svelte';
 
 	interface Props {
 		targetDate: Date | string | number | null | undefined;
@@ -16,10 +16,10 @@
 	let {
 		targetDate,
 		size = 'md',
-		theme = 'dark',
+		theme = 'light',
 		showSummaryBanner = true,
 		showTitle = false,
-		titleText = 'COMPTE À REBOURS OFFICIEL',
+		titleText = 'COMPTE À REBOURS',
 		class: customClass = ''
 	}: Props = $props();
 
@@ -70,10 +70,8 @@
 	}
 
 	$effect(() => {
-		// Calcul immédiat
 		calculateRemainingTime();
 
-		// Lance l'intervalle d'une seconde
 		if (timerId) clearInterval(timerId);
 		timerId = setInterval(() => {
 			calculateRemainingTime();
@@ -88,7 +86,7 @@
 		if (timerId) clearInterval(timerId);
 	});
 
-	// Texte formaté exact : "jj - X jours Y heures Z minutes et W secondes"
+	// Texte formaté élégant : "JJ - X jours Y heures Z minutes et W secondes"
 	let summaryText = $derived(() => {
 		if (isPassed) {
 			return 'JJ - Événement en cours';
@@ -100,21 +98,33 @@
 		return `JJ - ${jStr} ${hStr} ${mStr} et ${sStr}`;
 	});
 
-	// Classes d'espacement des séparateurs
+	// Classes des deux-points séparateurs selon taille et thème
 	const colonClasses = $derived(() => {
+		const colorClass = theme === 'dark' ? 'text-white/40' : 'text-slate-400';
 		switch (size) {
 			case 'hero':
-				return 'text-3xl sm:text-5xl md:text-6xl mx-1 sm:mx-2 md:mx-3 text-white/50 pb-7 sm:pb-9 md:pb-11';
+				return `text-2xl sm:text-3xl md:text-4xl mx-1 sm:mx-1.5 pb-5 sm:pb-7 ${colorClass}`;
 			case 'detail':
-				return 'text-2xl sm:text-4xl mx-1 sm:mx-2 text-white/50 pb-6 sm:pb-8';
+				return `text-xl sm:text-2xl mx-1 pb-5 ${colorClass}`;
 			case 'card':
-				return 'text-lg sm:text-xl mx-0.5 text-white/60 pb-4';
+				return `text-sm sm:text-base mx-0.5 pb-3.5 ${colorClass}`;
 			case 'sm':
-				return 'text-sm mx-0.5 text-white/60 pb-3';
+				return `text-xs mx-0.5 pb-2 ${colorClass}`;
 			case 'md':
 			default:
-				return 'text-2xl sm:text-3xl mx-1 text-white/50 pb-5';
+				return `text-lg sm:text-xl mx-0.5 sm:mx-1 pb-4 ${colorClass}`;
 		}
+	});
+
+	// Style de la bannière selon thème
+	const bannerClasses = $derived(() => {
+		if (theme === 'dark') {
+			return 'border-amber-400/30 bg-black/60 text-amber-300';
+		}
+		if (theme === 'brand') {
+			return 'border-red-200 bg-red-50 text-brand-primary';
+		}
+		return 'border-red-200/80 bg-red-50/90 text-brand-primary';
 	});
 </script>
 
@@ -126,11 +136,9 @@
 >
 	<!-- TITRE FACULTATIF -->
 	{#if showTitle}
-		<div class="mb-3 flex items-center gap-2">
-			<Clock size={16} class="animate-pulse text-brand-accent" />
-			<span
-				class="font-body text-[11px] font-bold tracking-widest text-white/80 uppercase sm:text-xs"
-			>
+		<div class="mb-2 flex items-center gap-1.5">
+			<Clock size={13} class="animate-pulse text-brand-primary" />
+			<span class="font-body text-[10px] font-bold tracking-wider text-slate-600 uppercase">
 				{titleText}
 			</span>
 		</div>
@@ -139,12 +147,10 @@
 	<!-- BANNIÈRE DE SYNTHÈSE FORMATÉE : JJ - X jours Y heures Z minutes et W secondes -->
 	{#if showSummaryBanner}
 		<div
-			class="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-accent/40 bg-brand-primary/20 px-3.5 py-1 text-center shadow-xs backdrop-blur-md sm:mb-4 sm:px-4 sm:py-1.5"
+			class="mb-2.5 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-center shadow-2xs backdrop-blur-xs sm:mb-3 {bannerClasses()}"
 		>
-			<Sparkles size={13} class="shrink-0 animate-pulse text-brand-accent" />
-			<span
-				class="font-mono text-xs font-bold tracking-wide text-brand-accent select-none sm:text-sm"
-			>
+			<Sparkles size={12} class="shrink-0 animate-pulse text-brand-primary" />
+			<span class="font-mono text-[11px] font-bold tracking-tight select-none sm:text-xs">
 				{summaryText()}
 			</span>
 		</div>
@@ -156,19 +162,19 @@
 		<FlipCard value={days} label="Jours" {size} {theme} />
 
 		<!-- Séparateur double point -->
-		<span class="font-mono font-black select-none {colonClasses()}">:</span>
+		<span class="font-mono font-bold select-none {colonClasses()}">:</span>
 
 		<!-- 2. HEURES -->
 		<FlipCard value={hours} label="Heures" {size} {theme} />
 
 		<!-- Séparateur double point -->
-		<span class="font-mono font-black select-none {colonClasses()}">:</span>
+		<span class="font-mono font-bold select-none {colonClasses()}">:</span>
 
 		<!-- 3. MINUTES -->
 		<FlipCard value={minutes} label="Minutes" {size} {theme} />
 
 		<!-- Séparateur double point -->
-		<span class="font-mono font-black select-none {colonClasses()}">:</span>
+		<span class="font-mono font-bold select-none {colonClasses()}">:</span>
 
 		<!-- 4. SECONDES (S'écoule en direct) -->
 		<FlipCard value={seconds} label="Secondes" {size} {theme} />

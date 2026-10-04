@@ -4,7 +4,6 @@
 		Calendar,
 		MapPin,
 		Clock,
-		Users,
 		ArrowRight,
 		ShieldCheck,
 		HeartHandshake,
@@ -24,7 +23,7 @@
 		dateDay: '15-18',
 		dateMonth: 'OCTOBRE',
 		dateYear: '2026',
-		time: '18h00 – 22h00 chaque soir',
+		time: '18h00 – 22h00',
 		location: 'Esplanade du Stade Ahmadou Ahidjo',
 		city: 'Yaoundé, Cameroun',
 		image: '/event-croisade.jpg',
@@ -32,7 +31,7 @@
 		status: 'upcoming',
 		description:
 			'4 soirées exceptionnelles d’adoration, de proclamation de l’Évangile avec puissance, délivrances et guérisons. Cliniques médicales gratuites offertes chaque matin.',
-		speakers: ['Pasteur Valéry Tchamekwen', 'Évangélistes & Médecins missionnaires'],
+		speakers: ['Pasteur Valéry Tchamekwen'],
 		isFree: true,
 		isFeatured: true
 	};
@@ -84,225 +83,171 @@
 	});
 </script>
 
-<!-- SECTION PLEINE LARGEUR D'ÉCRAN (W-FULL SOUS LA HERO) -->
+<!-- SECTION PLEINE LARGEUR ÉLÉGANTE, CLAIRE ET DE HAUTEUR COMPACTE -->
 <section
 	id="a-la-une"
 	bind:this={sectionEl}
-	class="relative w-full overflow-hidden bg-[#070e17] py-12 text-white sm:py-16 lg:py-20 {customClass}"
+	class="relative w-full border-y border-slate-200/80 bg-gradient-to-b from-[#f8fafc] via-white to-[#f1f5f9] py-6 sm:py-8 lg:py-9 {customClass}"
 	aria-labelledby="events-spotlight-heading"
 >
-	<!-- ARRIÈRE-PLAN AVEC MOTIF VISUEL SUBTIL ET DÉGRADÉ -->
 	<div
-		class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(139,30,30,0.35),rgba(255,255,255,0))]"
-		aria-hidden="true"
-	></div>
-
-	<!-- Halo lumineux d'ambiance -->
-	<div
-		class="pointer-events-none absolute top-1/4 -left-32 h-96 w-96 rounded-full bg-brand-primary/20 blur-3xl"
-		aria-hidden="true"
-	></div>
-	<div
-		class="pointer-events-none absolute -right-32 bottom-10 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl"
-		aria-hidden="true"
-	></div>
-
-	<!-- CONTENEUR PLEINE LARGEUR AVEC PADDING LATÉRAL ADAPTATIF -->
-	<div
-		class="relative z-10 mx-auto w-full max-w-[1536px] px-4 transition-all duration-700 ease-out sm:px-6 md:px-8 lg:px-12 {isVisible
+		class="relative z-10 mx-auto w-full max-w-7xl px-4 transition-all duration-700 ease-out sm:px-6 lg:px-8 {isVisible
 			? 'translate-y-0 opacity-100'
-			: 'translate-y-8 opacity-0'}"
+			: 'translate-y-6 opacity-0'}"
 	>
-		<!-- EN-TÊTE DE LA SECTION PLEINE LARGEUR -->
+		<!-- BANDEAU COMPACT EN 2 COLONNES (HAUTEUR MAÎTRISÉE) -->
 		<div
-			class="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6 sm:mb-10"
+			class="overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-4 shadow-sm sm:p-6 lg:p-7"
 		>
-			<div class="flex items-center gap-3">
-				<span
-					class="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/15 px-3.5 py-1 text-xs font-black tracking-widest text-amber-300 uppercase shadow-xs backdrop-blur-xs"
-				>
-					<Sparkles size={14} class="fill-amber-400 text-amber-400" />
-					<span>{eyebrow}</span>
-				</span>
-				<span class="hidden text-xs text-white/50 sm:inline">|</span>
-				<span class="hidden text-xs font-semibold text-white/70 sm:inline">
-					Prochain rassemblement majeur de l'Église
-				</span>
-			</div>
-
-			{#if event.isFree}
-				<div
-					class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1 text-xs font-bold text-emerald-300 backdrop-blur-xs"
-				>
-					<ShieldCheck size={14} />
-					<span>Accès 100% Libre & Gratuit</span>
-				</div>
-			{/if}
-		</div>
-
-		<!-- GRILLE PRINCIPALE EN 2 COLONNES : GRANDE IMAGE BIEN VISIBLE & INFOS AVEC COUNTDOWN -->
-		<div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
-			<!-- COLONNE 1 : IMAGE DE L'ÉVÉNEMENT BIEN VISIBLE EN GRAND FORMAT (5 COLS SUR DESKTOP) -->
-			<div class="lg:col-span-5 xl:col-span-5">
-				<div
-					class="group relative overflow-hidden rounded-3xl border border-white/15 bg-white/5 p-2 shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-brand-primary/40"
-				>
-					<!-- Conteneur d'image grand format -->
+			<div class="grid grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-8">
+				<!-- COLONNE 1 : IMAGE VISIBLE EN FORMAT PAYSAGE ÉQUILIBRÉ (5 COLS) -->
+				<div class="lg:col-span-5">
 					<div
-						class="relative h-72 w-full overflow-hidden rounded-2xl sm:h-96 md:h-[420px] lg:h-[460px]"
+						class="group relative h-48 w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-xs sm:h-56 md:h-60 lg:h-64"
 					>
 						<img
 							src={event.image}
 							alt={event.imageAlt || event.title}
-							class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+							class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-103"
 							loading="eager"
 						/>
 						<div
-							class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+							class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
 						></div>
 
-						<!-- Badge Date Flottant sur l'image -->
+						<!-- Badge Date Flottant -->
 						<div
-							class="absolute top-4 left-4 flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-black/70 px-4 py-2.5 text-center shadow-lg backdrop-blur-md"
+							class="absolute top-3 left-3 flex flex-col items-center justify-center rounded-xl border border-white/40 bg-white/95 px-3 py-1.5 text-center shadow-md backdrop-blur-xs"
 						>
-							<span class="font-display text-2xl leading-none font-black text-brand-accent">
+							<span class="font-display text-lg leading-none font-black text-brand-primary">
 								{event.dateDay}
 							</span>
-							<span class="mt-0.5 text-[10px] font-extrabold tracking-wider text-white uppercase">
+							<span class="mt-0.5 text-[9px] font-bold tracking-wider text-slate-700 uppercase">
 								{event.dateMonth}
 								{event.dateYear || ''}
 							</span>
 						</div>
 
-						<!-- Badge Catégorie en haut à droite -->
-						<div class="absolute top-4 right-4">
+						<!-- Badge Catégorie -->
+						<div class="absolute top-3 right-3">
 							<span
-								class="rounded-full bg-brand-primary px-3 py-1 text-xs font-bold text-white uppercase shadow-md"
+								class="rounded-full bg-brand-primary px-2.5 py-0.5 text-[10px] font-bold text-white uppercase shadow-xs"
 							>
 								{event.categoryLabel}
 							</span>
 						</div>
 
-						<!-- Infos au bas de l'image -->
-						<div
-							class="absolute inset-x-4 bottom-4 flex items-center justify-between text-xs text-white/90"
-						>
-							<div class="flex items-center gap-1.5 font-semibold drop-shadow-sm">
-								<MapPin size={15} class="text-brand-accent" />
-								<span>{event.location}, {event.city}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- COLONNE 2 : INFOS DÉTAILLÉES & COMPTE À REBOURS À RABAT BIEN VISIBLE (7 COLS) -->
-			<div class="flex flex-col lg:col-span-7 xl:col-span-7">
-				<!-- Catégorie et Titre -->
-				<div>
-					<h2
-						id="events-spotlight-heading"
-						class="font-display text-2xl leading-[1.15] font-black tracking-tight text-white sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl"
-					>
-						{event.title}
-					</h2>
-
-					<!-- Description concise et percutante -->
-					<p class="mt-4 font-body text-sm leading-relaxed text-white/80 sm:text-base">
-						{event.description}
-					</p>
-				</div>
-
-				<!-- Métadonnées : Lieu, Heure, Orateurs -->
-				<div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-					<div
-						class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs"
-					>
-						<div
-							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/25 text-brand-accent"
-						>
-							<MapPin size={18} />
-						</div>
-						<div class="min-w-0">
-							<span class="block text-[10px] font-bold tracking-wider text-white/60 uppercase">
-								Lieu du rassemblement
-							</span>
-							<span class="block truncate font-body text-xs font-bold text-white sm:text-sm">
+						<!-- Lieu incrusté au bas de la photo -->
+						<div class="absolute inset-x-3 bottom-2.5 flex items-center gap-1.5 text-xs text-white">
+							<MapPin size={13} class="text-brand-accent drop-shadow-xs" />
+							<span class="truncate font-semibold drop-shadow-xs">
 								{event.location}, {event.city}
 							</span>
 						</div>
 					</div>
-
-					<div
-						class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs"
-					>
-						<div
-							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/25 text-brand-accent"
-						>
-							<Clock size={18} />
-						</div>
-						<div class="min-w-0">
-							<span class="block text-[10px] font-bold tracking-wider text-white/60 uppercase">
-								Horaires
-							</span>
-							<span class="block truncate font-body text-xs font-bold text-white sm:text-sm">
-								{event.time}
-							</span>
-						</div>
-					</div>
 				</div>
 
-				<!-- Orateurs si disponibles -->
-				{#if event.speakers && event.speakers.length > 0}
-					<div class="mt-3 flex items-center gap-2 text-xs text-white/75">
-						<Users size={14} class="shrink-0 text-brand-accent" />
-						<span>Orateurs :</span>
-						<strong class="text-white">{event.speakers.join(', ')}</strong>
-					</div>
-				{/if}
-
-				<!-- BLOC WIDGET COMPTE À REBOURS (CALENDRIER À RABAT DONT LA PAGE TOURNE EN SECONDES) -->
-				<div
-					class="mt-8 rounded-3xl border border-brand-accent/30 bg-gradient-to-br from-black/80 via-[#101b2b]/90 to-black/80 p-5 shadow-2xl backdrop-blur-md sm:p-7"
-				>
-					<div class="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
-						<div class="flex items-center gap-2">
-							<Clock size={16} class="animate-pulse text-brand-accent" />
-							<span class="text-xs font-black tracking-widest text-white uppercase">
-								Compte à Rebours en Direct
-							</span>
-						</div>
-						<span class="text-[11px] font-bold text-brand-accent"> Temps réel (secondes) </span>
-					</div>
-
-					<!-- Widget Flip Countdown en taille hero -->
-					<FlipCountdown {targetDate} size="hero" theme="dark" showSummaryBanner={true} />
-				</div>
-
-				<!-- BOUTONS D'ACTION -->
-				<div class="mt-8 flex flex-wrap items-center gap-4">
-					<button
-						type="button"
-						onclick={() => onRegister?.(event)}
-						class="group inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-brand-primary px-6 py-3.5 font-body text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:bg-brand-primary-hover hover:shadow-xl focus-visible:outline-2 focus-visible:outline-white sm:text-base"
-					>
-						<HeartHandshake size={18} />
-						<span>Participer / S'inscrire</span>
-						<ArrowRight
-							size={16}
-							class="transition-transform duration-200 group-hover:translate-x-1"
-						/>
-					</button>
-
-					{#if event.slug || event.id}
-						<a
-							href="/nos-evenements/{event.slug || event.id}"
-							class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3.5 font-body text-sm font-semibold text-white backdrop-blur-xs transition-colors hover:border-white/40 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white"
+				<!-- COLONNE 2 : INFORMATIONS ET COMPTE À REBOURS COMPACT EN THÈME CLAIR (7 COLS) -->
+				<div class="flex flex-col justify-center lg:col-span-7">
+					<!-- En-tête : Badge À la Une + Accès libre -->
+					<div class="flex flex-wrap items-center gap-2">
+						<span
+							class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-900 shadow-2xs"
 						>
-							<Eye size={16} />
-							<span>Détails & Programme complet</span>
-						</a>
+							<Sparkles size={12} class="fill-amber-400 text-amber-500" />
+							<span>{eyebrow}</span>
+						</span>
+
+						{#if event.isFree}
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800"
+							>
+								<ShieldCheck size={12} class="text-emerald-600" />
+								<span>Accès 100% Libre</span>
+							</span>
+						{/if}
+					</div>
+
+					<!-- Titre bien proportionné -->
+					<h2
+						id="events-spotlight-heading"
+						class="mt-2 font-display text-xl leading-snug font-bold tracking-tight text-slate-900 sm:text-2xl lg:text-3xl"
+					>
+						{event.title}
+					</h2>
+
+					<!-- Description compacte -->
+					{#if event.description}
+						<p
+							class="mt-1.5 line-clamp-2 font-body text-xs leading-relaxed text-slate-600 sm:text-sm"
+						>
+							{event.description}
+						</p>
 					{/if}
+
+					<!-- Métadonnées Horaires & Lieu en mini-pills claires -->
+					<div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+						<span
+							class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium"
+						>
+							<Clock size={12} class="text-brand-primary" />
+							<span>{event.time}</span>
+						</span>
+						<span
+							class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium"
+						>
+							<MapPin size={12} class="text-brand-primary" />
+							<span>{event.location}</span>
+						</span>
+					</div>
+
+					<!-- WIDGET COMPTE À REBOURS COMPACT EN THÈME CLAIR (LUMIÈRE & FINESSE) -->
+					<div
+						class="mt-4 rounded-2xl border border-slate-200/90 bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] p-3 shadow-2xs sm:p-3.5"
+					>
+						<div class="mb-2 flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+							<span
+								class="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-brand-primary uppercase"
+							>
+								<Clock size={12} class="animate-pulse" />
+								<span>Compte à rebours officiel</span>
+							</span>
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700"
+							>
+								<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+								<span>Temps réel</span>
+							</span>
+						</div>
+
+						<FlipCountdown {targetDate} size="md" theme="light" showSummaryBanner={true} />
+					</div>
+
+					<!-- BOUTONS D'ACTION COMPACTS -->
+					<div class="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-5">
+						<button
+							type="button"
+							onclick={() => onRegister?.(event)}
+							class="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-4 py-2 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-sm sm:px-5 sm:py-2.5 sm:text-sm"
+						>
+							<HeartHandshake size={15} />
+							<span>Participer / S'inscrire</span>
+							<ArrowRight
+								size={14}
+								class="transition-transform duration-200 group-hover:translate-x-0.5"
+							/>
+						</button>
+
+						{#if event.slug || event.id}
+							<a
+								href="/nos-evenements/{event.slug || event.id}"
+								class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 font-body text-xs font-bold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 sm:px-4 sm:py-2.5 sm:text-sm"
+							>
+								<Eye size={14} />
+								<span>Voir les détails</span>
+							</a>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

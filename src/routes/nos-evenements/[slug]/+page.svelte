@@ -266,24 +266,29 @@
 						</div>
 					</div>
 
-					<!-- WIDGET COMPTE À REBOURS FLIP CALENDAR IMPOSANT -->
+					<!-- WIDGET COMPTE À REBOURS FLIP CALENDAR ÉLÉGANT -->
 					<div
-						class="mt-8 rounded-3xl border border-brand-accent/30 bg-gradient-to-br from-black/90 via-[#0f172a] to-black/90 p-5 shadow-2xl backdrop-blur-md sm:p-6"
+						class="mt-6 rounded-2xl border border-white/20 bg-white/95 p-4 text-slate-900 shadow-xl backdrop-blur-md sm:p-5"
 					>
-						<div class="mb-4 flex items-center justify-between border-b border-white/10 pb-2">
+						<div class="mb-3 flex items-center justify-between border-b border-slate-200/80 pb-2">
 							<span
-								class="flex items-center gap-2 text-xs font-black tracking-wider text-white uppercase"
+								class="flex items-center gap-2 text-xs font-bold tracking-wider text-brand-primary uppercase"
 							>
-								<Clock size={15} class="animate-pulse text-brand-accent" />
+								<Clock size={14} class="animate-pulse" />
 								<span>Compte à rebours officiel</span>
 							</span>
-							<span class="text-[11px] font-bold text-brand-accent"> Seconde par seconde </span>
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700"
+							>
+								<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+								<span>Temps réel</span>
+							</span>
 						</div>
 
 						<FlipCountdown
 							targetDate={event.targetDate}
-							size="hero"
-							theme="dark"
+							size="detail"
+							theme="light"
 							showSummaryBanner={true}
 						/>
 					</div>
