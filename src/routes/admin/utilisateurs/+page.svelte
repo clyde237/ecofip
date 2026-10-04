@@ -104,21 +104,7 @@
 		).length
 	);
 
-	// Réagir aux retours de soumission de formulaires
-	$effect(() => {
-		if (form?.success && form?.message) {
-			toast.success(form.message);
-			isCreateModalOpen = false;
-			isEditModalOpen = false;
-			isDeleteModalOpen = false;
-			newName = '';
-			newUsername = '';
-			newPassword = '';
-			editPassword = '';
-		} else if (form?.error) {
-			toast.error(form.error);
-		}
-	});
+	let isSubmitting = $state(false);
 
 	function openCreateModal() {
 		newName = '';
@@ -399,7 +385,30 @@
 	title="Créer un nouvel utilisateur"
 	description="Configurez les identifiants et le niveau de permissions pour le nouveau collaborateur."
 >
-	<form method="POST" action="?/create" use:enhance class="space-y-4 py-2">
+	<form
+		method="POST"
+		action="?/create"
+		use:enhance={() => {
+			isSubmitting = true;
+			return async ({ result, update }) => {
+				isSubmitting = false;
+				if (result.type === 'success') {
+					isCreateModalOpen = false;
+					newName = '';
+					newUsername = '';
+					newPassword = '';
+					const msg =
+						(result.data as { message?: string })?.message || 'Utilisateur créé avec succès.';
+					toast.success(msg);
+				} else if (result.type === 'failure') {
+					const err = (result.data as { error?: string })?.error || 'Erreur lors de la création.';
+					toast.error(err);
+				}
+				await update();
+			};
+		}}
+		class="space-y-4 py-2"
+	>
 		<!-- Nom complet -->
 		<div>
 			<label for="create-name" class="block text-xs font-bold text-text-primary uppercase">
@@ -515,10 +524,11 @@
 			</button>
 			<button
 				type="submit"
-				class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover"
+				disabled={isSubmitting}
+				class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<UserPlus size={15} />
-				<span>Enregistrer l'utilisateur</span>
+				<span>{isSubmitting ? 'Enregistrement...' : "Enregistrer l'utilisateur"}</span>
 			</button>
 		</div>
 	</form>
@@ -533,7 +543,30 @@
 	description={userToEdit ? `Mise à jour des informations pour @${userToEdit.username}` : ''}
 >
 	{#if userToEdit}
-		<form method="POST" action="?/update" use:enhance class="space-y-4 py-2">
+		<form
+			method="POST"
+			action="?/update"
+			use:enhance={() => {
+				isSubmitting = true;
+				return async ({ result, update }) => {
+					isSubmitting = false;
+					if (result.type === 'success') {
+						isEditModalOpen = false;
+						editPassword = '';
+						const msg =
+							(result.data as { message?: string })?.message ||
+							'Utilisateur mis à jour avec succès.';
+						toast.success(msg);
+					} else if (result.type === 'failure') {
+						const err =
+							(result.data as { error?: string })?.error || 'Erreur lors de la mise à jour.';
+						toast.error(err);
+					}
+					await update();
+				};
+			}}
+			class="space-y-4 py-2"
+		>
 			<input type="hidden" name="id" value={userToEdit.id} />
 
 			<div>
@@ -615,10 +648,11 @@
 				</button>
 				<button
 					type="submit"
-					class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover"
+					disabled={isSubmitting}
+					class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<CheckCircle2 size={15} />
-					<span>Enregistrer les modifications</span>
+					<span>{isSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications'}</span>
 				</button>
 			</div>
 		</form>
@@ -634,7 +668,29 @@
 	description="Cette action est irréversible et révoquera immédiatement tous les accès de cet utilisateur."
 >
 	{#if userToDelete}
-		<form method="POST" action="?/delete" use:enhance class="space-y-4 py-2">
+		<form
+			method="POST"
+			action="?/delete"
+			use:enhance={() => {
+				isSubmitting = true;
+				return async ({ result, update }) => {
+					isSubmitting = false;
+					if (result.type === 'success') {
+						isDeleteModalOpen = false;
+						userToDelete = null;
+						const msg =
+							(result.data as { message?: string })?.message || 'Utilisateur supprimé avec succès.';
+						toast.success(msg);
+					} else if (result.type === 'failure') {
+						const err =
+							(result.data as { error?: string })?.error || 'Erreur lors de la suppression.';
+						toast.error(err);
+					}
+					await update();
+				};
+			}}
+			class="space-y-4 py-2"
+		>
 			<input type="hidden" name="id" value={userToDelete.id} />
 
 			<div class="rounded-2xl border border-red-200 bg-red-50/70 p-4">
@@ -658,10 +714,11 @@
 				</button>
 				<button
 					type="submit"
-					class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-red-700"
+					disabled={isSubmitting}
+					class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<Trash2 size={15} />
-					<span>Confirmer la suppression</span>
+					<span>{isSubmitting ? 'Suppression...' : 'Confirmer la suppression'}</span>
 				</button>
 			</div>
 		</form>
