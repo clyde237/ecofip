@@ -8,7 +8,8 @@
 		ShieldCheck,
 		HeartHandshake,
 		Sparkles,
-		Eye
+		Eye,
+		Users
 	} from '@lucide/svelte';
 	import type { DetailedEventItem, EventsSpotlightProps } from '../types.js';
 	import FlipCountdown from '../components/FlipCountdown.svelte';
@@ -185,7 +186,7 @@
 						</p>
 					{/if}
 
-					<!-- Métadonnées Horaires & Lieu en mini-pills claires -->
+					<!-- Métadonnées Horaires, Lieu & Orateurs en mini-pills claires -->
 					<div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
 						<span
 							class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium"
@@ -199,6 +200,16 @@
 							<MapPin size={12} class="text-brand-primary" />
 							<span>{event.location}</span>
 						</span>
+						{#if event.speakers && event.speakers.length > 0}
+							<span
+								class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium"
+							>
+								<Users size={12} class="text-brand-primary" />
+								<span class="max-w-[200px] truncate sm:max-w-[300px]"
+									>{event.speakers.join(', ')}</span
+								>
+							</span>
+						{/if}
 					</div>
 
 					<!-- WIDGET COMPTE À REBOURS COMPACT EN THÈME CLAIR (LUMIÈRE & FINESSE) -->

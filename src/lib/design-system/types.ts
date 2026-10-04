@@ -495,6 +495,7 @@ export interface DetailedEventItem {
 	startDate?: Date | string | null;
 	eventDate?: Date | string | null;
 	targetDate?: Date | string | null;
+	program?: string | null;
 }
 
 export interface EventsHeroProps {

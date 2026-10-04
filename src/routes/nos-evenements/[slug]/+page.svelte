@@ -12,7 +12,8 @@
 		Sparkles,
 		MessageCircle,
 		Copy,
-		Check
+		Check,
+		ListChecks
 	} from '@lucide/svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
 	import FlipCountdown from '$lib/design-system/components/FlipCountdown.svelte';
@@ -24,6 +25,75 @@
 	let { data }: { data: PageData } = $props();
 
 	let event = $derived(data.event);
+
+	interface ProgramStep {
+		indexStr: string;
+		title: string;
+		description: string;
+	}
+
+	const parsedProgramSteps = $derived.by<ProgramStep[]>(() => {
+		if (!event.program || !event.program.trim()) {
+			return [
+				{
+					indexStr: '01',
+					title: 'Accueil & Installation',
+					description:
+						"Ouverture des portes dès 1 heure avant le début officiel. Des équipes d'accueil sont à votre disposition."
+				},
+				{
+					indexStr: '02',
+					title: 'Louange & Prédication',
+					description:
+						'Temps fort d’adoration, proclamation puissante de la Parole de Dieu et ministère pour les besoins.'
+				},
+				{
+					indexStr: '03',
+					title: 'Communion & Distribution',
+					description:
+						'Distribution gratuite de bibles, entretiens spirituels personnalisés et actions de grâce.'
+				}
+			];
+		}
+
+		const lines = event.program
+			.split('\n')
+			.map((l) => l.trim())
+			.filter(Boolean);
+
+		return lines.map((line, idx) => {
+			let cleanLine = line;
+			const leadingNumMatch = cleanLine.match(/^(\d+)[\.\-\)]\s*(.*)$/);
+			let customNum = '';
+			if (leadingNumMatch) {
+				customNum = String(leadingNumMatch[1]).padStart(2, '0');
+				cleanLine = leadingNumMatch[2].trim();
+			}
+
+			const indexStr = customNum || String(idx + 1).padStart(2, '0');
+
+			let title = cleanLine;
+			let description = '';
+
+			const colonIndex = cleanLine.indexOf(':');
+			if (colonIndex !== -1) {
+				title = cleanLine.slice(0, colonIndex).trim();
+				description = cleanLine.slice(colonIndex + 1).trim();
+			} else {
+				const dashIndex = cleanLine.indexOf(' - ');
+				if (dashIndex !== -1) {
+					title = cleanLine.slice(0, dashIndex).trim();
+					description = cleanLine.slice(dashIndex + 3).trim();
+				}
+			}
+
+			return {
+				indexStr,
+				title,
+				description
+			};
+		});
+	});
 
 	let isRegisterModalOpen = $state(false);
 	let isSubmitting = $state(false);
@@ -346,63 +416,39 @@
 						{/if}
 					</div>
 
-					<!-- Programme indicatif -->
+					<!-- Programme indicatif / Déroulé -->
 					<div class="rounded-3xl border border-gray-200/80 bg-white p-7 shadow-xs sm:p-10">
-						<h3 class="font-display text-xl font-bold text-text-primary">
-							Déroulement & Organisation
-						</h3>
+						<div class="flex items-center gap-2.5">
+							<div
+								class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary"
+							>
+								<ListChecks size={18} />
+							</div>
+							<h3 class="font-display text-xl font-bold text-text-primary">
+								Déroulement & Organisation
+							</h3>
+						</div>
 
 						<div class="mt-6 space-y-4">
-							<div
-								class="flex items-start gap-4 rounded-2xl border border-gray-100 bg-[#f8fafc] p-4"
-							>
+							{#each parsedProgramSteps as step}
 								<div
-									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 font-bold text-brand-primary"
+									class="flex items-start gap-4 rounded-2xl border border-gray-100 bg-[#f8fafc] p-4 transition-colors hover:border-gray-200 hover:bg-slate-50/80"
 								>
-									01
+									<div
+										class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 font-mono text-sm font-bold text-brand-primary shadow-2xs"
+									>
+										{step.indexStr}
+									</div>
+									<div class="min-w-0 flex-1">
+										<h4 class="text-sm font-bold text-text-primary">{step.title}</h4>
+										{#if step.description}
+											<p class="mt-1 text-xs leading-relaxed text-text-secondary">
+												{step.description}
+											</p>
+										{/if}
+									</div>
 								</div>
-								<div>
-									<h4 class="text-sm font-bold text-text-primary">Accueil & Installation</h4>
-									<p class="mt-1 text-xs leading-relaxed text-text-secondary">
-										Ouverture des portes dès 1 heure avant le début officiel. Des équipes d'accueil
-										sont à votre disposition.
-									</p>
-								</div>
-							</div>
-
-							<div
-								class="flex items-start gap-4 rounded-2xl border border-gray-100 bg-[#f8fafc] p-4"
-							>
-								<div
-									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 font-bold text-brand-primary"
-								>
-									02
-								</div>
-								<div>
-									<h4 class="text-sm font-bold text-text-primary">Louange & Prédication</h4>
-									<p class="mt-1 text-xs leading-relaxed text-text-secondary">
-										Temps fort d'adoration, proclamation puissante de la Parole de Dieu et ministère
-										pour les besoins.
-									</p>
-								</div>
-							</div>
-
-							<div
-								class="flex items-start gap-4 rounded-2xl border border-gray-100 bg-[#f8fafc] p-4"
-							>
-								<div
-									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 font-bold text-brand-primary"
-								>
-									03
-								</div>
-								<div>
-									<h4 class="text-sm font-bold text-text-primary">Communion & Distribution</h4>
-									<p class="mt-1 text-xs leading-relaxed text-text-secondary">
-										Distribution gratuite de bibles, entretiens spirituels personnalisés et actions
-										de grâce.
-									</p>
-								</div>
-							</div>
+							{/each}
 						</div>
 					</div>
 				</div>
