@@ -4,17 +4,17 @@
 	import type { ProjectsHeroProps } from '../types.js';
 
 	const defaultTags = [
-		'Croisades d’Évangélisation',
-		'Discipulat & Formation',
-		'Santé & Action Sociale',
-		'Jeunesse & Réveil'
+		'Projet national 2024–2026',
+		'1 croisade par région et par an',
+		'Collaboration avec les églises locales',
+		'Croisades & Actions Humanitaires'
 	];
 
 	let {
 		breadcrumbLabel = 'Projets & Missions',
-		eyebrow = 'ACTIONS DE TERRAIN & ÉVANGÉLISATION',
-		title = 'Projets & Missions',
-		subtitle = 'Découvrez nos initiatives concrètes sur le terrain : croisades d’évangélisation, soutien communautaire, soins médicaux et formation de disciples à travers le Cameroun.',
+		eyebrow = 'Nos projets',
+		title = 'Cameroun pour Jésus',
+		subtitle = 'Une stratégie missionnaire nationale (2024–2026) : 1 croisade par région et par an, en collaboration étroite avec les églises locales pour impacter durablement notre nation.',
 		tags = defaultTags,
 		backgroundImage = '/article-evangelisation.jpg',
 		class: customClass = ''

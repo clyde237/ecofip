@@ -53,6 +53,7 @@ export { default as JoinHero } from './design-system/patterns/JoinHero.svelte';
 export { default as JoinRolesSection } from './design-system/patterns/JoinRolesSection.svelte';
 export { default as JoinWhyUsSection } from './design-system/patterns/JoinWhyUsSection.svelte';
 export { default as JoinApplicationSection } from './design-system/patterns/JoinApplicationSection.svelte';
+export { default as JoinMembersTestimonials } from './design-system/patterns/JoinMembersTestimonials.svelte';
 export { default as JoinFaqSection } from './design-system/patterns/JoinFaqSection.svelte';
 export { default as EventsHero } from './design-system/patterns/EventsHero.svelte';
 export { default as EventsSpotlight } from './design-system/patterns/EventsSpotlight.svelte';
@@ -60,6 +61,8 @@ export { default as EventsListSection } from './design-system/patterns/EventsLis
 export { default as EventsHostCta } from './design-system/patterns/EventsHostCta.svelte';
 export { default as NewsHero } from './design-system/patterns/NewsHero.svelte';
 export { default as NewsFeaturedArticle } from './design-system/patterns/NewsFeaturedArticle.svelte';
+export { default as NewsPreviousCrusadesGallery } from './design-system/patterns/NewsPreviousCrusadesGallery.svelte';
+export { default as NewsMarkingTestimonies } from './design-system/patterns/NewsMarkingTestimonies.svelte';
 export { default as NewsListSection } from './design-system/patterns/NewsListSection.svelte';
 export { default as NewsNewsletterSection } from './design-system/patterns/NewsNewsletterSection.svelte';
 export { default as GalleryHero } from './design-system/patterns/GalleryHero.svelte';
@@ -69,3 +72,4 @@ export { default as ContactHero } from './design-system/patterns/ContactHero.sve
 export { default as ContactChannelsSection } from './design-system/patterns/ContactChannelsSection.svelte';
 export { default as ContactFormSection } from './design-system/patterns/ContactFormSection.svelte';
 export { default as ContactMapSection } from './design-system/patterns/ContactMapSection.svelte';
+export { default as ContactPrayerSection } from './design-system/patterns/ContactPrayerSection.svelte';

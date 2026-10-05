@@ -4,6 +4,7 @@
 		ContactChannelsSection,
 		ContactFormSection,
 		ContactMapSection,
+		ContactPrayerSection,
 		DonationCtaSection,
 		Modal,
 		Button,
@@ -16,33 +17,36 @@
 </script>
 
 <svelte:head>
-	<title>Contact & Écoute Pastorale — Famille Missionnaire | ECOFIP</title>
+	<title>Contact — Restons en Contact | ECOFIP</title>
 	<meta
 		name="description"
-		content="Contactez ECOFIP au Cameroun : permanence de prière et d’intercession, secrétariat général, coordination des missions de terrain et partenariats d’église."
+		content="Contactez ECOFIP au Cameroun : Quartier Tamja, Bafoussam. Téléphone, WhatsApp, email et équipe d'intercession disponible pour vos besoins de prière."
 	/>
-	<meta property="og:title" content="Contact & Écoute Pastorale — ECOFIP" />
+	<meta property="og:title" content="Contactez-nous — ECOFIP" />
 	<meta
 		property="og:description"
-		content="Une question, une requête de prière ou un projet de mission ? L'équipe de coordination ECOFIP est à votre écoute."
+		content="Une question ? Une suggestion ? Besoin de prière ? N'hésitez pas à nous contacter."
 	/>
 	<meta property="og:type" content="website" />
 </svelte:head>
 
 <div>
-	<!-- 1. Bannière d'introduction avec fil d'ariane et contacts rapides -->
+	<!-- SECTION 02 — Introduction Contact -->
 	<ContactHero />
 
-	<!-- 2. Les 4 Pôles et Départements dédiés avec coordonnées directes -->
+	<!-- SECTION 03 — Coordonnées -->
 	<ContactChannelsSection />
 
-	<!-- 3. Formulaire interactif complet avec validation et rassurance -->
+	<!-- SECTION 04 — Formulaire de contact -->
 	<ContactFormSection />
 
-	<!-- 4. Implantations géographiques avec Carte interactive Leaflet -->
+	<!-- SECTIONS 05 & 06 — Localisation et Réseaux sociaux -->
 	<ContactMapSection />
 
-	<!-- 5. Appel au partenariat & semence missionnaire -->
+	<!-- SECTION 07 — Besoin de prière ? -->
+	<ContactPrayerSection />
+
+	<!-- Appel au soutien missionnaire -->
 	<DonationCtaSection
 		eyebrow="SOUTENIR LE MINISTÈRE"
 		title="Faites un don, semez dans l’œuvre de Dieu au Cameroun"

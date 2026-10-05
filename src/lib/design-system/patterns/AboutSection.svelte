@@ -1,35 +1,31 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
-	import { CircleDot, Target, Diamond, ArrowRight } from '@lucide/svelte';
+	import { Target, Compass, ArrowRight } from '@lucide/svelte';
 	import type { AboutPillar, AboutSectionProps } from '../types.js';
 
 	const defaultPillars: AboutPillar[] = [
 		{
 			id: 'vision',
 			title: 'Notre vision',
-			description: 'Toucher les nations par l’Évangile.',
-			icon: CircleDot
-		},
-		{
-			id: 'mission',
-			title: 'Notre mission',
-			description: 'Former des leaders et des disciples.',
+			description:
+				'Annoncer l’Évangile de Jésus-Christ à travers tout le Cameroun, toucher des vies, transformer des communautés et établir le Royaume de Dieu dans chaque région du pays.',
 			icon: Target
 		},
 		{
-			id: 'valeurs',
-			title: 'Nos valeurs',
-			description: 'Foi, amour, unité et excellence.',
-			icon: Diamond
+			id: 'direction',
+			title: 'Direction & Leadership',
+			description:
+				'Sous la direction du Pasteur Valéry TCHAMEKWEN, Fondateur et Coordinateur National, ECOFIP mobilise l’Église pour une mission nationale d’évangélisation sans précédent.',
+			icon: Compass
 		}
 	];
 
 	let {
 		eyebrow = "À PROPOS D'ECOFIP",
-		title = 'Une mission fondée sur la',
-		highlightedTitle = 'Parole de Dieu',
-		description = 'ECOFIP est un ministère chrétien évangélique fondé sur des principes bibliques. Nous sommes appelés à être des gestionnaires fidèles et prudents pour annoncer la Bonne Nouvelle, enseigner et apporter la guérison par la puissance de Dieu.',
+		title = 'Les Économes Fidèles et Prudents —',
+		highlightedTitle = 'Une mission divine pour transformer le Cameroun',
+		description = "ECOFIP — Les Économes Fidèles et Prudents parcourt le Cameroun avec un message d'espoir, de salut et de transformation holistique par la puissance de l'Évangile.",
 		image = '/about-mission.jpg',
 		imageAlt = 'Moments de célébration, louange et adoration pour Jésus',
 		ctaLabel = 'Découvrir notre histoire',
@@ -138,25 +134,29 @@
 					</p>
 				{/if}
 
-				<!-- Rangée des 3 piliers (Vision, Mission, Valeurs) -->
-				<div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-3 lg:gap-4">
+				<!-- Blocs structurés : Notre vision & Direction -->
+				<div class="mt-8 space-y-4">
 					{#each pillars as pillar (pillar.id)}
-						<div class="flex items-start gap-3 sm:gap-2.5 lg:gap-3">
-							<!-- Pastille d'icône douce circulaire -->
+						<div
+							class="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-[#f8fafc] p-4.5 shadow-2xs transition-all duration-300 hover:border-brand-primary/25 hover:bg-white hover:shadow-md sm:p-5"
+						>
+							<!-- Pastille d'icône douce -->
 							<div
-								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-subtle sm:h-10 sm:w-10"
+								class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-primary/10 bg-brand-subtle text-brand-primary shadow-2xs transition-transform duration-300 group-hover:scale-105"
 							>
 								{#if pillar.icon}
-									<pillar.icon size={18} class="text-brand-primary" aria-hidden="true" />
+									<pillar.icon size={22} aria-hidden="true" />
 								{/if}
 							</div>
 
 							<!-- Titre et sous-texte du pilier -->
-							<div class="min-w-0">
-								<h3 class="font-body text-xs font-bold text-text-primary sm:text-sm">
+							<div class="min-w-0 flex-1">
+								<h3
+									class="font-display text-base font-bold tracking-tight text-text-primary sm:text-lg"
+								>
 									{pillar.title}
 								</h3>
-								<p class="mt-0.5 font-body text-[11px] leading-snug text-text-secondary sm:text-xs">
+								<p class="mt-1.5 font-body text-xs leading-relaxed text-text-secondary sm:text-sm">
 									{pillar.description}
 								</p>
 							</div>

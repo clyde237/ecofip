@@ -15,6 +15,7 @@
 		Input,
 		toast
 	} from '$lib';
+	import TenRegionsSection from '$lib/design-system/patterns/TenRegionsSection.svelte';
 	import type { DetailedEventItem } from '$lib/design-system/types.js';
 	import type { PageData } from './$types.js';
 	import { CheckCircle2 } from '@lucide/svelte';
@@ -69,21 +70,36 @@
 </script>
 
 <svelte:head>
-	<title>ECOFIP — Les Économes Fidèles et Prudents | Mouvement Chrétien & Humanitaire</title>
+	<title>ECOFIP — Les Économes Fidèles et Prudents | Cameroun pour Jésus</title>
 	<meta
 		name="description"
-		content="Site officiel d'ECOFIP : réveil spirituel, actions concrètes, campagnes missionnaires et soutien aux communautés."
+		content="ECOFIP — Les Économes Fidèles et Prudents parcourt les 10 régions du Cameroun pour annoncer l'Évangile, transformer des vies et apporter l'espoir à travers des croisades d'évangélisation et des actions humanitaires."
 	/>
 </svelte:head>
 
 <div>
-	<!-- Hero Pattern officiel ECOFIP -->
+	<!-- SECTION 02 — HERO / MISSION NATIONALE : Cameroun pour Jésus -->
 	<Hero />
 
-	<!-- Barre des statistiques clés (flottant à l'intersection avec décompte dynamique) -->
+	<!-- SECTION 04 — CHIFFRES CLÉS / NOTRE IMPACT (10 Régions, 50K+ Vies touchées, 3 ans Projet national) -->
 	<StatsBar />
 
-	<!-- Section Événement Mis en Avant Pleine Largeur sous la Hero (si activé dans l'admin) -->
+	<!-- SECTION 05 — 10 RÉGIONS, 1 MESSAGE (Adamaoua, Centre, Est, Extrême-Nord, Littoral, Nord, Nord-Ouest, Ouest, Sud, Sud-Ouest) -->
+	<TenRegionsSection />
+
+	<!-- SECTION 06 — TÉMOIGNAGES (Des vies transformées par la puissance de l'Évangile) -->
+	<TestimonialsSection />
+
+	<!-- SECTION 07 — À PROPOS D'ECOFIP (Les Économes Fidèles et Prudents — Notre vision & Direction) -->
+	<AboutSection />
+
+	<!-- SECTION 08 — CARTE DES MISSIONS (Villes visitées et à venir) -->
+	<MapSection />
+
+	<!-- SECTION 09 — NOS PROJETS & MISSIONS (Croisades, Actions humanitaires, Séminaires) -->
+	<EventsSection events={data.events && data.events.length > 0 ? data.events : undefined} />
+
+	<!-- Événement Mis en Avant (si configuré) -->
 	{#if data.featuredEvent}
 		<EventsSpotlight
 			event={data.featuredEvent}
@@ -92,26 +108,23 @@
 		/>
 	{/if}
 
-	<!-- Section À propos d'ECOFIP (Vision, Mission, Valeurs et Call To Action) -->
-	<AboutSection />
-
-	<!-- Section Nos Projets & Événements (Cartes d'actions concrètes, dates et inscriptions) -->
-	<EventsSection events={data.events && data.events.length > 0 ? data.events : undefined} />
-
-	<!-- Section Témoignages (Fond Rouge officiel, Glassmorphism, Portraits et Vies transformées) -->
-	<TestimonialsSection />
-
-	<!-- Section Vidéo Pleine Largeur (Temps forts, Rétrospective et Impact) -->
+	<!-- SECTION 11 — GALERIE PHOTOS & VIDÉOS (Revivez les moments forts de nos missions) -->
 	<VideoSection chapters={data.videos && data.videos.length > 0 ? data.videos : undefined} />
 
-	<!-- Section Carte Interactive Leaflet (Présence nationale, croisades et missions) -->
-	<MapSection />
-
-	<!-- Section Actualités & Dernières Nouvelles (3 articles, filtres et liens) -->
+	<!-- SECTION 12 — ACTUALITÉS & TÉMOIGNAGES (Dernières nouvelles de la moisson) -->
 	<NewsSection />
 
-	<!-- Dernière Section : Soutenez la Mission (Donation CTA avec dégradé et image de fond) -->
-	<DonationCtaSection onCtaClick={() => (isModalOpen = true)} />
+	<!-- SECTION 10 — REJOIGNEZ LA MISSION (Participer à la mission ou Faire un don) -->
+	<DonationCtaSection
+		eyebrow="REJOIGNEZ LA MISSION"
+		title="Soyez partie prenante de cette grande œuvre !"
+		description="Participez comme missionnaire, volontaire ou partenaire financier pour soutenir l'avancement du Royaume de Dieu au Cameroun."
+		ctaLabel="Participer à la mission"
+		ctaHref="/nous-rejoindre"
+		secondaryCtaLabel="Faire un don"
+		secondaryCtaHref="/faire-un-don"
+		onCtaClick={() => (isModalOpen = true)}
+	/>
 </div>
 
 <!-- Modale de don interactive -->

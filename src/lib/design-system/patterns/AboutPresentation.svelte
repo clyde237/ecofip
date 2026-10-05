@@ -5,18 +5,18 @@
 	import type { AboutPresentationProps } from '../types.js';
 
 	let {
-		eyebrow = 'QUI SOMMES-NOUS ?',
-		title = 'Un mouvement au service du',
-		highlightedTitle = 'Royaume de Dieu',
-		paragraph1 = 'ECOFIP — Les Économes Fidèles et Prudents — est un mouvement chrétien évangélique engagé à annoncer la Bonne Nouvelle, à former des disciples et à accompagner les personnes dans leur marche avec Dieu.',
-		paragraph2 = 'Notre engagement repose sur une conviction simple : les ressources, les talents et les opportunités qui nous sont confiés doivent être administrés avec fidélité, sagesse et responsabilité pour servir la mission.',
-		quoteText = '« Être fidèles dans ce qui nous est confié afin que la grâce de Dieu puisse toucher davantage de vies. »',
+		eyebrow = 'Qui sommes-nous ?',
+		title = 'Les Économes',
+		highlightedTitle = 'Fidèles et Prudents',
+		paragraph1 = '« Quel est donc l’économe fidèle et prudent que le maître établira sur ses gens, pour leur donner la nourriture au temps convenable ? » — Luc 12:42',
+		paragraph2 = '« Jésus parcourait toutes les villes et les villages, enseignant dans les synagogues, prêchant la bonne nouvelle du royaume, et guérissant toute maladie et toute infirmité. » — Matthieu 9:35',
+		quoteText = 'ECOFIP (Les Économes Fidèles et Prudents) est un ministère chrétien missionnaire fondé sur ces principes bibliques. Nous sommes appelés à être de bons gestionnaires de l’Évangile, parcourant les villes et villages pour annoncer la Bonne Nouvelle, enseigner et apporter la guérison par la puissance de Dieu.',
 		image = '/pasteur-valery-tchamekwen.png',
-		imageAlt = 'Pasteur Valery Tchamekwen — Porteur de vision ECOFIP',
+		imageAlt = 'Pasteur Valery Tchamekwen — Fondateur & Coordinateur National ECOFIP',
 		badgeTitle = 'Pasteur Valery Tchamekwen',
-		badgeSubtitle = 'Porteur de vision ECOFIP',
-		ctaLabel = 'Découvrir notre mission',
-		ctaHref = '#mission',
+		badgeSubtitle = 'Fondateur & Coordinateur National',
+		ctaLabel = 'Découvrir notre histoire',
+		ctaHref = '#histoire',
 		class: customClass = ''
 	}: AboutPresentationProps = $props();
 

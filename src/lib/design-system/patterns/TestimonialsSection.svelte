@@ -6,32 +6,32 @@
 
 	const defaultTestimonials: TestimonialItem[] = [
 		{
-			id: 'jean-pierre',
-			name: 'Jean-Pierre',
-			membership: 'Membre depuis 2022',
+			id: 'jean-paul',
+			name: 'Pasteur Jean-Paul',
+			membership: 'Missionnaire ECOFIP',
 			quote:
-				'« Ce mouvement m’a permis de redécouvrir ma foi, de grandir spirituellement et de me rapprocher chaque jour davantage de la présence de Dieu. »',
+				'« Participer à Cameroun pour Jésus a transformé ma vie et celle de milliers d’âmes. La puissance de Dieu se manifeste à chaque mission. »',
 			avatar: '/avatar-jean-pierre.jpg',
 			verified: true,
 			rating: 5
 		},
 		{
-			id: 'sarah',
-			name: 'Sarah',
-			membership: 'Membre depuis 2023',
+			id: 'marie-ndongo',
+			name: 'Marie Ndongo',
+			membership: 'Participante & Équipière',
 			quote:
-				'« La prière fervente et l’amour de notre communauté m’ont soutenue dans les moments difficiles et m’ont aidée à retrouver une espérance vivante et inébranlable. »',
-			avatar: '/avatar-sarah.jpg',
+				'« J’ai trouvé Christ lors d’une croisade ECOFIP. Aujourd’hui, je sers avec eux pour amener d’autres personnes à la lumière de l’Évangile. »',
+			avatar: '/avatar-marie.jpg',
 			verified: true,
 			rating: 5
 		},
 		{
-			id: 'marie',
-			name: 'Marie',
-			membership: 'Membre depuis 2024',
+			id: 'jean-pierre',
+			name: 'Jean-Pierre (Kribi)',
+			membership: 'Témoignage de délivrance',
 			quote:
-				'« Les enseignements bibliques et l’accompagnement pastoral ont profondément renouvelé ma relation avec Dieu et affermi ma vocation missionnaire. »',
-			avatar: '/avatar-marie.jpg',
+				'« Ancien sorcier, j’ai rencontré Jésus lors de la croisade à Kribi et renoncé publiquement à mes fétiches. Ma vie est totalement restaurée. »',
+			avatar: '/avatar-sarah.jpg',
 			verified: true,
 			rating: 5
 		}
@@ -41,7 +41,7 @@
 		eyebrow = 'TÉMOIGNAGES',
 		title = 'Des vies transformées par la',
 		highlightedTitle = 'puissance de l’Évangile',
-		description = 'Découvrez comment la grâce de Dieu, la communion fraternelle et la prière restaurent les cœurs et bâtissent des vies épanouies.',
+		description = 'Découvrez les témoignages authentiques d’âmes touchées, restaurées et guéries lors de nos campagnes à travers le Cameroun.',
 		testimonials = defaultTestimonials,
 		ctaLabel = 'Partager mon témoignage',
 		ctaHref = '/contact',

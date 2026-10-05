@@ -7,31 +7,33 @@
 
 	const defaultLocations: CampaignLocation[] = [
 		{
-			id: 'douala',
-			name: 'Douala',
-			region: 'Région du Littoral',
-			coordinates: [4.051, 9.767],
-			campaignType: 'Grande Croisade & Réveil Spirituel',
-			date: 'Campagne annuelle',
-			impact: '+20 000 participants'
+			id: 'bafoussam',
+			name: 'Bafoussam',
+			region: 'Région de l’Ouest',
+			coordinates: [5.477, 10.417],
+			campaignType: 'Siège National & Foyer Spirituel ECOFIP',
+			date: 'Centre de coordination permanente',
+			impact: 'Quartier Tamja • Mobilisation des 10 Régions',
+			isFeatured: true,
+			badge: 'Siège National • Ouest'
 		},
 		{
 			id: 'yaounde',
 			name: 'Yaoundé',
 			region: 'Région du Centre',
 			coordinates: [3.848, 11.502],
-			campaignType: 'Siège National & Rassemblements',
+			campaignType: 'Capitale & Rassemblements Nationaux',
 			date: 'Missions permanentes',
 			impact: '+25 000 personnes touchées'
 		},
 		{
-			id: 'bafoussam',
-			name: 'Bafoussam',
-			region: 'Région de l’Ouest',
-			coordinates: [5.477, 10.417],
-			campaignType: 'Mission d’Évangélisation & Action Sociale',
-			date: 'Croisade régionale',
-			impact: '+8 000 participants'
+			id: 'douala',
+			name: 'Douala',
+			region: 'Région du Littoral',
+			coordinates: [4.051, 9.767],
+			campaignType: 'Grande Croisade & Réveil Évangélique',
+			date: 'Campagne annuelle',
+			impact: '+20 000 participants'
 		},
 		{
 			id: 'garoua',
@@ -47,17 +49,62 @@
 			name: 'Maroua',
 			region: 'Région de l’Extrême-Nord',
 			coordinates: [10.597, 14.315],
-			campaignType: 'Secours Humanitaire & Prédication',
+			campaignType: 'Secours Humanitaire & Compassion',
 			date: 'Missions frontalières',
 			impact: '+7 200 familles secourues'
+		},
+		{
+			id: 'ngaoundere',
+			name: 'Ngaoundéré',
+			region: 'Région de l’Adamaoua',
+			coordinates: [7.316, 13.583],
+			campaignType: 'Évangélisation en Terre de Savane',
+			date: 'Croisade régionale',
+			impact: '+5 000 personnes touchées'
+		},
+		{
+			id: 'bertoua',
+			name: 'Bertoua',
+			region: 'Région de l’Est',
+			coordinates: [4.577, 13.684],
+			campaignType: 'Mission Forestière & Réveil Communautaire',
+			date: 'Campagnes rurales et urbaines',
+			impact: '+4 800 personnes touchées'
+		},
+		{
+			id: 'bamenda',
+			name: 'Bamenda',
+			region: 'Région du Nord-Ouest',
+			coordinates: [5.959, 10.159],
+			campaignType: 'Message de Paix, Réconciliation & Espoir',
+			date: 'Missions des Hauts Plateaux',
+			impact: '+6 000 personnes touchées'
+		},
+		{
+			id: 'ebolowa',
+			name: 'Ebolowa',
+			region: 'Région du Sud',
+			coordinates: [2.916, 11.15],
+			campaignType: 'Croisades Régionales & Actions Sociales',
+			date: 'Missions Sud-Cameroun',
+			impact: '+5 500 participants'
+		},
+		{
+			id: 'buea',
+			name: 'Buea',
+			region: 'Région du Sud-Ouest',
+			coordinates: [4.155, 9.243],
+			campaignType: 'Campus Universitaire & Réveil Jeunesse',
+			date: 'Missions Mont Cameroun',
+			impact: '+8 500 jeunes et familles'
 		}
 	];
 
 	let {
-		eyebrow = 'NOTRE PRÉSENCE AU CAMEROUN',
-		title = 'Un mouvement présent dans plusieurs régions',
-		description = 'Découvrez les localités touchées par nos campagnes, nos actions sociales et nos missions.',
-		ctaLabel = 'Voir les localisations',
+		eyebrow = 'MISSION NATIONALE — LES 10 RÉGIONS DU CAMEROUN',
+		title = 'Carte des 10 régions & parcours',
+		description = 'Découvrez l’implantation et les missions d’ECOFIP à travers les 10 régions du Cameroun, coordonnées depuis son siège national et foyer spirituel à Bafoussam (Région de l’Ouest).',
+		ctaLabel = 'Afficher toute la carte',
 		locations = defaultLocations,
 		class: customClass = ''
 	}: MapSectionProps = $props();
@@ -145,21 +192,68 @@
 					</p>
 				{/if}
 
-				<!-- Sélecteur rapide des 5 villes pour zoomer sur la carte -->
+				<!-- Sélecteur rapide des 10 régions & villes pour zoomer sur la carte -->
 				<div class="mt-6 flex flex-wrap gap-2">
 					{#each locations as loc (loc.id)}
 						{@const isSelected = activeCityId === loc.id}
+						{@const isSpecial = loc.isFeatured || loc.id === 'bafoussam'}
 						<button
 							type="button"
 							onclick={() => handleCityClick(loc)}
-							class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-150 {isSelected
-								? 'border-brand-primary bg-brand-primary text-white shadow-xs'
-								: 'border-gray-200 bg-surface text-text-primary hover:border-brand-primary/50 hover:bg-white'}"
+							class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-200 {isSpecial
+								? isSelected
+									? 'border-brand-primary bg-brand-primary text-white shadow-md ring-2 ring-brand-primary/20'
+									: 'border-amber-400/90 bg-amber-50/80 font-bold text-brand-primary shadow-2xs ring-1 ring-amber-400/30 hover:border-brand-primary hover:bg-amber-100'
+								: isSelected
+									? 'border-brand-primary bg-brand-primary text-white shadow-xs'
+									: 'border-gray-200 bg-surface text-text-primary hover:border-brand-primary/50 hover:bg-white'}"
 						>
-							<MapPin size={12} class={isSelected ? 'text-white' : 'text-brand-primary'} />
-							<span>{loc.name}</span>
+							{#if isSpecial}
+								<span class="relative flex h-2 w-2">
+									<span
+										class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-primary opacity-75"
+									></span>
+									<span class="relative inline-flex h-2 w-2 rounded-full bg-brand-primary"></span>
+								</span>
+								<span>★ {loc.name}</span>
+								<span
+									class="py-0.2 rounded bg-amber-200/80 px-1 text-[9px] font-black tracking-wider text-amber-900"
+								>
+									OUEST • SIÈGE
+								</span>
+							{:else}
+								<MapPin size={12} class={isSelected ? 'text-white' : 'text-brand-primary'} />
+								<span>{loc.name}</span>
+							{/if}
 						</button>
 					{/each}
+				</div>
+
+				<!-- Légende officielle des 10 régions & Foyer de Bafoussam -->
+				<div
+					class="mt-6 flex flex-wrap items-center gap-4 border-t border-gray-100 pt-4 text-xs font-semibold text-text-secondary"
+				>
+					<div class="flex items-center gap-1.5">
+						<span class="relative flex h-3 w-3 items-center justify-center">
+							<span
+								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-primary opacity-75"
+							></span>
+							<span
+								class="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand-primary ring-1 ring-amber-400"
+							></span>
+						</span>
+						<span class="font-bold text-text-primary"
+							>Foyer Spirituel & Siège (Bafoussam, Ouest)</span
+						>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="h-2.5 w-2.5 rounded-full bg-brand-primary"></span>
+						<span>Les 10 régions du Cameroun</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+						<span>Missions & Croisades</span>
+					</div>
 				</div>
 
 				<!-- Bouton d'action principal -->

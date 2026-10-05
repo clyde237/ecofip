@@ -1,9 +1,10 @@
 <script lang="ts">
 	import {
 		JoinHero,
-		JoinRolesSection,
 		JoinWhyUsSection,
+		JoinRolesSection,
 		JoinApplicationSection,
+		JoinMembersTestimonials,
 		JoinFaqSection,
 		DonationCtaSection,
 		Modal,
@@ -13,7 +14,7 @@
 	import { Heart } from '@lucide/svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 
-	let selectedPole = $state('sante');
+	let selectedPole = $state('evangelisation');
 	let isDonationModalOpen = $state(false);
 	let selectedDonationCause = $state<'mission' | 'sante' | 'jeunesse'>('mission');
 </script>
@@ -22,7 +23,7 @@
 	<title>Nous rejoindre — Devenir Bénévole & Servir la Mission | ECOFIP</title>
 	<meta
 		name="description"
-		content="Engagez-vous aux côtés d'ECOFIP : soignants, évangélistes, techniciens, moniteurs de jeunesse. Mettez vos compétences et vos talents au service du Royaume au Cameroun."
+		content="Engagez-vous aux côtés d'ECOFIP : évangélisation, intercession, logistique, multimédia, action sociale, formation. Mettez vos talents au service du Royaume au Cameroun."
 	/>
 	<meta property="og:title" content="Nous rejoindre — Devenir Bénévole & Serviteur ECOFIP" />
 	<meta
@@ -33,30 +34,33 @@
 </svelte:head>
 
 <div>
-	<!-- 1. Bannière simple, aérée et immersive -->
+	<!-- SECTION 02 — Appel à la mission -->
 	<JoinHero />
 
-	<!-- 2. Les 4 Pôles d'Action et profils recherchés -->
+	<!-- SECTION 03 — Comment s'impliquer ? -->
+	<JoinWhyUsSection />
+
+	<!-- SECTION 04 — Nos départements de service -->
 	<JoinRolesSection
 		onSelectRole={(roleId) => {
 			selectedPole = roleId;
 		}}
 	/>
 
-	<!-- 3. Pourquoi s'engager avec ECOFIP (4 piliers d'expérience) -->
-	<JoinWhyUsSection />
-
-	<!-- 4. Formulaire interactif de candidature avec validation et feedback -->
+	<!-- SECTION 05 — Formulaire de candidature / d'intérêt -->
 	<JoinApplicationSection bind:selectedPole />
 
-	<!-- 5. Foire aux questions (FAQ) spéciale bénévolat et engagement -->
+	<!-- SECTION 06 — Témoignages de membres -->
+	<JoinMembersTestimonials />
+
+	<!-- Foire aux questions (FAQ) spéciale engagement -->
 	<JoinFaqSection />
 
-	<!-- 6. Appel alternatif : semer financièrement si on ne peut pas partir sur le terrain -->
+	<!-- Appel alternatif : semer financièrement -->
 	<DonationCtaSection
 		eyebrow="VOUS NE POUVEZ PAS PARTIR SUR LE TERRAIN ?"
 		title="Soutenez ceux qui vont au front de la mission"
-		description="Si vos obligations actuelles ne vous permettent pas d'être déployé sur le terrain, vos dons permettent d’acheter les médicaments, les bibles et de couvrir la logistique des campagnes."
+		description="Si vos obligations actuelles ne vous permettent pas d'être déployé sur le terrain, vos dons permettent de financer la logistique, les bibles et les secours médicaux."
 		ctaLabel="Semer dans la mission"
 		onCtaClick={() => (isDonationModalOpen = true)}
 	/>

@@ -5,24 +5,24 @@
 	import type { DetailedArticleItem } from '../types.js';
 
 	const defaultFeaturedArticle: DetailedArticleItem = {
-		id: 'rapport-croisade-bafia-2026',
-		title: 'Rapport de Mission : Plus de 1 200 âmes touchées et 450 soins médicaux offerts à Bafia',
-		category: 'Rapport de Terrain',
+		id: 'derniere-ligne-droite',
+		title: 'Dernière Ligne Droite - Cameroun pour Jésus',
+		category: 'Mission Nationale',
 		categorySlug: 'mission',
-		date: '18 Septembre 2026',
-		readTime: '6 min de lecture',
-		image: '/article-communaute.jpg',
-		imageAlt: 'Communauté et bénévoles rassemblés lors de la mission à Bafia',
+		date: 'Édition 2024–2026',
+		readTime: 'Mission en cours',
+		image: '/article-evangelisation.jpg',
+		imageAlt: 'Cameroun pour Jésus - Dernière ligne droite',
 		authorName: 'Pasteur Valéry Tchamekwen',
-		authorRole: 'Directeur de la vision ECOFIP',
-		authorAvatar: '/avatar-jean-pierre.jpg',
+		authorRole: 'Fondateur & Coordinateur National',
+		authorAvatar: '/pasteur-valery-tchamekwen.png',
 		excerpt:
-			'Pendant quatre jours intenses de déploiement missionnaire, l’équipe pluridisciplinaire d’ECOFIP a sillonné les villages du département du Mbam-et-Inoubou. Entre soins de santé gratuits, consultations ophtalmologiques, distribution de bibles et grandes soirées d’évangélisation, découvrez les temps forts de cette moisson bénie.',
+			'Dans quelques mois, nous entamerons la dernière ligne droite de notre programme « Cameroun pour Jésus ». Il reste encore 10 villes à parcourir afin de révéler la puissance de Dieu et restaurer sa gloire dans les vies et les sociétés. De nombreuses personnes vivent dans la détresse et attendent le secours que Dieu leur enverra à travers cette mission.',
 		fullContent: [
-			'La grâce de notre Seigneur Jésus-Christ s’est une nouvelle fois manifestée avec puissance lors de notre mission de terrain à Bafia et dans les localités environnantes.',
-			'Dès le premier matin, la clinique mobile installée à l’esplanade municipale a accueilli des centaines d’hommes, de femmes et d’enfants venus parfois de plus de 25 kilomètres à pied. Grâce au dévouement sans faille de nos 14 médecins et infirmiers bénévoles, plus de 450 consultations médicales gratuites et des lots entiers de médicaments de première nécessité ont été distribués.',
-			'Chaque soir, dès le coucher du soleil, la place des fêtes s’est transformée en un sanctuaire à ciel ouvert. Les cantiques de louange ont résonné, et la prédication simple mais tranchante de l’Évangile de la croix a touché les cœurs les plus endurcis. Plus de 380 personnes ont levé la main pour donner leur vie à Christ et ont immédiatement été prises en charge par nos conseillers d’écoute pour un suivi personnalisé avec les églises locales.',
-			'Nous rendons toute la gloire à Dieu et remercions chaleureusement chacun des donateurs et prieurs qui rendent ces expéditions possibles.'
+			'Dans quelques mois, nous entamerons la dernière ligne droite de notre programme « Cameroun pour Jésus ».',
+			'Il reste encore 10 villes à parcourir afin de révéler la puissance de Dieu et restaurer sa gloire dans les vies et les sociétés. De nombreuses personnes vivent dans la détresse et attendent le secours que Dieu leur enverra à travers cette mission.',
+			'Chaque croisade est une opportunité historique de proclamer le salut en Jésus-Christ, de délivrer les captifs et d’apporter une assistance concrète aux veuves, orphelins et malades.',
+			'Mobilisons-nous dans la prière, le don et l’engagement sur le terrain pour cette grande moisson nationale.'
 		],
 		isFeatured: true
 	};
@@ -165,19 +165,25 @@
 						</div>
 					</div>
 
-					<!-- Bouton d'action pour lire l'article -->
-					<div class="mt-8 pt-2">
-						<button
-							type="button"
-							onclick={() => onReadArticle?.(article)}
-							class="group/btn inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-brand-primary px-6 py-3 font-body text-sm font-bold text-white shadow-md transition-all duration-200 hover:translate-y-[-1px] hover:bg-brand-primary-hover hover:shadow-lg focus-visible:outline-2 focus-visible:outline-brand-primary sm:text-base"
+					<!-- Actions officielles de la dernière grande mission -->
+					<div class="mt-8 flex flex-wrap items-center gap-3.5 pt-2">
+						<a
+							href="/projets-missions"
+							class="group/btn inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-3 font-body text-xs font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-primary-hover hover:shadow-lg focus-visible:outline-2 focus-visible:outline-brand-primary sm:text-sm"
 						>
-							<span>Lire le rapport complet</span>
+							<span>En savoir plus sur les dates et comment s'impliquer</span>
 							<ArrowRight
-								size={17}
+								size={16}
 								class="transition-transform duration-200 group-hover/btn:translate-x-1"
 							/>
-						</button>
+						</a>
+
+						<a
+							href="#temoignages-marquants"
+							class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3 font-body text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-gray-400 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-gray-400 sm:text-sm"
+						>
+							<span>Lire des témoignages</span>
+						</a>
 					</div>
 				</div>
 			</div>

@@ -5,9 +5,9 @@
 	import type { AboutQuoteBannerProps } from '../types.js';
 
 	let {
-		quote = '« Du reste, ce qu’on demande des dispensateurs, c’est qu’ils soient trouvés fidèles. »',
-		subtitle = 'Une parole qui résume l’esprit de fidélité et de responsabilité porté par ECOFIP.',
-		reference = '1 Corinthiens 4:2',
+		quote = '« Quel est donc l’économe fidèle et prudent que le maître établira sur ses gens, pour leur donner la nourriture au temps convenable ? »',
+		subtitle = 'Le fondement biblique qui guide notre appel à être de bons gestionnaires de l’Évangile au Cameroun.',
+		reference = 'Luc 12:42',
 		class: customClass = ''
 	}: AboutQuoteBannerProps = $props();
 

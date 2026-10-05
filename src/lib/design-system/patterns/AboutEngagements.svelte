@@ -10,28 +10,28 @@
 			icon: CircleDot,
 			title: 'Notre vision',
 			description:
-				'Voir des vies transformées par l’Évangile et des communautés fortifiées par la foi, l’amour et le service.'
+				'Voir chaque région du Cameroun et d’Afrique touchée par la puissance transformatrice de l’Évangile de Jésus-Christ, formant une génération d’économes fidèles et prudents dans tous les domaines de la vie.'
 		},
 		{
 			id: 'mission',
 			icon: Sparkles,
 			title: 'Notre mission',
 			description:
-				'Annoncer l’Évangile, former des disciples, équiper des leaders et soutenir des actions qui répondent aux besoins des communautés.'
+				'Évangéliser massivement, former des leaders spirituels, et apporter l’espoir et la transformation par des actions humanitaires, tout en collaborant avec les églises locales pour bâtir le royaume de Dieu.'
 		},
 		{
-			id: 'appel',
+			id: 'methodes',
 			icon: Diamond,
-			title: 'Notre appel',
+			title: 'Nos méthodes d’action',
 			description:
-				'Être des économes fidèles et prudents, en mettant nos ressources, nos compétences et notre temps au service du Royaume de Dieu.'
+				'Des croisades massives pour annoncer l’Évangile avec puissance, des séminaires et formations pour équiper les disciples, et la production de traités bibliques pour la diffusion du message.'
 		}
 	];
 
 	let {
-		eyebrow = 'NOTRE IDENTITÉ',
-		title = 'Une vision portée par trois engagements',
-		subtitle = 'Notre action s’articule autour de la vision, de la mission et des valeurs qui guident chacune de nos initiatives.',
+		eyebrow = 'VISION & MISSION',
+		title = 'Notre vision, mission et méthodes d’action',
+		subtitle = 'Des stratégies bibliques pour toucher les cœurs, équiper les croyants et transformer les communautés.',
 		items = defaultEngagements,
 		class: customClass = ''
 	}: AboutEngagementsProps = $props();

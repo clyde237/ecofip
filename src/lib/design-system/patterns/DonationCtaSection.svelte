@@ -10,6 +10,9 @@
 		description = 'Votre générosité nous permet d’organiser des croisades, soutenir les communautés, former des disciples et poursuivre la mission.',
 		ctaLabel = 'Faire un don maintenant',
 		ctaHref = '#faire-un-don',
+		secondaryCtaLabel,
+		secondaryCtaHref,
+		onSecondaryCtaClick,
 		backgroundImage = '/donate-banner-bg.jpg',
 		class: customClass = '',
 		onCtaClick
@@ -115,8 +118,27 @@
 				{/if}
 			</div>
 
-			<!-- Bouton d'action principal (Droite) -->
-			<div class="shrink-0 lg:pl-6">
+			<!-- Boutons d'action (Droite) -->
+			<div class="flex shrink-0 flex-wrap items-center gap-3.5 lg:pl-6">
+				{#if secondaryCtaLabel}
+					{#if onSecondaryCtaClick}
+						<button
+							type="button"
+							onclick={onSecondaryCtaClick}
+							class="group inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-4 text-sm font-bold text-white backdrop-blur-sm transition-all duration-200 select-none hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-base"
+						>
+							<span>{secondaryCtaLabel}</span>
+						</button>
+					{:else}
+						<a
+							href={secondaryCtaHref}
+							class="group inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-4 text-sm font-bold text-white backdrop-blur-sm transition-all duration-200 select-none hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-base"
+						>
+							<span>{secondaryCtaLabel}</span>
+						</a>
+					{/if}
+				{/if}
+
 				{#if onCtaClick}
 					<button
 						type="button"

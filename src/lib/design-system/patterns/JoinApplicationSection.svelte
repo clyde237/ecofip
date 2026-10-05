@@ -9,7 +9,7 @@
 	import { Send, CheckCircle2, HeartHandshake, ShieldCheck } from '@lucide/svelte';
 
 	let {
-		selectedPole = $bindable('sante'),
+		selectedPole = $bindable('evangelisation'),
 		class: customClass = ''
 	}: {
 		selectedPole?: string;
@@ -19,56 +19,45 @@
 	let fullName = $state('');
 	let email = $state('');
 	let phone = $state('');
-	let city = $state('');
-	let poleChoice = $state(selectedPole || 'sante');
-	let availability = $state('croisades');
-	let skills = $state('');
-	let motivation = $state('');
+	let department = $state(selectedPole || 'evangelisation');
+	let engagementType = $state('terrain');
+	let message = $state('');
 
 	let isSubmitting = $state(false);
 	let isSubmitted = $state(false);
 	let errors = $state<{ [key: string]: string }>({});
 
-	// Synchroniser si le parent modifie le pôle sélectionné
+	// Synchroniser si le parent modifie le département sélectionné
 	$effect(() => {
 		if (selectedPole) {
-			poleChoice = selectedPole;
+			department = selectedPole;
 		}
 	});
 
-	const poleOptions = [
-		{ value: 'sante', label: 'Pôle Médical & Secours (Santé, Soins)' },
-		{ value: 'evangelisation', label: 'Pôle Moisson & Discipulat (Évangélisation, Prière)' },
-		{ value: 'technique', label: 'Pôle Technique & Communication (Régie, Médias, Son)' },
-		{ value: 'jeunesse', label: 'Pôle Jeunesse & Enseignement (Camps, Enfants, Mentorat)' },
-		{ value: 'autre', label: 'Autre domaine / Compétences polyvalentes' }
+	const departmentOptions = [
+		{ value: 'evangelisation', label: 'Évangélisation' },
+		{ value: 'intercession', label: 'Intercession' },
+		{ value: 'logistique', label: 'Logistique' },
+		{ value: 'multimedia', label: 'Multimédia' },
+		{ value: 'action-sociale', label: 'Action sociale' },
+		{ value: 'formation', label: 'Formation' }
 	];
 
-	const availabilityOptions = [
-		{ value: 'croisades', label: 'Ponctuelle (lors des grandes croisades & campagnes)' },
-		{ value: 'mensuelle', label: 'Régulière (1 à 2 week-ends par mois)' },
-		{ value: 'hebdomadaire', label: 'Active (plusieurs heures chaque semaine)' },
-		{ value: 'missionnaire', label: 'Volontariat à plein temps' }
+	const engagementOptions = [
+		{ value: 'terrain', label: 'Missionnaire de terrain' },
+		{ value: 'occasionnel', label: 'Bénévole occasionnel' },
+		{ value: 'partenaire', label: 'Partenaire financier' },
+		{ value: 'intercesseur', label: 'Intercesseur' }
 	];
 
 	function validate(): boolean {
 		const newErrors: { [key: string]: string } = {};
 
 		if (!fullName.trim()) {
-			newErrors.fullName = 'Veuillez renseigner votre nom et prénom.';
+			newErrors.fullName = 'Veuillez renseigner votre nom complet.';
 		}
 		if (!email.trim() || !email.includes('@')) {
 			newErrors.email = 'Veuillez saisir une adresse email valide.';
-		}
-		if (!phone.trim() || phone.length < 8) {
-			newErrors.phone = 'Veuillez fournir un numéro de téléphone ou WhatsApp valide.';
-		}
-		if (!city.trim()) {
-			newErrors.city = 'Veuillez indiquer votre ville de résidence.';
-		}
-		if (!motivation.trim() || motivation.length < 15) {
-			newErrors.motivation =
-				'Veuillez partager quelques mots sur votre motivation (au moins 15 caractères).';
 		}
 
 		errors = newErrors;
@@ -95,8 +84,8 @@
 		isSubmitted = true;
 
 		toast.success(
-			'Votre candidature bénévole a bien été transmise ! Notre équipe vous contactera très prochainement.',
-			'Candidature envoyée avec succès'
+			'Votre demande a bien été envoyée ! Notre équipe vous contactera très rapidement.',
+			'Demande transmise avec succès'
 		);
 	}
 
@@ -104,9 +93,9 @@
 		fullName = '';
 		email = '';
 		phone = '';
-		city = '';
-		skills = '';
-		motivation = '';
+		department = 'evangelisation';
+		engagementType = 'terrain';
+		message = '';
 		isSubmitted = false;
 		errors = {};
 	}
@@ -166,7 +155,7 @@
 					<span
 						class="font-body text-xs font-bold tracking-wider text-brand-primary uppercase sm:text-sm"
 					>
-						FORMULAIRE DE CANDIDATURE
+						REJOINDRE L'ÉQUIPE
 					</span>
 				</div>
 
@@ -174,12 +163,11 @@
 					id="join-application-heading"
 					class="font-display text-3xl leading-[1.2] font-extrabold tracking-tight text-text-primary sm:text-4xl"
 				>
-					Faites le pas, rejoignez les rangs des serviteurs
+					Exprimez votre intérêt
 				</h2>
 
 				<p class="mt-4 font-body text-sm leading-relaxed text-text-secondary sm:text-base">
-					Remplissez ce formulaire pour nous faire part de vos compétences, de vos disponibilités et
-					du pôle qui résonne le plus avec votre cœur.
+					Remplissez ce formulaire et nous vous contacterons rapidement.
 				</p>
 
 				<!-- 3 engagements de notre part -->
@@ -207,8 +195,8 @@
 						<div>
 							<h4 class="font-body text-sm font-bold text-text-primary">Orientation & Formation</h4>
 							<p class="mt-0.5 font-body text-xs text-text-secondary">
-								Chaque nouvel équipier reçoit une formation d'accueil adaptée aux réalités du
-								terrain.
+								Chaque équipier reçoit un accompagnement adapté aux réalités du terrain
+								missionnaire.
 							</p>
 						</div>
 					</div>
@@ -224,7 +212,8 @@
 								Respect de vos disponibilités
 							</h4>
 							<p class="mt-0.5 font-body text-xs text-text-secondary">
-								Votre engagement s’adapte à votre vie professionnelle, familiale et vos études.
+								Votre engagement s’adapte à votre disponibilité, votre vie de famille et vos
+								compétences.
 							</p>
 						</div>
 					</div>
@@ -255,14 +244,13 @@
 							<p
 								class="mt-3 max-w-md font-body text-sm leading-relaxed text-text-secondary sm:text-base"
 							>
-								Votre proposition d’engagement pour le pôle <strong class="text-text-primary"
-									>{poleOptions.find((p) => p.value === poleChoice)?.label}</strong
-								> a bien été enregistrée. Notre équipe de coordination va vous recontacter par WhatsApp
-								ou téléphone.
+								Votre intérêt pour le département <strong class="text-text-primary"
+									>{departmentOptions.find((p) => p.value === department)?.label}</strong
+								> a bien été enregistré. Notre équipe de coordination vous contactera très rapidement.
 							</p>
 							<div class="mt-8">
 								<Button variant="outline" size="md" onclick={resetForm}>
-									Envoyer une autre candidature
+									Envoyer une autre demande
 								</Button>
 							</div>
 						</div>
@@ -271,14 +259,14 @@
 						<form onsubmit={handleSubmit} class="space-y-5" novalidate>
 							<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 								<Input
-									label="Nom complet"
+									label="Nom complet *"
 									placeholder="Ex: Jean-Luc Mbarga"
 									bind:value={fullName}
 									error={errors.fullName}
 									required
 								/>
 								<Input
-									label="Email de contact"
+									label="Email *"
 									type="email"
 									placeholder="Ex: jeanluc@example.com"
 									bind:value={email}
@@ -289,62 +277,43 @@
 
 							<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 								<Input
-									label="Téléphone ou WhatsApp"
+									label="Téléphone"
 									type="tel"
 									placeholder="Ex: +237 6XX XX XX XX"
 									bind:value={phone}
-									error={errors.phone}
-									required
 								/>
-								<Input
-									label="Ville / Région de résidence"
-									placeholder="Ex: Douala, Yaoundé, Bafoussam..."
-									bind:value={city}
-									error={errors.city}
+								<Select
+									label="Département d'intérêt"
+									options={departmentOptions}
+									bind:value={department}
 									required
 								/>
 							</div>
 
-							<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-								<Select
-									label="Pôle d’engagement souhaité"
-									options={poleOptions}
-									bind:value={poleChoice}
-									required
-								/>
-								<Select
-									label="Votre disponibilité"
-									options={availabilityOptions}
-									bind:value={availability}
-									required
-								/>
-							</div>
-
-							<Input
-								label="Métier ou compétences clés (facultatif)"
-								placeholder="Ex: Médecin généraliste, Ingénieur son, Enseignant, Chauffeur..."
-								bind:value={skills}
+							<Select
+								label="Type d'engagement"
+								options={engagementOptions}
+								bind:value={engagementType}
+								required
 							/>
 
 							<Textarea
-								label="Vos motivations & votre parcours"
-								placeholder="Dites-nous ce qui vous pousse à rejoindre l'aventure ECOFIP et comment vous aimeriez servir..."
+								label="Message"
+								placeholder="Partagez-nous vos motivations, questions ou disponibilités..."
 								rows={4}
-								bind:value={motivation}
-								error={errors.motivation}
-								required
+								bind:value={message}
 							/>
 
 							<div class="pt-3">
 								<Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting}>
 									<Send size={18} class="mr-2" />
-									<span>Envoyer ma candidature bénévole</span>
+									<span>Envoyer ma demande</span>
 								</Button>
 							</div>
 
 							<p class="text-center font-body text-xs text-text-secondary">
 								Vos données restent strictement confidentielles et ne sont utilisées que dans le
-								cadre de votre engagement au sein du mouvement ECOFIP.
+								cadre des activités de la mission ECOFIP.
 							</p>
 						</form>
 					{/if}

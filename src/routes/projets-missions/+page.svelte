@@ -5,10 +5,13 @@
 		ProjectsSpotlight,
 		ProjectsHowToEngage,
 		DonationCtaSection,
+		MapSection,
 		Modal,
 		Button,
 		Input
 	} from '$lib';
+	import ProjectAxesAndStats from '$lib/design-system/patterns/ProjectAxesAndStats.svelte';
+	import TestimonyCategoriesSection from '$lib/design-system/patterns/TestimonyCategoriesSection.svelte';
 	import { Heart } from '@lucide/svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 
@@ -17,34 +20,46 @@
 </script>
 
 <svelte:head>
-	<title>Projets & Missions — Actions et Impact sur le Terrain | ECOFIP</title>
+	<title>Projets & Missions — Cameroun pour Jésus | ECOFIP</title>
 	<meta
 		name="description"
-		content="Découvrez l’ensemble des projets et missions d’ECOFIP : grandes croisades d’évangélisation, cliniques mobiles gratuites, formations bibliques et centres communautaires au Cameroun."
+		content="« Cameroun pour Jésus » : stratégie missionnaire sur 3 ans (2024-2026) visant à toucher systématiquement les 10 régions du pays avec l'Évangile et des actions humanitaires."
 	/>
-	<meta property="og:title" content="Projets & Missions — Actions Terrain ECOFIP" />
-	<meta
-		property="og:description"
-		content="Découvrez les actions d’évangélisation et d’aide communautaire portées par ECOFIP à travers tout le Cameroun."
-	/>
-	<meta property="og:type" content="website" />
 </svelte:head>
 
 <div>
-	<!-- 1. Bannière simple, aérée et épurée -->
+	<!-- SECTION 02 — INTRODUCTION DU PROJET (Cameroun pour Jésus - 2024-2026) -->
 	<ProjectsHero />
 
-	<!-- 2. Catalogue complet des projets avec filtres interactifs par catégorie -->
+	<!-- SECTION 03, 04, 05 — LE PROJET EN DÉTAIL, LES 4 AXES & CHIFFRES CLÉS -->
+	<ProjectAxesAndStats />
+
+	<!-- Catalogue des projets de terrain -->
 	<ProjectsListSection />
 
-	<!-- 3. Projet phare à la une (Cliniques Mobiles & Soins aux plus vulnérables) -->
-	<ProjectsSpotlight ctaHref="#faire-un-don" ctaLabel="Soutenir cette mission" />
+	<!-- SECTION 06 — CARTE INTERACTIVE DES MISSIONS (Villes visitées, à venir, équipes) -->
+	<MapSection />
 
-	<!-- 4. Les 3 manières concrètes de participer (Prier, Devenir bénévole, Donner) -->
+	<!-- SECTION 07 — CATÉGORIES DE TÉMOIGNAGES (Conversion, Pardon, Guérison, Transformation) -->
+	<TestimonyCategoriesSection />
+
+	<!-- Projet phare à la une -->
+	<ProjectsSpotlight ctaHref="/faire-un-don" ctaLabel="Soutenir cette mission" />
+
+	<!-- Les manières concrètes de participer -->
 	<ProjectsHowToEngage />
 
-	<!-- 5. Appel final à la générosité et au partenariat -->
-	<DonationCtaSection onCtaClick={() => (isDonationModalOpen = true)} />
+	<!-- SECTION 08 — APPEL À PARTICIPER (Rejoignez-nous dans cette grande moisson) -->
+	<DonationCtaSection
+		eyebrow="APPEL À LA MISSION"
+		title="Rejoignez-nous dans cette grande moisson"
+		description="Il reste encore 10 villes à parcourir. Soyez partenaire de cette vision et participez à la transformation du Cameroun par l'Évangile."
+		ctaLabel="Participer à la mission"
+		ctaHref="/nous-rejoindre"
+		secondaryCtaLabel="Faire un don"
+		secondaryCtaHref="/faire-un-don"
+		onCtaClick={() => (isDonationModalOpen = true)}
+	/>
 </div>
 
 <!-- Modal interactive de soutien aux projets -->

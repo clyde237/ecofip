@@ -10,7 +10,7 @@
 			value: 10,
 			prefix: '',
 			suffix: '',
-			label: 'Régions couvertes',
+			label: 'Régions visitées',
 			icon: CircleDot,
 			fillIcon: false
 		},
@@ -19,7 +19,7 @@
 			value: 50,
 			prefix: '',
 			suffix: 'K+',
-			label: 'Personnes touchées',
+			label: 'Vies touchées',
 			icon: Sparkle,
 			fillIcon: true
 		},
@@ -28,22 +28,28 @@
 			value: 3,
 			prefix: '',
 			suffix: ' ans',
-			label: 'Projet missionnaire',
+			label: 'Projet national',
 			icon: Clock,
 			fillIcon: false
 		},
 		{
-			id: 'lives',
-			value: 500,
+			id: 'croisades',
+			value: 15,
 			prefix: '+',
 			suffix: '',
-			label: 'Vies accompagnées',
+			label: 'Croisades organisées',
 			icon: Heart,
 			fillIcon: true
 		}
 	];
 
-	let { items = defaultStats, duration = 2000, class: customClass = '' }: StatsBarProps = $props();
+	let {
+		title = 'Notre impact',
+		description = 'Depuis le lancement de « Cameroun pour Jésus », Dieu a accompli de grandes choses.',
+		items = defaultStats,
+		duration = 2000,
+		class: customClass = ''
+	}: StatsBarProps & { title?: string; description?: string } = $props();
 
 	let containerEl: HTMLElement | null = $state(null);
 	let isVisible = $state(false);
@@ -128,10 +134,22 @@
 >
 	<Container>
 		<div
-			class="rounded-2xl border border-gray-100 bg-white p-2 shadow-[0_16px_40px_-10px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.03)] sm:rounded-3xl sm:p-3 {isVisible
+			class="rounded-2xl border border-gray-100 bg-white p-2 shadow-[0_16px_40px_-10px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.03)] sm:rounded-3xl sm:p-4 {isVisible
 				? 'animate-stats-entrance'
 				: 'opacity-0'}"
 		>
+			{#if title}
+				<div class="mb-2 border-b border-gray-100/80 px-4 pt-2 pb-3 text-center sm:text-left">
+					<h2 class="font-display text-lg font-bold text-text-primary sm:text-xl">
+						{title}
+					</h2>
+					{#if description}
+						<p class="mt-0.5 text-xs text-text-secondary sm:text-sm">
+							{description}
+						</p>
+					{/if}
+				</div>
+			{/if}
 			<div class="grid grid-cols-2 lg:grid-cols-4">
 				{#each items as item, index (item.id)}
 					{@const isLastColIn2 = index % 2 === 1}

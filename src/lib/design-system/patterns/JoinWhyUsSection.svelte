@@ -1,39 +1,54 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
-	import { Sparkles, Users, Award, ShieldCheck } from '@lucide/svelte';
+	import {
+		Sparkles,
+		HeartHandshake,
+		PhoneCall,
+		ShieldCheck,
+		Heart,
+		ArrowRight
+	} from '@lucide/svelte';
 
 	const reasons = [
 		{
 			icon: Sparkles,
-			title: 'Croissance spirituelle profonde',
+			title: '01. Prier pour nous',
 			description:
-				'Participer aux missions transforme votre propre foi. Vous vivez des temps forts de prière, d’intercession et voyez la puissance de Dieu à l’œuvre.'
+				'Rejoignez notre réseau d’intercesseurs qui soutiennent chaque mission et croisade par la prière fervente.',
+			ctaLabel: 'S’engager dans la prière',
+			ctaHref: '/contact'
 		},
 		{
-			icon: Users,
-			title: 'Une vraie famille fraternelle',
+			icon: Heart,
+			title: '02. Faire un don financier',
 			description:
-				'Rejoindre ECOFIP, c’est intégrer une communauté unie où règnent l’amour fraternel, l’entraide mutuelle et la joie de servir ensemble.'
+				'Soutenez financièrement les croisades, les actions humanitaires d’aide médicale et la logistique missionnaire.',
+			ctaLabel: 'Envoyer un don',
+			ctaHref: '/faire-un-don'
 		},
 		{
-			icon: Award,
-			title: 'Un impact direct et mesurable',
+			icon: HeartHandshake,
+			title: '03. Collaborer diversement',
 			description:
-				'Chaque heure consacrée, chaque soin dispensé ou chaque parole partagée touche directement des personnes et des familles réelles.'
+				'Offrez vos compétences professionnelles, votre temps ou vos ressources matérielles pour soutenir la mission.',
+			ctaLabel: 'Proposer une collaboration',
+			ctaHref: '#postuler'
 		},
 		{
-			icon: ShieldCheck,
-			title: 'Fidélité, intégrité & rigueur',
+			icon: PhoneCall,
+			title: '04. Nous contacter',
 			description:
-				'Nous travaillons dans l’ordre, la transparence et le respect des dons confiés, avec le désir de glorifier Dieu en toute circonstance.'
+				'Discutez directement avec nous de la façon dont vous pouvez participer à la vision de « Cameroun pour Jésus ».',
+			ctaLabel: 'Prendre contact',
+			ctaHref: '/contact'
 		}
 	];
 
 	let {
-		eyebrow = 'NOTRE CADRE DE SERVICE',
-		title = 'Ce que vous vivrez au sein de l’équipe',
-		subtitle = 'Servir dans la mission est une aventure transformatrice pour ceux qui reçoivent, mais tout autant pour ceux qui donnent.',
+		eyebrow = 'PARTICIPATION & ENGAGEMENT',
+		title = 'Comment s’impliquer ?',
+		subtitle = 'Plusieurs façons concrètes de participer à la grande moisson de Dieu au Cameroun.',
 		class: customClass = ''
 	}: {
 		eyebrow?: string;
@@ -144,6 +159,19 @@
 					<p class="font-body text-xs leading-relaxed text-text-secondary sm:text-sm">
 						{reason.description}
 					</p>
+
+					<!-- Action spécifique -->
+					{#if reason.ctaLabel}
+						<div class="mt-5 border-t border-gray-100 pt-3">
+							<a
+								href={reason.ctaHref}
+								class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:text-brand-primary-hover hover:underline"
+							>
+								<span>{reason.ctaLabel}</span>
+								<ArrowRight size={13} />
+							</a>
+						</div>
+					{/if}
 				</div>
 			{/each}
 		</div>

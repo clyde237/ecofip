@@ -94,17 +94,21 @@
 </svelte:head>
 
 <div>
-	<!-- 1. Bannière d'introduction avec fil d'ariane et filtres rapides -->
-	<GalleryHero />
+	<!-- SECTION 02 — Introduction -->
+	<GalleryHero
+		eyebrow="Galerie"
+		title="Photos & Vidéos"
+		subtitle="Revivez les moments forts de nos missions à travers le Cameroun."
+	/>
 
-	<!-- 2. Grille complète des photos & vidéos avec filtres dynamiques -->
+	<!-- SECTIONS 03, 04, 05 — Filtres, Photos, Vidéos -->
 	<GalleryGridSection
 		onSelectMedia={(media, index) => {
 			handleOpenLightbox(media, index);
 		}}
 	/>
 
-	<!-- 3. Section Appel à contributions photos et vidéos des fidèles -->
+	<!-- SECTION 06 — Réseaux sociaux -->
 	<GalleryShareCta />
 
 	<!-- 4. Appel au soutien média & audiovisuel de la mission -->
