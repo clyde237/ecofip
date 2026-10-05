@@ -1,9 +1,16 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import { getAdminSession, canAccessRoute } from '$lib/server/auth.js';
 import dns from 'node:dns';
+import net from 'node:net';
 
 try {
 	dns.setDefaultResultOrder?.('ipv4first');
+} catch {
+	// Ignorer si non supporté
+}
+
+try {
+	net.setDefaultAutoSelectFamily?.(false);
 } catch {
 	// Ignorer si non supporté
 }

@@ -229,7 +229,7 @@ export const actions: Actions = {
 			try {
 				if (values.isFeatured) {
 					// Si cet événement est mis en avant, retirer la mise en avant des autres
-					await db.update(events).set({ isFeatured: false });
+					await db.update(events).set({ isFeatured: false }).where(eq(events.isFeatured, true));
 				}
 
 				await db.insert(events).values({
@@ -282,7 +282,7 @@ export const actions: Actions = {
 				}
 
 				if (values.isFeatured) {
-					await db.update(events).set({ isFeatured: false });
+					await db.update(events).set({ isFeatured: false }).where(eq(events.isFeatured, true));
 				}
 
 				// Le slug est conservé pour ne pas casser les liens déjà partagés
@@ -340,8 +340,9 @@ export const actions: Actions = {
 					rawTarget === 'true' ? true : rawTarget === 'false' ? false : !existing.isFeatured;
 
 				if (nextFeatured) {
-					// Un seul événement à la une à la fois pour un affichage optimal
-					await db.update(events).set({ isFeatured: false });
+					// Un seul événement à la une à la fois pour un affichage optimal :
+					// on désactive uniquement les événements actuellement mis en avant
+					await db.update(events).set({ isFeatured: false }).where(eq(events.isFeatured, true));
 				}
 
 				await db
