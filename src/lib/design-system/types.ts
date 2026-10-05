@@ -578,6 +578,8 @@ export interface CampaignLocation {
 	campaignType: string;
 	date: string;
 	impact: string;
+	isFeatured?: boolean;
+	badge?: string;
 }
 
 export interface MapSectionProps {
