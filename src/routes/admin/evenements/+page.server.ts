@@ -317,64 +317,126 @@ export const actions: Actions = {
 	toggleFeatured: async ({ request }) => {
 		const formData = await request.formData();
 		const id = Number(formData.get('id'));
-		const currentStatus = formData.get('currentStatus') === 'true';
+		if (!Number.isInteger(id) || id <= 0) {
+			return fail(400, { error: 'Identifiant invalide.' });
+		}
 
-		if (!id) return fail(400, { error: 'Identifiant invalide' });
+		const rawTarget = formData.get('target');
 
 		if (isDbConfigured && db) {
 			try {
-				const nextFeatured = !currentStatus;
+				const [existing] = await db
+					.select({ id: events.id, title: events.title, isFeatured: events.isFeatured })
+					.from(events)
+					.where(eq(events.id, id))
+					.limit(1);
+
+				if (!existing) {
+					return fail(404, { error: 'Événement introuvable.' });
+				}
+
+				// Déterminer le nouvel état : priorité à la valeur cible explicite si fournie, sinon inversion
+				const nextFeatured =
+					rawTarget === 'true' ? true : rawTarget === 'false' ? false : !existing.isFeatured;
+
 				if (nextFeatured) {
 					// Un seul événement à la une à la fois pour un affichage optimal
 					await db.update(events).set({ isFeatured: false });
 				}
+
 				await db
 					.update(events)
 					.set({ isFeatured: nextFeatured, updatedAt: new Date() })
 					.where(eq(events.id, id));
+
+				const message = nextFeatured
+					? `« ${existing.title} » est maintenant mis en avant sous la Hero Section.`
+					: `« ${existing.title} » a été retiré de la mise en avant.`;
+
+				return { success: true, message, isFeatured: nextFeatured };
 			} catch (err: unknown) {
 				console.error('Erreur mise en avant:', err);
-				return fail(500, { error: 'Erreur lors de la mise à jour de la mise en avant' });
+				return fail(500, { error: 'Erreur lors de la mise à jour de la mise en avant.' });
 			}
 		} else {
 			const ev = fallbackEvents.find((e) => e.id === id);
-			if (ev) {
-				ev.isFeatured = !currentStatus;
-				if (ev.isFeatured) {
-					fallbackEvents.forEach((other) => {
-						if (other.id !== id) other.isFeatured = false;
-					});
-				}
+			if (!ev) {
+				return fail(404, { error: 'Événement introuvable.' });
 			}
-		}
 
-		return { success: true, message: 'Mise en avant mise à jour avec succès.' };
+			const nextFeatured =
+				rawTarget === 'true' ? true : rawTarget === 'false' ? false : !ev.isFeatured;
+
+			ev.isFeatured = nextFeatured;
+			if (nextFeatured) {
+				fallbackEvents.forEach((other) => {
+					if (other.id !== id) other.isFeatured = false;
+				});
+			}
+
+			const message = nextFeatured
+				? `« ${ev.title} » est maintenant mis en avant sous la Hero Section.`
+				: `« ${ev.title} » a été retiré de la mise en avant.`;
+
+			return { success: true, message, isFeatured: nextFeatured };
+		}
 	},
 
 	togglePublish: async ({ request }) => {
 		const formData = await request.formData();
 		const id = Number(formData.get('id'));
-		const currentStatus = formData.get('currentStatus') === 'true';
+		if (!Number.isInteger(id) || id <= 0) {
+			return fail(400, { error: 'Identifiant invalide.' });
+		}
 
-		if (!id) return fail(400, { error: 'Identifiant invalide' });
+		const rawTarget = formData.get('target');
 
 		if (isDbConfigured && db) {
 			try {
+				const [existing] = await db
+					.select({ id: events.id, title: events.title, isPublished: events.isPublished })
+					.from(events)
+					.where(eq(events.id, id))
+					.limit(1);
+
+				if (!existing) {
+					return fail(404, { error: 'Événement introuvable.' });
+				}
+
+				const nextPublished =
+					rawTarget === 'true' ? true : rawTarget === 'false' ? false : !existing.isPublished;
+
 				await db
 					.update(events)
-					.set({ isPublished: !currentStatus, updatedAt: new Date() })
+					.set({ isPublished: nextPublished, updatedAt: new Date() })
 					.where(eq(events.id, id));
-			} catch {
-				return fail(500, { error: 'Erreur lors de la mise à jour' });
+
+				const message = nextPublished
+					? `« ${existing.title} » est maintenant publié sur le site.`
+					: `« ${existing.title} » a été dépublié (brouillon).`;
+
+				return { success: true, message, isPublished: nextPublished };
+			} catch (err: unknown) {
+				console.error('Erreur publication:', err);
+				return fail(500, { error: 'Erreur lors de la mise à jour du statut.' });
 			}
 		} else {
 			const ev = fallbackEvents.find((e) => e.id === id);
-			if (ev) {
-				ev.isPublished = !currentStatus;
+			if (!ev) {
+				return fail(404, { error: 'Événement introuvable.' });
 			}
-		}
 
-		return { success: true, message: 'Statut de publication mis à jour.' };
+			const nextPublished =
+				rawTarget === 'true' ? true : rawTarget === 'false' ? false : !ev.isPublished;
+
+			ev.isPublished = nextPublished;
+
+			const message = nextPublished
+				? `« ${ev.title} » est maintenant publié sur le site.`
+				: `« ${ev.title} » a été dépublié (brouillon).`;
+
+			return { success: true, message, isPublished: nextPublished };
+		}
 	},
 
 	delete: async ({ request }) => {

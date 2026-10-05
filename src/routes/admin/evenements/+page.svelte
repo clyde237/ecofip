@@ -374,13 +374,13 @@
 										(result.data as { error?: string })?.error || 'Erreur lors de la mise à jour.';
 									toast.error(err);
 								}
-								await update();
+								await update({ reset: false });
 							};
 						}}
 						class="flex items-center"
 					>
 						<input type="hidden" name="id" value={ev.id} />
-						<input type="hidden" name="currentStatus" value={String(Boolean(ev.isFeatured))} />
+						<input type="hidden" name="target" value={ev.isFeatured ? 'false' : 'true'} />
 						<button
 							type="submit"
 							role="switch"
@@ -428,12 +428,12 @@
 										(result.data as { error?: string })?.error || 'Erreur lors de la mise à jour.';
 									toast.error(err);
 								}
-								await update();
+								await update({ reset: false });
 							};
 						}}
 					>
 						<input type="hidden" name="id" value={ev.id} />
-						<input type="hidden" name="currentStatus" value={String(ev.isPublished)} />
+						<input type="hidden" name="target" value={ev.isPublished ? 'false' : 'true'} />
 						<button
 							type="submit"
 							class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors {ev.isPublished
@@ -496,9 +496,46 @@
 									<span>Modifier l’événement</span>
 								</button>
 
+								<!-- Option 3 : Basculer À la une -->
+								<form
+									method="POST"
+									action="?/toggleFeatured"
+									use:enhance={() => {
+										return async ({ result, update }) => {
+											if (result.type === 'success') {
+												const msg =
+													(result.data as { message?: string })?.message ||
+													'Mise en avant mise à jour.';
+												toast.success(msg);
+											} else if (result.type === 'failure') {
+												const err =
+													(result.data as { error?: string })?.error ||
+													'Erreur lors de la mise à jour.';
+												toast.error(err);
+											}
+											await update({ reset: false });
+										};
+									}}
+								>
+									<input type="hidden" name="id" value={ev.id} />
+									<input type="hidden" name="target" value={ev.isFeatured ? 'false' : 'true'} />
+									<button
+										role="menuitem"
+										type="submit"
+										onclick={() => (openMenuId = null)}
+										class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
+									>
+										<Sparkles
+											size={14}
+											class={ev.isFeatured ? 'fill-amber-400 text-amber-600' : 'text-gray-400'}
+										/>
+										<span>{ev.isFeatured ? 'Retirer de la une' : 'Mettre à la une'}</span>
+									</button>
+								</form>
+
 								<div class="my-1 border-t border-gray-100"></div>
 
-								<!-- Option 3 : Supprimer l'événement -->
+								<!-- Option 4 : Supprimer l'événement -->
 								<button
 									role="menuitem"
 									type="button"
