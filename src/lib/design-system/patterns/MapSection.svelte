@@ -54,10 +54,10 @@
 	];
 
 	let {
-		eyebrow = 'NOTRE PRÉSENCE AU CAMEROUN',
-		title = 'Un mouvement présent dans plusieurs régions',
-		description = 'Découvrez les localités touchées par nos campagnes, nos actions sociales et nos missions.',
-		ctaLabel = 'Voir les localisations',
+		eyebrow = 'PARCOURS MISSIONNAIRE',
+		title = 'Carte des missions',
+		description = 'Découvrez les villes visitées et celles à venir dans notre parcours missionnaire à travers le Cameroun.',
+		ctaLabel = 'Afficher toute la carte',
 		locations = defaultLocations,
 		class: customClass = ''
 	}: MapSectionProps = $props();
@@ -160,6 +160,24 @@
 							<span>{loc.name}</span>
 						</button>
 					{/each}
+				</div>
+
+				<!-- Légende officielle du document -->
+				<div
+					class="mt-6 flex flex-wrap items-center gap-4 border-t border-gray-100 pt-4 text-xs font-semibold text-text-secondary"
+				>
+					<div class="flex items-center gap-1.5">
+						<span class="h-2.5 w-2.5 rounded-full bg-brand-primary"></span>
+						<span>Ville visitée</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+						<span>Ville à venir</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
+						<span>Équipe missionnaire</span>
+					</div>
 				</div>
 
 				<!-- Bouton d'action principal -->

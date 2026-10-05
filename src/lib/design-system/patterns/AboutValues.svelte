@@ -6,30 +6,31 @@
 	const defaultValues: AboutValueItem[] = [
 		{
 			number: '01',
-			title: 'Foi',
-			description: 'Placer Dieu et sa Parole au centre de notre engagement.'
+			title: 'Amour',
+			description: 'L’amour de Christ nous pousse à servir avec compassion et dévouement.'
 		},
 		{
 			number: '02',
 			title: 'Fidélité',
-			description: 'Gérer avec responsabilité ce qui nous est confié.'
+			description:
+				'Être des économes fidèles de l’Évangile et des ressources qui nous sont confiées.'
 		},
 		{
 			number: '03',
-			title: 'Amour',
-			description: 'Servir les personnes avec compassion, respect et bienveillance.'
+			title: 'Unité',
+			description: 'Rassembler le corps de Christ dans l’unité pour la moisson des âmes.'
 		},
 		{
 			number: '04',
 			title: 'Excellence',
-			description: 'Rechercher la qualité et l’intégrité dans chaque action.'
+			description: 'Servir Dieu avec excellence et professionnalisme dans tout ce que nous faisons.'
 		}
 	];
 
 	let {
 		eyebrow = 'NOS VALEURS',
-		title = 'Ce qui guide notre manière de servir',
-		subtitle = 'Les valeurs d’ECOFIP doivent se traduire dans notre manière de travailler, de servir et de considérer chaque personne.',
+		title = 'Les principes qui guident notre service',
+		subtitle = 'Quatre piliers spirituels et éthiques qui définissent notre identité et chacune de nos actions.',
 		values = defaultValues,
 		image = '/about-valeurs.png',
 		imageAlt = 'Équipe et jeunes ECOFIP unis au coucher du soleil dans la communion fraternelle',

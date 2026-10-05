@@ -7,45 +7,47 @@
 	const defaultEvents: EventItem[] = [
 		{
 			id: 'croisade-evangelisation',
-			title: 'Croisade d’évangélisation',
-			dateDay: '15',
-			dateMonthYear: 'OCT 2026',
-			time: '18h00 – 22h00',
-			location: 'Yaoundé, Cameroun',
-			ctaLabel: 'Participer',
-			href: '/nos-evenements',
-			image: '/event-croisade.jpg',
-			imageAlt: 'Scène de la croisade d’évangélisation avec chants et adoration'
-		},
-		{
-			id: 'seminaire-formation',
-			title: 'Séminaire de formation',
-			dateDay: '22',
-			dateMonthYear: 'OCT 2026',
-			time: '09h00 – 16h00',
-			location: 'Centre de formation',
-			ctaLabel: 'S’inscrire',
-			href: '/nos-evenements',
-			image: '/event-seminaire.jpg',
-			imageAlt: 'Étude biblique et séminaire de formation de disciples'
-		},
-		{
-			id: 'camp-jeunes',
-			title: 'Camp des jeunes',
-			dateDay: '05',
-			dateMonthYear: 'NOV 2026',
-			time: '3 jours',
-			location: 'Mont Fébé, Yaoundé',
+			title: 'Croisades d’évangélisation',
+			dateDay: '01',
+			dateMonthYear: 'PROJET',
+			time: 'Grandes campagnes publiques',
+			location: 'À travers les 10 régions du Cameroun',
 			ctaLabel: 'En savoir plus',
-			href: '/nos-evenements',
+			href: '/projets-missions',
+			image: '/event-croisade.jpg',
+			imageAlt:
+				'Des campagnes massives pour annoncer Christ avec puissance et voir des milliers de vies transformées'
+		},
+		{
+			id: 'actions-humanitaires',
+			title: 'Actions humanitaires',
+			dateDay: '02',
+			dateMonthYear: 'PROJET',
+			time: 'Soins gratuits & Vivres',
+			location: 'Communautés vulnérables',
+			ctaLabel: 'En savoir plus',
+			href: '/projets-missions',
 			image: '/event-camp.jpg',
-			imageAlt: 'Rassemblement de jeunes chrétiens au Mont Fébé'
+			imageAlt:
+				'Distribution de vivres, soins médicaux et assistance aux communautés dans le besoin'
+		},
+		{
+			id: 'seminaires-formations',
+			title: 'Séminaires & formations',
+			dateDay: '03',
+			dateMonthYear: 'PROJET',
+			time: 'Équipement & Discipulat',
+			location: 'Centres régionaux',
+			ctaLabel: 'En savoir plus',
+			href: '/projets-missions',
+			image: '/event-seminaire.jpg',
+			imageAlt: 'Équiper les leaders et former des disciples pour un service efficace'
 		}
 	];
 
 	let {
-		eyebrow = 'NOS PROJETS & ÉVÉNEMENTS',
-		title = 'Des actions concrètes pour transformer les vies',
+		eyebrow = 'NOS PROJETS & MISSIONS',
+		title = 'Campagnes d’évangélisation, actions humanitaires et formations bibliques',
 		viewAllLabel = 'Voir tous les projets',
 		viewAllHref = '/projets-missions',
 		events = defaultEvents,

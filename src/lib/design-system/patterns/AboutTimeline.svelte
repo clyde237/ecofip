@@ -6,31 +6,31 @@
 	const defaultMilestones: AboutTimelineMilestone[] = [
 		{
 			id: 'origines',
-			tag: 'ORIGINES',
+			tag: 'VISION DIVINE',
 			title: 'La naissance de la vision',
 			description:
-				'Présenter ici l’origine du mouvement, le contexte de sa création et la vision qui a conduit à sa naissance.'
+				'ECOFIP est né d’une vision divine reçue par notre fondateur, Pasteur Valéry TCHAMEKWEN, appelé à susciter une génération d’économes fidèles qui géreraient avec sagesse et intégrité les ressources et les âmes confiées par Dieu.'
 		},
 		{
-			id: 'developpement',
-			tag: 'DÉVELOPPEMENT',
-			title: 'Les premières missions',
+			id: 'parcours',
+			tag: 'IMPACT HOLISTIQUE',
+			title: 'Un message d’espoir à travers le Cameroun',
 			description:
-				'Présenter les premières campagnes, communautés ou initiatives ayant permis au mouvement de se développer.'
+				'Depuis sa création, ECOFIP a parcouru les régions du Cameroun avec un message d’espoir, de salut et de transformation. Notre ministère se distingue par une approche holistique combinant l’évangélisation, l’enseignement biblique et l’action sociale.'
 		},
 		{
-			id: 'expansion',
-			tag: 'EXPANSION',
-			title: 'Une présence qui s’étend',
+			id: 'cameroun-pour-jesus',
+			tag: 'AUJOURD’HUI',
+			title: 'Le projet national « Cameroun pour Jésus »',
 			description:
-				'Présenter les nouvelles localités, équipes, projets ou partenariats qui ont marqué l’évolution d’ECOFIP.'
+				'Aujourd’hui, avec le projet « Cameroun pour Jésus », nous poursuivons cette mission avec une détermination renouvelée, croyant que Dieu fera de grandes choses à travers notre obéissance et notre fidélité.'
 		}
 	];
 
 	let {
 		eyebrow = 'NOTRE PARCOURS',
-		title = 'Une histoire qui continue de s’écrire',
-		subtitle = 'Une chronologie prête à recevoir les véritables étapes de l’histoire d’ECOFIP.',
+		title = 'Notre histoire',
+		subtitle = 'L’histoire divine d’un ministère suscité pour toucher les cœurs et bâtir le Royaume au Cameroun.',
 		milestones = defaultMilestones,
 		class: customClass = ''
 	}: AboutTimelineProps = $props();

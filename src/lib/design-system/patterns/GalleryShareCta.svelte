@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
-	import { Camera, Mail, MessageSquare, CheckCircle2, ArrowRight } from '@lucide/svelte';
+	import { ArrowUpRight } from '@lucide/svelte';
 
 	let {
-		eyebrow = 'PARTAGEZ VOS SOUVENIRS DE MISSION',
-		title = 'Vous avez capturé des temps forts lors d’un événement ECOFIP ?',
-		description = 'Chaque cliché et chaque témoignage visuel édifie le corps du Christ et documente la fidélité de Dieu sur notre terre. Envoyez vos photos et vidéos à notre équipe audiovisuelle pour enrichir les archives missionnaires.',
+		eyebrow = 'COMMUNAUTÉ DIGITALE',
+		title = 'Plus de contenu sur nos réseaux',
+		description = 'Suivez-nous sur Facebook, Instagram et YouTube pour ne rien manquer de nos missions et témoignages.',
 		class: customClass = ''
 	}: {
 		eyebrow?: string;
@@ -53,8 +53,8 @@
 
 <section
 	bind:this={sectionEl}
-	class="bg-white py-16 sm:py-20 lg:py-24 {customClass}"
-	aria-labelledby="gallery-share-heading"
+	class="border-t border-gray-100 bg-white py-16 sm:py-20 lg:py-24 {customClass}"
+	aria-labelledby="gallery-social-heading"
 >
 	<Container>
 		<div
@@ -80,7 +80,7 @@
 				{/if}
 
 				<h2
-					id="gallery-share-heading"
+					id="gallery-social-heading"
 					class="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl"
 				>
 					{title}
@@ -92,70 +92,54 @@
 					</p>
 				{/if}
 
-				<!-- 3 garanties du pôle média -->
-				<div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<div
-						class="flex items-start gap-2.5 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs"
-					>
-						<CheckCircle2 size={18} class="mt-0.5 shrink-0 text-brand-primary" />
-						<div>
-							<strong class="block font-body text-xs font-bold text-text-primary">
-								Qualité & Respect
-							</strong>
-							<span class="font-body text-[11px] leading-normal text-text-secondary">
-								Sélection soignée respectant la dignité de chacun.
-							</span>
-						</div>
-					</div>
-
-					<div
-						class="flex items-start gap-2.5 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs"
-					>
-						<CheckCircle2 size={18} class="mt-0.5 shrink-0 text-brand-primary" />
-						<div>
-							<strong class="block font-body text-xs font-bold text-text-primary">
-								Crédit du Photographe
-							</strong>
-							<span class="font-body text-[11px] leading-normal text-text-secondary">
-								Votre nom sera mentionné sur les publications officielles.
-							</span>
-						</div>
-					</div>
-
-					<div
-						class="flex items-start gap-2.5 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs"
-					>
-						<CheckCircle2 size={18} class="mt-0.5 shrink-0 text-brand-primary" />
-						<div>
-							<strong class="block font-body text-xs font-bold text-text-primary">
-								Diffusion Missionnaire
-							</strong>
-							<span class="font-body text-[11px] leading-normal text-text-secondary">
-								Utilisation exclusive pour glorifier Dieu et encourager les fidèles.
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Actions -->
+				<!-- 3 Actions Réseaux Sociaux -->
 				<div class="mt-8 flex flex-wrap items-center gap-4 sm:mt-10">
+					<!-- Facebook -->
 					<a
-						href="mailto:media@ecofip.org"
-						class="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-6 py-3.5 font-body text-sm font-bold text-white shadow-md transition-all duration-200 hover:translate-y-[-1px] hover:bg-brand-primary-hover hover:shadow-lg focus-visible:outline-2 focus-visible:outline-brand-primary"
-					>
-						<Mail size={17} />
-						<span>Envoyer à media@ecofip.org</span>
-						<ArrowRight size={16} />
-					</a>
-
-					<a
-						href="https://wa.me/237699000000"
+						href="https://facebook.com/ecofip"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3.5 font-body text-sm font-semibold text-text-primary shadow-2xs transition-colors hover:border-gray-400 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-gray-400"
+						class="inline-flex items-center gap-2.5 rounded-2xl bg-[#1877F2] px-6 py-3.5 font-body text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-[#1877F2]"
 					>
-						<MessageSquare size={17} class="text-emerald-600" />
-						<span>Transmettre via WhatsApp</span>
+						<svg class="h-4 w-4 fill-white" viewBox="0 0 24 24" aria-hidden="true">
+							<path
+								d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+							/>
+						</svg>
+						<span>Suivre sur Facebook</span>
+						<ArrowUpRight size={15} />
+					</a>
+
+					<!-- Instagram -->
+					<a
+						href="https://instagram.com/ecofip"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] px-6 py-3.5 font-body text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-rose-500"
+					>
+						<svg class="h-4 w-4 fill-white" viewBox="0 0 24 24" aria-hidden="true">
+							<path
+								d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+							/>
+						</svg>
+						<span>Suivre sur Instagram</span>
+						<ArrowUpRight size={15} />
+					</a>
+
+					<!-- YouTube -->
+					<a
+						href="https://youtube.com/@ecofip"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center gap-2.5 rounded-2xl bg-[#FF0000] px-6 py-3.5 font-body text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-[#FF0000]"
+					>
+						<svg class="h-4 w-4 fill-white" viewBox="0 0 24 24" aria-hidden="true">
+							<path
+								d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+							/>
+						</svg>
+						<span>Chaîne YouTube</span>
+						<ArrowUpRight size={15} />
 					</a>
 				</div>
 			</div>

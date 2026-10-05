@@ -5,18 +5,21 @@
 
 	let {
 		breadcrumbLabel = 'Nous rejoindre',
-		eyebrow = 'ENGAGEMENT & SERVICE DANS LE ROYAUME',
-		title = 'Mettez vos dons et vos talents au service de Dieu',
-		subtitle = 'Que vous soyez soignant, évangéliste, logisticien, enseignant ou simplement animé du zèle de servir, il y a une place précieuse pour vous au sein de la famille missionnaire ECOFIP.',
+		eyebrow = 'APPEL À LA MISSION',
+		title = 'Nous rejoindre',
+		verse = '« Voyant la foule, il fut ému de compassion pour elle, parce qu’elle était languissante et abattue, comme des brebis qui n’ont point de berger. Alors il dit à ses disciples : La moisson est grande, mais il y a peu d’ouvriers. » — Matthieu 9:36-37',
+		subtitle = 'Le champ est vaste au Cameroun et la moisson est abondante. Nous avons besoin d’ouvriers fidèles, engagés et passionnés pour participer à cette grande œuvre. Quel que soit votre don ou votre disponibilité, il y a une place pour vous dans cette mission.',
 		backgroundImage = '/article-communaute.jpg',
 		class: customClass = ''
-	}: JoinHeroProps = $props();
+	}: JoinHeroProps & { verse?: string } = $props();
 
 	const quickTags = [
-		'Missions Médicales',
-		'Évangélisation & Croisades',
-		'Logistique & Multimédia',
-		'Jeunesse & Discipulat'
+		'Évangélisation',
+		'Intercession',
+		'Logistique',
+		'Multimédia',
+		'Action sociale',
+		'Formation'
 	];
 </script>
 
@@ -92,10 +95,19 @@
 				{title}
 			</h1>
 
+			<!-- Citation biblique officielle (Matthieu 9:36-37) -->
+			{#if verse}
+				<blockquote
+					class="mx-auto mt-4 max-w-2xl border-y border-white/15 py-3 font-display text-sm text-amber-300 italic sm:text-base"
+				>
+					{verse}
+				</blockquote>
+			{/if}
+
 			<!-- Sous-titre descriptif en DM Sans -->
 			{#if subtitle}
 				<p
-					class="mt-5 font-body text-sm leading-relaxed text-white/85 sm:text-base sm:leading-relaxed md:text-lg"
+					class="mt-4 font-body text-sm leading-relaxed text-white/90 sm:text-base sm:leading-relaxed md:text-lg"
 				>
 					{subtitle}
 				</p>

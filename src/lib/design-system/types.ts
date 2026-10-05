@@ -651,10 +651,12 @@ export interface MediaItem {
 	id: string;
 	title: string;
 	category: string;
-	categorySlug: 'all' | 'croisade' | 'medical' | 'jeunesse' | 'communaute' | 'video';
+	categorySlug: string;
 	type: 'photo' | 'video';
 	url: string;
 	videoUrl?: string;
+	duration?: string;
+	year?: string;
 	location: string;
 	date: string;
 	description?: string;
@@ -714,6 +716,9 @@ export interface DonationCtaProps {
 	description?: string;
 	ctaLabel?: string;
 	ctaHref?: string;
+	secondaryCtaLabel?: string;
+	secondaryCtaHref?: string;
+	onSecondaryCtaClick?: () => void;
 	backgroundImage?: string;
 	class?: string;
 	onCtaClick?: () => void;

@@ -5,31 +5,31 @@
 
 	let {
 		breadcrumbLabel = 'Contact',
-		eyebrow = 'ÉCOUTE, PRIÈRE & ORIENTATION MISSIONNAIRE',
-		title = 'Prenez contact avec la famille missionnaire ECOFIP',
-		subtitle = 'Une question sur nos croisades, une demande d’intercession pastorale, un partenariat d’église ou une proposition de bénévolat ? Notre équipe de coordination est à votre entière écoute.',
+		eyebrow = 'Contactez-nous',
+		title = 'Restons en Contact',
+		subtitle = "Une question ? Une suggestion ? Besoin de prière ? N'hésitez pas à nous contacter. Nous serions ravis d'échanger avec vous !",
 		backgroundImage = '/about-mission.jpg',
 		class: customClass = ''
 	}: ContactHeroProps = $props();
 
 	const contactPills = [
 		{
+			icon: MapPin,
+			label: 'Adresse',
+			value: 'Quartier Tamja, Bafoussam, Cameroun',
+			href: '#localisation'
+		},
+		{
 			icon: Phone,
-			label: 'Téléphone & WhatsApp',
-			value: '+237 699 00 00 00',
-			href: 'tel:+237699000000'
+			label: 'Téléphone / WhatsApp',
+			value: '+237 698 352 037 / +237 690 172 939',
+			href: 'tel:+237698352037'
 		},
 		{
 			icon: Mail,
-			label: 'Email officiel',
-			value: 'contact@ecofip.org',
-			href: 'mailto:contact@ecofip.org'
-		},
-		{
-			icon: MapPin,
-			label: 'Siège National',
-			value: 'Bafoussam, Cameroun',
-			href: '#siege'
+			label: 'Email',
+			value: 'contact@ecofip.cm / info@ecofip.cm',
+			href: 'mailto:contact@ecofip.cm'
 		}
 	];
 </script>

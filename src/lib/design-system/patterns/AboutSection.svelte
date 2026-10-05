@@ -8,28 +8,24 @@
 		{
 			id: 'vision',
 			title: 'Notre vision',
-			description: 'Toucher les nations par l’Évangile.',
+			description:
+				'Annoncer l’Évangile de Jésus-Christ à travers tout le Cameroun, toucher des vies, transformer des communautés et établir le Royaume de Dieu dans chaque région du pays.',
 			icon: CircleDot
 		},
 		{
-			id: 'mission',
-			title: 'Notre mission',
-			description: 'Former des leaders et des disciples.',
+			id: 'direction',
+			title: 'Direction & Leadership',
+			description:
+				'Sous la direction du Pasteur Valéry TCHAMEKWEN, Fondateur et Coordinateur National, ECOFIP mobilise l’Église pour une mission nationale d’évangélisation sans précédent.',
 			icon: Target
-		},
-		{
-			id: 'valeurs',
-			title: 'Nos valeurs',
-			description: 'Foi, amour, unité et excellence.',
-			icon: Diamond
 		}
 	];
 
 	let {
 		eyebrow = "À PROPOS D'ECOFIP",
-		title = 'Une mission fondée sur la',
-		highlightedTitle = 'Parole de Dieu',
-		description = 'ECOFIP est un ministère chrétien évangélique fondé sur des principes bibliques. Nous sommes appelés à être des gestionnaires fidèles et prudents pour annoncer la Bonne Nouvelle, enseigner et apporter la guérison par la puissance de Dieu.',
+		title = 'Les Économes Fidèles et Prudents —',
+		highlightedTitle = 'Une mission divine pour transformer le Cameroun',
+		description = "ECOFIP — Les Économes Fidèles et Prudents parcourt le Cameroun avec un message d'espoir, de salut et de transformation holistique par la puissance de l'Évangile.",
 		image = '/about-mission.jpg',
 		imageAlt = 'Moments de célébration, louange et adoration pour Jésus',
 		ctaLabel = 'Découvrir notre histoire',

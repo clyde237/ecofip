@@ -5,35 +5,38 @@
 
 	const defaultMembers: AboutTeamMember[] = [
 		{
-			id: 'direction',
-			tag: 'DIRECTION',
-			role: 'Responsable du mouvement',
-			description: 'Vision, orientation et coordination générale.',
+			id: 'valery-tchamekwen',
+			tag: 'FONDATEUR',
+			role: 'Pasteur Valéry TCHAMEKWEN',
+			description:
+				'Fondateur & Coordinateur National — Vision, prédication et conduite du projet « Cameroun pour Jésus ».',
 			image: '/team-member-direction.png',
-			imageAlt: 'Responsable du mouvement ECOFIP'
+			imageAlt: 'Pasteur Valéry TCHAMEKWEN — Fondateur & Coordinateur National'
 		},
 		{
-			id: 'mission',
-			tag: 'MISSION',
-			role: 'Responsable des missions',
-			description: 'Coordination des actions d’évangélisation et de terrain.',
+			id: 'archange-fokam',
+			tag: 'MISSIONS',
+			role: 'Missionnaire Archange FOKAM',
+			description:
+				'Directeur des Missions — Organisation tactique, déploiement des équipes régionales et logistique terrain.',
 			image: '/team-member-missions.png',
-			imageAlt: 'Responsable des missions ECOFIP'
+			imageAlt: 'Missionnaire Archange FOKAM — Directeur des Missions'
 		},
 		{
-			id: 'formation',
-			tag: 'FORMATION',
-			role: 'Responsable formation',
-			description: 'Accompagnement, enseignement et développement des disciples.',
+			id: 'germaine-amonde',
+			tag: 'INTERCESSION',
+			role: 'Germaine AMONDE',
+			description:
+				'Responsable Intercession — Couverture spirituelle, coordination des réseaux de prière et veillées missionnaires.',
 			image: '/team-member-formation.png',
-			imageAlt: 'Responsable de la formation des disciples ECOFIP'
+			imageAlt: 'Germaine AMONDE — Responsable Intercession'
 		}
 	];
 
 	let {
-		eyebrow = 'NOTRE ÉQUIPE',
-		title = 'Des personnes engagées au service de la mission',
-		subtitle = 'Cette section peut présenter les responsables, les équipes et les personnes qui portent les différentes dimensions du mouvement.',
+		eyebrow = 'NOTRE ÉQUIPE DIRIGEANTE',
+		title = 'Notre équipe dirigeante',
+		subtitle = 'Des serviteurs passionnés au service de la mission divine à travers tout le Cameroun.',
 		members = defaultMembers,
 		class: customClass = ''
 	}: AboutTeamProps = $props();

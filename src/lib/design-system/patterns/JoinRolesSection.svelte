@@ -13,71 +13,70 @@
 
 	const defaultRoles: JoinRoleItem[] = [
 		{
-			id: 'sante',
-			icon: Stethoscope,
-			category: 'SANTÉ & HUMANITAIRE',
-			title: 'Pôle Médical & Secours',
-			description:
-				'Apporter des soins de qualité et l’amour de Christ aux populations les plus démunies lors des cliniques mobiles et campagnes de santé gratuites.',
-			profiles: [
-				'Médecins généralistes & spécialistes',
-				'Infirmiers & sages-femmes',
-				'Pharmaciens',
-				'Aides-soignants'
-			],
-			badge: 'Besoin prioritaire'
-		},
-		{
 			id: 'evangelisation',
 			icon: Flame,
-			category: 'ÉVANGÉLISATION & PRIÈRE',
-			title: 'Pôle Moisson & Discipulat',
-			description:
-				'Proclamer l’Évangile de maison en maison, encadrer les nouveaux convertis, prier pour les malades et porter l’intercession des croisades.',
+			category: 'DÉPARTEMENT 01',
+			title: 'Évangélisation',
+			description: 'Prédication, témoignage et annonce de l’Évangile sur le terrain.',
 			profiles: [
-				'Évangélistes de terrain',
-				'Conseillers d’écoute & de prière',
-				'Formateurs de disciples',
-				'Intercesseurs'
+				'Prédicateurs',
+				'Témoins de terrain',
+				'Évangélistes de rue',
+				'Conseillers spirituels'
 			],
-			badge: 'Cœur de mission'
+			badge: 'Terrain'
 		},
 		{
-			id: 'technique',
+			id: 'intercession',
+			icon: Flame,
+			category: 'DÉPARTEMENT 02',
+			title: 'Intercession',
+			description: 'Prières stratégiques pour les missions et la couverture spirituelle.',
+			profiles: ['Sentinelles de prière', 'Veilleurs spirituels', 'Intercesseurs de croisade'],
+			badge: 'Prière'
+		},
+		{
+			id: 'logistique',
 			icon: Wrench,
-			category: 'LOGISTIQUE & MÉDIAS',
-			title: 'Pôle Technique & Communication',
-			description:
-				'Assurer le son, la lumière, la captation vidéo, la retransmission en direct, le transport et la logistique matérielle des grands rassemblements.',
-			profiles: [
-				'Techniciens son & régie',
-				'Cadreurs & photographes',
-				'Chauffeurs & logisticiens',
-				'Accueil & protocole'
-			],
-			badge: 'Essentiel'
+			category: 'DÉPARTEMENT 03',
+			title: 'Logistique',
+			description: 'Organisation, transport, hébergement et coordination des équipes.',
+			profiles: ['Coordinateurs transport', 'Gestionnaires hébergement', 'Ravitaillement'],
+			badge: 'Organisation'
 		},
 		{
-			id: 'jeunesse',
+			id: 'multimedia',
+			icon: Wrench,
+			category: 'DÉPARTEMENT 04',
+			title: 'Multimédia',
+			description: 'Sonorisation, vidéo, photographie et communication digitale.',
+			profiles: ['Techniciens son', 'Cadreurs & monteurs vidéo', 'Photographes', 'Réseaux sociaux'],
+			badge: 'Médias'
+		},
+		{
+			id: 'action-sociale',
+			icon: Stethoscope,
+			category: 'DÉPARTEMENT 05',
+			title: 'Action sociale',
+			description: 'Distribution de vivres, assistance médicale et aide humanitaire.',
+			profiles: ['Médecins & soignants', 'Distribution de vivres', 'Soutien orphelinats'],
+			badge: 'Compassion'
+		},
+		{
+			id: 'formation',
 			icon: GraduationCap,
-			category: 'ÉDUCATION & JEUNESSE',
-			title: 'Pôle Jeunesse & Enseignement',
-			description:
-				'Animer les camps chrétiens pour les jeunes, former la relève spirituelle, donner des cours de soutien scolaire et organiser des activités d’éveil.',
-			profiles: [
-				'Moniteurs de jeunesse',
-				'Enseignants & éducateurs',
-				'Animateurs d’ateliers',
-				'Mentors de disciples'
-			],
-			badge: 'Avenir'
+			category: 'DÉPARTEMENT 06',
+			title: 'Formation',
+			description: 'Enseignement, séminaires et formation des leaders.',
+			profiles: ['Enseignants bibliques', 'Mentors de disciples', 'Animateurs d’ateliers'],
+			badge: 'Discipulat'
 		}
 	];
 
 	let {
-		eyebrow = 'NOS PÔLES D’ACTION',
-		title = 'Trouvez le pôle qui correspond à vos talents',
-		subtitle = 'Chaque membre du corps du Christ a reçu des dons spécifiques. Découvrez les départements dans lesquels votre contribution fera la différence.',
+		eyebrow = 'NOS DÉPARTEMENTS DE SERVICE',
+		title = 'Nos départements de service',
+		subtitle = 'Trouvez votre place dans l’équipe missionnaire selon vos talents et votre appel.',
 		roles = defaultRoles,
 		onSelectRole,
 		class: customClass = ''

@@ -48,16 +48,16 @@
 		const newErrors: { [key: string]: string } = {};
 
 		if (!fullName.trim()) {
-			newErrors.fullName = 'Veuillez saisir votre nom et prénom.';
+			newErrors.fullName = 'Veuillez saisir votre nom complet.';
 		}
 		if (!email.trim() || !email.includes('@')) {
 			newErrors.email = 'Veuillez renseigner une adresse email valide.';
 		}
-		if (!phone.trim() || phone.length < 8) {
-			newErrors.phone = 'Numéro de téléphone ou WhatsApp valide requis.';
+		if (!subject.trim()) {
+			newErrors.subject = 'Veuillez préciser le sujet de votre message.';
 		}
-		if (!message.trim() || message.length < 10) {
-			newErrors.message = 'Veuillez préciser votre message (au moins 10 caractères).';
+		if (!message.trim() || message.length < 5) {
+			newErrors.message = 'Veuillez écrire votre message.';
 		}
 
 		errors = newErrors;
@@ -152,7 +152,7 @@
 					<span
 						class="font-body text-xs font-bold tracking-wider text-brand-primary uppercase sm:text-sm"
 					>
-						FORMULAIRE DE CONTACT
+						CONTACTEZ-NOUS
 					</span>
 				</div>
 
@@ -160,13 +160,12 @@
 					id="contact-form-heading"
 					class="font-display text-3xl leading-[1.2] font-extrabold tracking-tight text-text-primary sm:text-4xl"
 				>
-					Écrivez-nous, nous vous répondrons avec joie
+					Envoyez-nous un message
 				</h2>
 
 				<p class="mt-4 font-body text-sm leading-relaxed text-text-secondary sm:text-base">
-					Que vous ayez besoin de prière, d’une orientation pour votre assemblée ou de détails
-					pratiques sur nos rassemblements, chaque message est lu avec attention par nos
-					coordinateurs.
+					Une question ? Une suggestion ? Besoin de prière ? N'hésitez pas à nous contacter. Nous
+					serions ravis d'échanger avec vous !
 				</p>
 
 				<!-- Blocs d'engagements & Horaires -->
@@ -216,8 +215,8 @@
 						<div>
 							<h4 class="font-body text-sm font-bold text-text-primary">Rappel Personnalisé</h4>
 							<p class="mt-0.5 font-body text-xs leading-relaxed text-text-secondary">
-								Si vous cochez l’option de rappel, un membre de notre équipe prendra contact avec
-								vous par téléphone ou WhatsApp sous 24h.
+								Un membre de notre équipe prendra contact avec vous rapidement par téléphone,
+								WhatsApp ou email.
 							</p>
 						</div>
 					</div>
@@ -248,10 +247,8 @@
 							<p
 								class="mt-3 max-w-md font-body text-sm leading-relaxed text-text-secondary sm:text-base"
 							>
-								Votre message concernant <strong class="text-text-primary"
-									>{topicOptions.find((t) => t.value === topic)?.label}</strong
-								>
-								a bien été transmis. Nous vous répondrons à l’adresse
+								Votre message concernant « <strong class="text-text-primary">{subject}</strong> » a
+								bien été transmis. Nous vous répondrons à l’adresse
 								<span class="font-semibold text-brand-primary">{email}</span>.
 							</p>
 							<div class="mt-8">
@@ -265,14 +262,14 @@
 						<form onsubmit={handleSubmit} class="space-y-5" novalidate>
 							<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 								<Input
-									label="Nom et Prénom"
+									label="Nom complet *"
 									placeholder="Ex: Samuel Eboa"
 									bind:value={fullName}
 									error={errors.fullName}
 									required
 								/>
 								<Input
-									label="Adresse Email"
+									label="Email *"
 									type="email"
 									placeholder="Ex: samuel@example.com"
 									bind:value={email}
@@ -281,50 +278,27 @@
 								/>
 							</div>
 
-							<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-								<Input
-									label="Téléphone ou WhatsApp"
-									type="tel"
-									placeholder="Ex: +237 6XX XX XX XX"
-									bind:value={phone}
-									error={errors.phone}
-									required
-								/>
-								<Select
-									label="Objet de votre démarche"
-									options={topicOptions}
-									bind:value={topic}
-									required
-								/>
-							</div>
-
 							<Input
-								label="Sujet du message (facultatif)"
-								placeholder="Ex: Demande de soutien pour l’assemblée de..."
+								label="Sujet *"
+								placeholder="Ex: Demande de renseignement, requête, etc."
 								bind:value={subject}
+								error={errors.subject}
+								required
 							/>
 
 							<Textarea
-								label="Votre message ou requête de prière"
-								placeholder="Expliquez-nous en détail votre demande ou votre requête spirituelle..."
+								label="Message *"
+								placeholder="Votre message..."
 								rows={5}
 								bind:value={message}
 								error={errors.message}
 								required
 							/>
 
-							<div class="pt-1">
-								<Checkbox
-									id="callMeBack"
-									label="Je souhaite être recontacté(e) par téléphone ou WhatsApp par un responsable"
-									bind:checked={callMeBack}
-								/>
-							</div>
-
 							<div class="pt-3">
 								<Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting}>
 									<Send size={18} class="mr-2" />
-									<span>Transmettre mon message</span>
+									<span>Envoyer le message</span>
 								</Button>
 							</div>
 

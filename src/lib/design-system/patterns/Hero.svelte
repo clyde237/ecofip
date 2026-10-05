@@ -9,18 +9,20 @@
 	}
 
 	let {
-		eyebrow = 'UNE MISSION · UNE VISION · UNE FOI',
+		eyebrow = 'Mission nationale 2023–2025',
 		title,
-		description = "Nous sommes un ministère chrétien évangélique engagé à porter l'Évangile, former des disciples et transformer des vies au Cameroun et au-delà.",
-		primaryCta = { label: 'Découvrir nos missions', href: '/projets-missions' },
-		secondaryCta = { label: 'En savoir plus', href: '/a-propos' },
-		tertiaryCta = { label: 'Nous rejoindre', href: '/nous-rejoindre' },
+		subtitle = 'Une nation en feu pour Christ.',
+		description = "ECOFIP — Les Économes Fidèles et Prudents parcourt les 10 régions du Cameroun pour annoncer l'Évangile, transformer des vies et apporter l'espoir à travers des croisades d'évangélisation et des actions humanitaires.",
+		primaryCta = { label: 'Rejoindre la mission', href: '/nous-rejoindre' },
+		secondaryCta = { label: 'Faire un don', href: '/faire-un-don' },
+		tertiaryCta = { label: "Plus d'informations", href: '/a-propos' },
 		backgroundImage = '/hero-bg.jpg',
 		curvedBottom = true,
 		class: customClass = ''
 	}: {
 		eyebrow?: string;
 		title?: Snippet;
+		subtitle?: string;
 		description?: string;
 		primaryCta?: CtaButton;
 		secondaryCta?: CtaButton;
@@ -55,11 +57,11 @@
 
 	<Container class="relative z-10 pt-16 pb-24 sm:pt-20 sm:pb-32 lg:pt-28 lg:pb-38">
 		<div class="max-w-3xl">
-			<!-- Eyebrow (Fade-up slow & smooth) -->
+			<!-- Eyebrow / Badge -->
 			{#if eyebrow}
 				<div class="animate-fade-up delay-eyebrow mb-5 flex items-center gap-2 sm:mb-6">
 					<span
-						class="font-body text-xs font-semibold tracking-[0.22em] text-white/90 uppercase sm:text-sm"
+						class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-1 font-body text-xs font-bold tracking-[0.2em] text-white uppercase backdrop-blur-md sm:text-sm"
 					>
 						{eyebrow}
 					</span>
@@ -73,22 +75,29 @@
 				{#if title}
 					{@render title()}
 				{:else}
-					Un mouvement au<br />
-					service du <span class="text-brand-primary">Royaume</span><br />
-					<span class="text-brand-primary">de Dieu</span>
+					Cameroun pour <span class="text-brand-primary">Jésus</span>
 				{/if}
 			</h1>
 
-			<!-- Description (Fade-up slow & smooth) -->
+			<!-- Subtitle (Une nation en feu pour Christ) -->
+			{#if subtitle}
+				<p
+					class="animate-fade-up delay-desc mt-3 font-display text-xl font-bold text-brand-primary sm:text-2xl"
+				>
+					{subtitle}
+				</p>
+			{/if}
+
+			<!-- Description -->
 			{#if description}
 				<p
-					class="animate-fade-up delay-desc mt-6 max-w-2xl font-body text-base leading-relaxed text-white/85 sm:text-lg"
+					class="animate-fade-up delay-desc mt-5 max-w-2xl font-body text-base leading-relaxed text-white/90 sm:text-lg"
 				>
 					{description}
 				</p>
 			{/if}
 
-			<!-- Call To Actions (Fade-up slow & smooth avec micro-interactions) -->
+			<!-- Call To Actions (3 actions officielles : Rejoindre la mission, Faire un don, Plus d'informations) -->
 			<div
 				class="animate-fade-up delay-cta mt-8 flex flex-wrap items-center gap-3.5 font-body sm:mt-10 sm:gap-4"
 			>
@@ -114,7 +123,7 @@
 				{#if tertiaryCta}
 					<a
 						href={tertiaryCta.href}
-						class="inline-flex cursor-pointer items-center justify-center rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-brand-primary shadow-md transition-all duration-200 select-none hover:-translate-y-0.5 hover:bg-white/95 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-gray-100 sm:text-base"
+						class="inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/40 bg-white/10 px-6 py-3.5 text-sm font-bold text-white shadow-md backdrop-blur-md transition-all duration-200 select-none hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-base"
 					>
 						<span>{tertiaryCta.label}</span>
 					</a>

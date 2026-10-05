@@ -2,6 +2,8 @@
 	import {
 		NewsHero,
 		NewsFeaturedArticle,
+		NewsPreviousCrusadesGallery,
+		NewsMarkingTestimonies,
 		NewsListSection,
 		NewsNewsletterSection,
 		DonationCtaSection,
@@ -38,33 +40,43 @@
 </script>
 
 <svelte:head>
-	<title>Actualités & Chroniques — Rapports de Mission & Témoignages | ECOFIP</title>
+	<title>Actualités — Cameroun pour Jésus | ECOFIP</title>
 	<meta
 		name="description"
-		content="Consultez les dernières nouvelles de la mission ECOFIP : rapports de nos croisades au Cameroun, témoignages de guérisons miraculeuses, enseignements bibliques et actions de santé."
+		content="Consultez les dernières nouvelles de la mission ECOFIP : rapports de la dernière ligne droite de Cameroun pour Jésus, galeries des croisades et témoignages marquants."
 	/>
-	<meta property="og:title" content="Actualités & Chroniques de Mission — ECOFIP" />
+	<meta property="og:title" content="Actualités & Témoignages — ECOFIP" />
 	<meta
 		property="og:description"
-		content="Plongez au cœur des actions de foi et de compassion menées par ECOFIP à travers tout le Cameroun."
+		content="Restez informés de nos dernières missions et témoignages de vies transformées à travers le Cameroun."
 	/>
 	<meta property="og:type" content="website" />
 </svelte:head>
 
 <div>
-	<!-- 1. Bannière d'introduction avec fil d'ariane et tags -->
-	<NewsHero />
+	<!-- SECTION 02 — Introduction -->
+	<NewsHero
+		eyebrow="Actualités"
+		title="Actualités"
+		subtitle="Restez informés de nos dernières missions et témoignages de vies transformées."
+	/>
 
-	<!-- 2. Grand article à la une (Spotlight reportage de terrain) -->
+	<!-- SECTION 03 — Dernière Grande Mission -->
 	<NewsFeaturedArticle onReadArticle={handleOpenArticle} />
 
-	<!-- 3. Catalogue complet avec filtres et recherche instantanée -->
+	<!-- SECTION 04 — Galerie des croisades précédentes -->
+	<NewsPreviousCrusadesGallery />
+
+	<!-- SECTION 05 — Témoignages marquants -->
+	<NewsMarkingTestimonies />
+
+	<!-- Tous les articles & chroniques complémentaires -->
 	<NewsListSection onReadArticle={handleOpenArticle} />
 
-	<!-- 4. Boîte d'inscription à la newsletter mensuelle -->
+	<!-- Boîte d'inscription à la newsletter -->
 	<NewsNewsletterSection />
 
-	<!-- 5. Appel au don / semence pour financer les missions futures -->
+	<!-- Appel au don -->
 	<DonationCtaSection
 		eyebrow="PROPAGER LA BONNE NOUVELLE"
 		title="Soutenez l’annonce de l’Évangile et nos prochaines expéditions"
