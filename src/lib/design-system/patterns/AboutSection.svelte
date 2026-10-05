@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
-	import { CircleDot, Target, Diamond, ArrowRight } from '@lucide/svelte';
+	import { Target, Compass, ArrowRight } from '@lucide/svelte';
 	import type { AboutPillar, AboutSectionProps } from '../types.js';
 
 	const defaultPillars: AboutPillar[] = [
@@ -10,14 +10,14 @@
 			title: 'Notre vision',
 			description:
 				'Annoncer l’Évangile de Jésus-Christ à travers tout le Cameroun, toucher des vies, transformer des communautés et établir le Royaume de Dieu dans chaque région du pays.',
-			icon: CircleDot
+			icon: Target
 		},
 		{
 			id: 'direction',
 			title: 'Direction & Leadership',
 			description:
 				'Sous la direction du Pasteur Valéry TCHAMEKWEN, Fondateur et Coordinateur National, ECOFIP mobilise l’Église pour une mission nationale d’évangélisation sans précédent.',
-			icon: Target
+			icon: Compass
 		}
 	];
 
@@ -134,25 +134,29 @@
 					</p>
 				{/if}
 
-				<!-- Rangée des 3 piliers (Vision, Mission, Valeurs) -->
-				<div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-3 lg:gap-4">
+				<!-- Blocs structurés : Notre vision & Direction -->
+				<div class="mt-8 space-y-4">
 					{#each pillars as pillar (pillar.id)}
-						<div class="flex items-start gap-3 sm:gap-2.5 lg:gap-3">
-							<!-- Pastille d'icône douce circulaire -->
+						<div
+							class="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-[#f8fafc] p-4.5 shadow-2xs transition-all duration-300 hover:border-brand-primary/25 hover:bg-white hover:shadow-md sm:p-5"
+						>
+							<!-- Pastille d'icône douce -->
 							<div
-								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-subtle sm:h-10 sm:w-10"
+								class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-primary/10 bg-brand-subtle text-brand-primary shadow-2xs transition-transform duration-300 group-hover:scale-105"
 							>
 								{#if pillar.icon}
-									<pillar.icon size={18} class="text-brand-primary" aria-hidden="true" />
+									<pillar.icon size={22} aria-hidden="true" />
 								{/if}
 							</div>
 
 							<!-- Titre et sous-texte du pilier -->
-							<div class="min-w-0">
-								<h3 class="font-body text-xs font-bold text-text-primary sm:text-sm">
+							<div class="min-w-0 flex-1">
+								<h3
+									class="font-display text-base font-bold tracking-tight text-text-primary sm:text-lg"
+								>
 									{pillar.title}
 								</h3>
-								<p class="mt-0.5 font-body text-[11px] leading-snug text-text-secondary sm:text-xs">
+								<p class="mt-1.5 font-body text-xs leading-relaxed text-text-secondary sm:text-sm">
 									{pillar.description}
 								</p>
 							</div>
