@@ -15,7 +15,6 @@
 		Input,
 		toast
 	} from '$lib';
-	import MissionCountdown from '$lib/design-system/components/MissionCountdown.svelte';
 	import TenRegionsSection from '$lib/design-system/patterns/TenRegionsSection.svelte';
 	import type { DetailedEventItem } from '$lib/design-system/types.js';
 	import type { PageData } from './$types.js';
@@ -81,9 +80,6 @@
 <div>
 	<!-- SECTION 02 — HERO / MISSION NATIONALE : Cameroun pour Jésus -->
 	<Hero />
-
-	<!-- SECTION 03 — COMPTEUR DE LA PROCHAINE MISSION (Jours, Heures, Minutes, Secondes) -->
-	<MissionCountdown />
 
 	<!-- SECTION 04 — CHIFFRES CLÉS / NOTRE IMPACT (10 Régions, 50K+ Vies touchées, 3 ans Projet national) -->
 	<StatsBar />
