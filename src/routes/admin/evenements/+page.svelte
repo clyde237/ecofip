@@ -5,8 +5,6 @@
 		MapPin,
 		Clock,
 		Trash2,
-		Eye,
-		EyeOff,
 		X,
 		CalendarDays,
 		Sparkles,
@@ -14,7 +12,11 @@
 		ListChecks,
 		MoreVertical,
 		ExternalLink,
-		Pencil
+		Pencil,
+		Search,
+		RotateCcw,
+		ChevronLeft,
+		ChevronRight
 	} from '@lucide/svelte';
 	import { ImagePicker } from '$lib';
 	import { toast } from '$lib/design-system/toast.svelte.js';
@@ -33,6 +35,89 @@
 
 	let openMenuId = $state<number | null>(null);
 	let eventToDelete = $state<(typeof data.events)[number] | null>(null);
+
+	// ==========================================
+	// ÉTAT RECHERCHE, FILTRES & PAGINATION (15/PAGE)
+	// ==========================================
+	let searchQuery = $state('');
+	let categoryFilter = $state('all');
+	let publicationFilter = $state('all');
+	let featuredFilter = $state('all');
+	let currentPage = $state(1);
+	const pageSize = 15;
+
+	let hasActiveFilters = $derived(
+		searchQuery.trim().length > 0 ||
+			categoryFilter !== 'all' ||
+			publicationFilter !== 'all' ||
+			featuredFilter !== 'all'
+	);
+
+	function resetFilters() {
+		searchQuery = '';
+		categoryFilter = 'all';
+		publicationFilter = 'all';
+		featuredFilter = 'all';
+		currentPage = 1;
+	}
+
+	let filteredEvents = $derived(
+		data.events.filter((ev) => {
+			// 1. Recherche textuelle
+			if (searchQuery.trim().length > 0) {
+				const q = searchQuery.toLowerCase().trim();
+				const matchTitle = (ev.title || '').toLowerCase().includes(q);
+				const matchLocation = (ev.location || '').toLowerCase().includes(q);
+				const matchCategory = (ev.category || '').toLowerCase().includes(q);
+				const matchSpeakers = (ev.speakers || '').toLowerCase().includes(q);
+				const matchDescription = (ev.description || '').toLowerCase().includes(q);
+				if (
+					!matchTitle &&
+					!matchLocation &&
+					!matchCategory &&
+					!matchSpeakers &&
+					!matchDescription
+				) {
+					return false;
+				}
+			}
+
+			// 2. Filtre par Catégorie
+			if (categoryFilter !== 'all' && ev.category !== categoryFilter) {
+				return false;
+			}
+
+			// 3. Filtre par Statut de Publication
+			if (publicationFilter === 'published' && !ev.isPublished) {
+				return false;
+			}
+			if (publicationFilter === 'draft' && ev.isPublished) {
+				return false;
+			}
+
+			// 4. Filtre par Mise en avant (Hero)
+			if (featuredFilter === 'featured' && !ev.isFeatured) {
+				return false;
+			}
+			if (featuredFilter === 'not_featured' && ev.isFeatured) {
+				return false;
+			}
+
+			return true;
+		})
+	);
+
+	let totalPages = $derived(Math.max(1, Math.ceil(filteredEvents.length / pageSize)));
+
+	let paginatedEvents = $derived(
+		filteredEvents.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+	);
+
+	function goToPage(p: number) {
+		if (p >= 1 && p <= totalPages) {
+			currentPage = p;
+		}
+	}
 
 	function getTodayDateString(): string {
 		const today = new Date();
@@ -242,315 +327,492 @@
 		</button>
 	</div>
 
-	<!-- Liste des événements -->
-	<div class="space-y-4">
-		{#if data.events.length === 0}
-			<div
-				class="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center text-text-secondary"
-			>
-				<p class="text-sm font-semibold">Aucun événement enregistré pour le moment.</p>
-				<button
-					type="button"
-					onclick={() => {
-						resetCreateForm();
-						isCreateModalOpen = true;
-					}}
-					class="mt-3 inline-flex items-center gap-2 text-xs font-bold text-brand-primary hover:underline"
-				>
-					<Plus size={14} />
-					<span>Créer le premier événement</span>
-				</button>
-			</div>
-		{/if}
-
-		{#each data.events as ev (ev.id)}
-			<div
-				class="flex flex-col gap-4 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs transition-all hover:border-gray-300 md:flex-row md:items-center md:justify-between"
-			>
-				<div class="flex min-w-0 items-start gap-4">
-					<!-- Date Pill -->
-					<div
-						class="flex h-16 min-w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-primary px-2 text-white shadow-xs"
-					>
-						<span
-							class="text-center font-display leading-none font-bold {ev.dateDay &&
-							ev.dateDay.length > 4
-								? 'text-xs'
-								: 'text-xl'}">{ev.dateDay || '—'}</span
-						>
-						<span class="mt-0.5 text-center text-[9px] font-bold tracking-wider uppercase"
-							>{ev.dateMonthYear || ''}</span
-						>
-					</div>
-
-					<!-- Image Miniature si disponible -->
-					{#if ev.imageUrl}
-						<div
-							class="hidden h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100 sm:block"
-						>
-							<img src={ev.imageUrl} alt={ev.title} class="h-full w-full object-cover" />
-						</div>
-					{/if}
-
-					<!-- Infos -->
-					<div class="min-w-0 flex-1">
-						<div class="flex flex-wrap items-center gap-2">
-							<span
-								class="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-text-secondary"
-							>
-								{ev.category}
-							</span>
-							{#if ev.isFeatured}
-								<span
-									class="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800"
-								>
-									<Sparkles size={11} class="fill-amber-400 text-amber-600" />
-									<span>À la Une (Sous la Hero)</span>
-								</span>
-							{/if}
-							{#if ev.isPublished}
-								<span
-									class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700"
-								>
-									Publié sur le site
-								</span>
-							{:else}
-								<span
-									class="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-text-disabled"
-								>
-									Brouillon (Non publié)
-								</span>
-							{/if}
-						</div>
-
-						<!-- Titre avec lien cliquable vers la page détail de l'événement -->
-						<h3 class="mt-1.5 font-display text-base font-bold">
-							<a
-								href="/nos-evenements/{ev.slug || ev.id}"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="group/title inline-flex items-center gap-1.5 text-text-primary transition-colors hover:text-brand-primary"
-								title="Ouvrir la page détail de l’événement"
-							>
-								<span>{ev.title}</span>
-								<ExternalLink
-									size={13}
-									class="shrink-0 text-text-disabled transition-colors group-hover/title:text-brand-primary"
-								/>
-							</a>
-						</h3>
-
-						<div class="mt-1 flex flex-wrap items-center gap-4 text-xs text-text-secondary">
-							<span class="flex items-center gap-1">
-								<MapPin size={12} class="text-text-disabled" />
-								{ev.location}
-							</span>
-							{#if ev.time}
-								<span class="flex items-center gap-1">
-									<Clock size={12} class="text-text-disabled" />
-									{ev.time}
-								</span>
-							{/if}
-						</div>
-					</div>
+	<!-- Tableau des événements avec barre de recherche, filtres et pagination -->
+	<div class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-xs">
+		<!-- Barre d'outils du tableau -->
+		<div class="space-y-4 border-b border-gray-100 p-5">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex items-center gap-2">
+					<CalendarDays size={18} class="text-brand-primary" />
+					<h2 class="font-display text-base font-bold text-text-primary sm:text-lg">
+						Liste des événements ({filteredEvents.length} / {data.events.length})
+					</h2>
 				</div>
 
-				<!-- Actions rapides & Menu contextuel -->
-				<div
-					class="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 md:border-0 md:pt-0"
-				>
-					<!-- Widget Switch pour Mettre en avant -->
-					<form
-						method="POST"
-						action="?/toggleFeatured"
-						use:enhance={() => {
-							return async ({ result, update }) => {
-								if (result.type === 'success') {
-									const msg =
-										(result.data as { message?: string })?.message || 'Mise en avant mise à jour.';
-									toast.success(msg);
-								} else if (result.type === 'failure') {
-									const err =
-										(result.data as { error?: string })?.error || 'Erreur lors de la mise à jour.';
-									toast.error(err);
-								}
-								await update({ reset: false });
-							};
-						}}
-						class="flex items-center"
-					>
-						<input type="hidden" name="id" value={ev.id} />
-						<input type="hidden" name="target" value={ev.isFeatured ? 'false' : 'true'} />
-						<button
-							type="submit"
-							role="switch"
-							aria-checked={Boolean(ev.isFeatured)}
-							class="group inline-flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all {ev.isFeatured
-								? 'border-amber-300 bg-amber-50/80 text-amber-900 shadow-2xs'
-								: 'border-gray-200 bg-white text-text-secondary hover:border-gray-300'}"
-							title={ev.isFeatured ? 'Retirer de la mise en avant' : 'Mettre en avant sous la Hero'}
-						>
-							<!-- Switch pill track -->
-							<span
-								class="relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out {ev.isFeatured
-									? 'bg-amber-500'
-									: 'bg-gray-200'}"
-							>
-								<span
-									class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out {ev.isFeatured
-										? 'translate-x-4'
-										: 'translate-x-0.5'}"
-								></span>
-							</span>
-							<span class="flex items-center gap-1">
-								<Sparkles
-									size={12}
-									class={ev.isFeatured ? 'fill-amber-400 text-amber-600' : 'text-gray-400'}
-								/>
-								<span>{ev.isFeatured ? 'À la Une' : 'Mettre en avant'}</span>
-							</span>
-						</button>
-					</form>
-
-					<!-- Basculer statut de publication -->
-					<form
-						method="POST"
-						action="?/togglePublish"
-						use:enhance={() => {
-							return async ({ result, update }) => {
-								if (result.type === 'success') {
-									const msg =
-										(result.data as { message?: string })?.message ||
-										'Statut de publication mis à jour.';
-									toast.success(msg);
-								} else if (result.type === 'failure') {
-									const err =
-										(result.data as { error?: string })?.error || 'Erreur lors de la mise à jour.';
-									toast.error(err);
-								}
-								await update({ reset: false });
-							};
-						}}
-					>
-						<input type="hidden" name="id" value={ev.id} />
-						<input type="hidden" name="target" value={ev.isPublished ? 'false' : 'true'} />
-						<button
-							type="submit"
-							class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors {ev.isPublished
-								? 'border-gray-200 bg-white text-text-secondary hover:border-gray-300'
-								: 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}"
-						>
-							{#if ev.isPublished}
-								<EyeOff size={13} />
-								<span>Dépublier</span>
-							{:else}
-								<Eye size={13} />
-								<span>Publier</span>
-							{/if}
-						</button>
-					</form>
-
-					<!-- Menu contextuel à 3 points verticaux -->
-					<div class="relative">
+				<!-- Barre de recherche -->
+				<div class="relative w-full sm:w-80">
+					<Search size={15} class="absolute top-1/2 left-3.5 -translate-y-1/2 text-gray-400" />
+					<input
+						type="search"
+						placeholder="Rechercher par titre, lieu, orateur..."
+						bind:value={searchQuery}
+						oninput={() => (currentPage = 1)}
+						class="h-9 w-full rounded-xl border border-gray-200 bg-[#f8fafc] pr-9 pl-9 text-xs text-text-primary placeholder:text-gray-400 focus:border-brand-primary focus:bg-white focus:outline-hidden sm:text-sm"
+					/>
+					{#if searchQuery}
 						<button
 							type="button"
-							aria-label="Options de l'événement"
-							aria-haspopup="true"
-							aria-expanded={openMenuId === ev.id}
-							onclick={(e) => toggleMenu(ev.id, e)}
-							class="cursor-pointer rounded-xl border border-gray-200 bg-white p-2 text-text-secondary transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-text-primary"
-							title="Options supplémentaires"
+							onclick={() => {
+								searchQuery = '';
+								currentPage = 1;
+							}}
+							class="absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+							aria-label="Effacer la recherche"
 						>
-							<MoreVertical size={16} />
+							<X size={14} />
 						</button>
-
-						{#if openMenuId === ev.id}
-							<div
-								role="menu"
-								tabindex="-1"
-								onclick={(e) => e.stopPropagation()}
-								onkeydown={(e) => e.stopPropagation()}
-								class="absolute top-full right-0 z-30 mt-1.5 w-52 rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl shadow-gray-200/50"
-							>
-								<!-- Option 1 : Voir la page détail -->
-								<a
-									role="menuitem"
-									href="/nos-evenements/{ev.slug || ev.id}"
-									target="_blank"
-									rel="noopener noreferrer"
-									onclick={() => (openMenuId = null)}
-									class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
-								>
-									<ExternalLink size={14} class="text-text-secondary" />
-									<span>Voir la page détail</span>
-								</a>
-
-								<!-- Option 2 : Modifier l'événement -->
-								<button
-									role="menuitem"
-									type="button"
-									onclick={() => openEditModal(ev)}
-									class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
-								>
-									<Pencil size={14} class="text-brand-primary" />
-									<span>Modifier l’événement</span>
-								</button>
-
-								<!-- Option 3 : Basculer À la une -->
-								<form
-									method="POST"
-									action="?/toggleFeatured"
-									use:enhance={() => {
-										return async ({ result, update }) => {
-											if (result.type === 'success') {
-												const msg =
-													(result.data as { message?: string })?.message ||
-													'Mise en avant mise à jour.';
-												toast.success(msg);
-											} else if (result.type === 'failure') {
-												const err =
-													(result.data as { error?: string })?.error ||
-													'Erreur lors de la mise à jour.';
-												toast.error(err);
-											}
-											await update({ reset: false });
-										};
-									}}
-								>
-									<input type="hidden" name="id" value={ev.id} />
-									<input type="hidden" name="target" value={ev.isFeatured ? 'false' : 'true'} />
-									<button
-										role="menuitem"
-										type="submit"
-										onclick={() => (openMenuId = null)}
-										class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
-									>
-										<Sparkles
-											size={14}
-											class={ev.isFeatured ? 'fill-amber-400 text-amber-600' : 'text-gray-400'}
-										/>
-										<span>{ev.isFeatured ? 'Retirer de la une' : 'Mettre à la une'}</span>
-									</button>
-								</form>
-
-								<div class="my-1 border-t border-gray-100"></div>
-
-								<!-- Option 4 : Supprimer l'événement -->
-								<button
-									role="menuitem"
-									type="button"
-									onclick={() => openDeleteModal(ev)}
-									class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
-								>
-									<Trash2 size={14} />
-									<span>Supprimer</span>
-								</button>
-							</div>
-						{/if}
-					</div>
+					{/if}
 				</div>
 			</div>
-		{/each}
+
+			<!-- Rangée de Filtres -->
+			<div class="flex flex-wrap items-center gap-3 pt-1">
+				<!-- Filtre Catégorie -->
+				<div class="flex items-center gap-1.5">
+					<span class="text-[11px] font-bold text-text-secondary uppercase">Catégorie :</span>
+					<select
+						bind:value={categoryFilter}
+						onchange={() => (currentPage = 1)}
+						class="h-8 rounded-lg border border-gray-200 bg-[#f8fafc] px-2.5 text-xs font-semibold text-text-primary focus:border-brand-primary focus:bg-white focus:outline-hidden"
+					>
+						<option value="all">Toutes les catégories</option>
+						<option value="Croisade">Croisade</option>
+						<option value="Séminaire">Séminaire</option>
+						<option value="Camp Jeunes">Camp Jeunes</option>
+						<option value="Action Sociale">Action Sociale</option>
+						<option value="Mission">Campagne Missionnaire</option>
+					</select>
+				</div>
+
+				<!-- Filtre Statut Publication -->
+				<div class="flex items-center gap-1.5">
+					<span class="text-[11px] font-bold text-text-secondary uppercase">Publication :</span>
+					<select
+						bind:value={publicationFilter}
+						onchange={() => (currentPage = 1)}
+						class="h-8 rounded-lg border border-gray-200 bg-[#f8fafc] px-2.5 text-xs font-semibold text-text-primary focus:border-brand-primary focus:bg-white focus:outline-hidden"
+					>
+						<option value="all">Tous les statuts</option>
+						<option value="published">Publiés sur le site</option>
+						<option value="draft">Brouillons (Non publiés)</option>
+					</select>
+				</div>
+
+				<!-- Filtre À la Une -->
+				<div class="flex items-center gap-1.5">
+					<span class="text-[11px] font-bold text-text-secondary uppercase">Hero :</span>
+					<select
+						bind:value={featuredFilter}
+						onchange={() => (currentPage = 1)}
+						class="h-8 rounded-lg border border-gray-200 bg-[#f8fafc] px-2.5 text-xs font-semibold text-text-primary focus:border-brand-primary focus:bg-white focus:outline-hidden"
+					>
+						<option value="all">Toutes</option>
+						<option value="featured">À la Une (Hero) uniquement</option>
+						<option value="not_featured">Non mis en avant</option>
+					</select>
+				</div>
+
+				<!-- Bouton réinitialiser -->
+				{#if hasActiveFilters}
+					<button
+						type="button"
+						onclick={resetFilters}
+						class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-gray-50 hover:text-brand-primary"
+					>
+						<RotateCcw size={12} />
+						<span>Réinitialiser les filtres</span>
+					</button>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Tableau responsive -->
+		<div class="overflow-x-auto">
+			<table class="w-full text-left text-xs sm:text-sm">
+				<thead
+					class="border-b border-gray-100 bg-gray-50/80 text-[11px] font-bold text-text-secondary uppercase"
+				>
+					<tr>
+						<th class="px-5 py-3.5">Date</th>
+						<th class="px-5 py-3.5">Événement & Lieu</th>
+						<th class="px-5 py-3.5">Catégorie</th>
+						<th class="px-5 py-3.5 text-center">À la Une (Hero)</th>
+						<th class="px-5 py-3.5 text-center">Publication</th>
+						<th class="px-5 py-3.5 text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-100">
+					{#if paginatedEvents.length === 0}
+						<tr>
+							<td colspan="6" class="py-12 text-center text-text-secondary">
+								{#if hasActiveFilters}
+									<p class="font-semibold">Aucun événement ne correspond à vos filtres.</p>
+									<button
+										type="button"
+										onclick={resetFilters}
+										class="mt-2 cursor-pointer text-xs font-bold text-brand-primary hover:underline"
+									>
+										Réinitialiser les filtres
+									</button>
+								{:else}
+									<p class="font-semibold">Aucun événement enregistré pour le moment.</p>
+									<button
+										type="button"
+										onclick={() => {
+											resetCreateForm();
+											isCreateModalOpen = true;
+										}}
+										class="mt-2 inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-brand-primary hover:underline"
+									>
+										<Plus size={14} />
+										<span>Créer le premier événement</span>
+									</button>
+								{/if}
+							</td>
+						</tr>
+					{:else}
+						{#each paginatedEvents as ev (ev.id)}
+							<tr class="transition-colors hover:bg-gray-50/60">
+								<!-- 1. Colonne Date Pill -->
+								<td class="px-5 py-3.5 whitespace-nowrap">
+									<div
+										class="flex h-12 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-primary px-1.5 text-white shadow-xs"
+									>
+										<span
+											class="text-center font-display leading-none font-bold {ev.dateDay &&
+											ev.dateDay.length > 4
+												? 'text-[11px]'
+												: 'text-base'}">{ev.dateDay || '—'}</span
+										>
+										<span class="mt-0.5 text-center text-[8px] font-bold tracking-wider uppercase"
+											>{ev.dateMonthYear || ''}</span
+										>
+									</div>
+								</td>
+
+								<!-- 2. Colonne Événement & Lieu -->
+								<td class="px-5 py-3.5">
+									<div class="flex items-center gap-3">
+										{#if ev.imageUrl}
+											<div
+												class="h-11 w-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
+											>
+												<img src={ev.imageUrl} alt={ev.title} class="h-full w-full object-cover" />
+											</div>
+										{/if}
+										<div class="max-w-md min-w-0">
+											<a
+												href="/nos-evenements/{ev.slug || ev.id}"
+												target="_blank"
+												rel="noopener noreferrer"
+												class="group/title inline-flex items-center gap-1.5 font-display text-xs font-bold text-text-primary transition-colors hover:text-brand-primary sm:text-sm"
+												title="Voir la page détail"
+											>
+												<span class="truncate">{ev.title}</span>
+												<ExternalLink
+													size={12}
+													class="shrink-0 text-text-disabled group-hover/title:text-brand-primary"
+												/>
+											</a>
+											<div
+												class="mt-0.5 flex flex-wrap items-center gap-3 text-[11px] text-text-secondary"
+											>
+												<span class="flex items-center gap-1">
+													<MapPin size={11} class="text-text-disabled" />
+													<span class="max-w-[200px] truncate">{ev.location}</span>
+												</span>
+												{#if ev.time}
+													<span class="flex items-center gap-1">
+														<Clock size={11} class="text-text-disabled" />
+														<span>{ev.time}</span>
+													</span>
+												{/if}
+											</div>
+										</div>
+									</div>
+								</td>
+
+								<!-- 3. Colonne Catégorie -->
+								<td class="px-5 py-3.5 whitespace-nowrap">
+									<span
+										class="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-text-secondary"
+									>
+										{ev.category}
+									</span>
+								</td>
+
+								<!-- 4. Colonne À la Une (Hero Switch) -->
+								<td class="px-5 py-3.5 text-center whitespace-nowrap">
+									<form
+										method="POST"
+										action="?/toggleFeatured"
+										use:enhance={() => {
+											return async ({ result, update }) => {
+												if (result.type === 'success') {
+													const msg =
+														(result.data as { message?: string })?.message ||
+														'Mise en avant mise à jour.';
+													toast.success(msg);
+												} else if (result.type === 'failure') {
+													const err =
+														(result.data as { error?: string })?.error ||
+														'Erreur lors de la mise à jour.';
+													toast.error(err);
+												}
+												await update({ reset: false });
+											};
+										}}
+										class="inline-flex justify-center"
+									>
+										<input type="hidden" name="id" value={ev.id} />
+										<input type="hidden" name="target" value={ev.isFeatured ? 'false' : 'true'} />
+										<button
+											type="submit"
+											role="switch"
+											aria-checked={Boolean(ev.isFeatured)}
+											class="group inline-flex cursor-pointer items-center gap-2 rounded-xl border px-2.5 py-1 text-xs font-semibold transition-all {ev.isFeatured
+												? 'border-amber-300 bg-amber-50/80 text-amber-900 shadow-2xs'
+												: 'border-gray-200 bg-white text-text-secondary hover:border-gray-300'}"
+											title={ev.isFeatured
+												? 'Désactiver la mise en avant'
+												: 'Mettre en avant sous la Hero'}
+										>
+											<span
+												class="relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out {ev.isFeatured
+													? 'bg-amber-500'
+													: 'bg-gray-200'}"
+											>
+												<span
+													class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out {ev.isFeatured
+														? 'translate-x-4'
+														: 'translate-x-0.5'}"
+												></span>
+											</span>
+											<span class="flex items-center gap-1">
+												<Sparkles
+													size={12}
+													class={ev.isFeatured ? 'fill-amber-400 text-amber-600' : 'text-gray-400'}
+												/>
+												<span>{ev.isFeatured ? 'À la Une' : 'Inactif'}</span>
+											</span>
+										</button>
+									</form>
+								</td>
+
+								<!-- 5. Colonne Statut Publication -->
+								<td class="px-5 py-3.5 text-center whitespace-nowrap">
+									<form
+										method="POST"
+										action="?/togglePublish"
+										use:enhance={() => {
+											return async ({ result, update }) => {
+												if (result.type === 'success') {
+													const msg =
+														(result.data as { message?: string })?.message ||
+														'Statut de publication mis à jour.';
+													toast.success(msg);
+												} else if (result.type === 'failure') {
+													const err =
+														(result.data as { error?: string })?.error ||
+														'Erreur lors de la mise à jour.';
+													toast.error(err);
+												}
+												await update({ reset: false });
+											};
+										}}
+										class="inline-flex justify-center"
+									>
+										<input type="hidden" name="id" value={ev.id} />
+										<input type="hidden" name="target" value={ev.isPublished ? 'false' : 'true'} />
+										<button
+											type="submit"
+											class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors {ev.isPublished
+												? 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+												: 'border-gray-200 bg-gray-50 text-text-disabled hover:bg-gray-100'}"
+											title={ev.isPublished ? 'Mettre en brouillon' : 'Publier sur le site'}
+										>
+											<span
+												class="h-1.5 w-1.5 rounded-full {ev.isPublished
+													? 'bg-emerald-500'
+													: 'bg-gray-400'}"
+											></span>
+											<span>{ev.isPublished ? 'Publié' : 'Brouillon'}</span>
+										</button>
+									</form>
+								</td>
+
+								<!-- 6. Colonne Actions (Menu 3-points) -->
+								<td class="px-5 py-3.5 text-right whitespace-nowrap">
+									<div class="relative inline-block text-left">
+										<button
+											type="button"
+											aria-label="Options de l'événement"
+											aria-haspopup="true"
+											aria-expanded={openMenuId === ev.id}
+											onclick={(e) => toggleMenu(ev.id, e)}
+											class="cursor-pointer rounded-xl border border-gray-200 bg-white p-2 text-text-secondary transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-text-primary"
+											title="Options supplémentaires"
+										>
+											<MoreVertical size={16} />
+										</button>
+
+										{#if openMenuId === ev.id}
+											<div
+												role="menu"
+												tabindex="-1"
+												onclick={(e) => e.stopPropagation()}
+												onkeydown={(e) => e.stopPropagation()}
+												class="absolute top-full right-0 z-30 mt-1.5 w-52 rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl shadow-gray-200/50"
+											>
+												<!-- Option 1 : Voir la page détail -->
+												<a
+													role="menuitem"
+													href="/nos-evenements/{ev.slug || ev.id}"
+													target="_blank"
+													rel="noopener noreferrer"
+													onclick={() => (openMenuId = null)}
+													class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
+												>
+													<ExternalLink size={14} class="text-text-secondary" />
+													<span>Voir la page détail</span>
+												</a>
+
+												<!-- Option 2 : Modifier l'événement -->
+												<button
+													role="menuitem"
+													type="button"
+													onclick={() => openEditModal(ev)}
+													class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
+												>
+													<Pencil size={14} class="text-brand-primary" />
+													<span>Modifier l’événement</span>
+												</button>
+
+												<!-- Option 3 : Basculer À la une -->
+												<form
+													method="POST"
+													action="?/toggleFeatured"
+													use:enhance={() => {
+														return async ({ result, update }) => {
+															if (result.type === 'success') {
+																const msg =
+																	(result.data as { message?: string })?.message ||
+																	'Mise en avant mise à jour.';
+																toast.success(msg);
+															} else if (result.type === 'failure') {
+																const err =
+																	(result.data as { error?: string })?.error ||
+																	'Erreur lors de la mise à jour.';
+																toast.error(err);
+															}
+															await update({ reset: false });
+														};
+													}}
+												>
+													<input type="hidden" name="id" value={ev.id} />
+													<input
+														type="hidden"
+														name="target"
+														value={ev.isFeatured ? 'false' : 'true'}
+													/>
+													<button
+														role="menuitem"
+														type="submit"
+														onclick={() => (openMenuId = null)}
+														class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
+													>
+														<Sparkles
+															size={14}
+															class={ev.isFeatured
+																? 'fill-amber-400 text-amber-600'
+																: 'text-gray-400'}
+														/>
+														<span>{ev.isFeatured ? 'Retirer de la une' : 'Mettre à la une'}</span>
+													</button>
+												</form>
+
+												<div class="my-1 border-t border-gray-100"></div>
+
+												<!-- Option 4 : Supprimer l'événement -->
+												<button
+													role="menuitem"
+													type="button"
+													onclick={() => openDeleteModal(ev)}
+													class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+												>
+													<Trash2 size={14} />
+													<span>Supprimer</span>
+												</button>
+											</div>
+										{/if}
+									</div>
+								</td>
+							</tr>
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Pied de tableau : Pagination (15 éléments / page) -->
+		{#if filteredEvents.length > 0}
+			<div
+				class="flex flex-col items-center justify-between gap-3 border-t border-gray-100 bg-[#f8fafc] p-4 sm:flex-row sm:px-6"
+			>
+				<div class="text-xs text-text-secondary">
+					Affichage de <span class="font-bold text-text-primary"
+						>{(currentPage - 1) * pageSize + 1}</span
+					>
+					à
+					<span class="font-bold text-text-primary"
+						>{Math.min(currentPage * pageSize, filteredEvents.length)}</span
+					>
+					sur <span class="font-bold text-text-primary">{filteredEvents.length}</span> événements
+				</div>
+
+				<div class="flex items-center gap-1.5">
+					<!-- Bouton Précédent -->
+					<button
+						type="button"
+						onclick={() => goToPage(currentPage - 1)}
+						disabled={currentPage <= 1}
+						class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-text-secondary transition-colors hover:bg-gray-50 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+						aria-label="Page précédente"
+					>
+						<ChevronLeft size={16} />
+					</button>
+
+					<!-- Numéros de page -->
+					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+						{#if p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)}
+							<button
+								type="button"
+								onclick={() => goToPage(p)}
+								class="inline-flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-lg px-2 text-xs font-bold transition-colors {currentPage ===
+								p
+									? 'bg-brand-primary text-white shadow-xs'
+									: 'border border-gray-200 bg-white text-text-secondary hover:bg-gray-50 hover:text-text-primary'}"
+							>
+								{p}
+							</button>
+						{:else if (p === 2 && currentPage > 3) || (p === totalPages - 1 && currentPage < totalPages - 2)}
+							<span class="px-1 text-xs text-text-disabled">...</span>
+						{/if}
+					{/each}
+
+					<!-- Bouton Suivant -->
+					<button
+						type="button"
+						onclick={() => goToPage(currentPage + 1)}
+						disabled={currentPage >= totalPages}
+						class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-text-secondary transition-colors hover:bg-gray-50 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+						aria-label="Page suivante"
+					>
+						<ChevronRight size={16} />
+					</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -952,14 +1214,14 @@
 					<button
 						type="button"
 						onclick={() => (isCreateModalOpen = false)}
-						class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
+						class="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
 					>
 						Annuler
 					</button>
 					<button
 						type="submit"
 						disabled={isSubmitting}
-						class="rounded-xl bg-brand-primary px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:opacity-50"
+						class="cursor-pointer rounded-xl bg-brand-primary px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:opacity-50"
 					>
 						{isSubmitting ? 'Enregistrement...' : 'Créer l’événement'}
 					</button>
@@ -991,7 +1253,7 @@
 				<button
 					type="button"
 					onclick={() => (isEditModalOpen = false)}
-					class="rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
+					class="cursor-pointer rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
 				>
 					<X size={18} />
 				</button>
@@ -1360,14 +1622,14 @@
 					<button
 						type="button"
 						onclick={() => (isEditModalOpen = false)}
-						class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
+						class="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
 					>
 						Annuler
 					</button>
 					<button
 						type="submit"
 						disabled={isEditSubmitting}
-						class="rounded-xl bg-brand-primary px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:opacity-50"
+						class="cursor-pointer rounded-xl bg-brand-primary px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:opacity-50"
 					>
 						{isEditSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications'}
 					</button>
@@ -1395,7 +1657,7 @@
 						isDeleteModalOpen = false;
 						eventToDelete = null;
 					}}
-					class="rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
+					class="cursor-pointer rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
 				>
 					<X size={18} />
 				</button>
@@ -1439,14 +1701,14 @@
 						isDeleteModalOpen = false;
 						eventToDelete = null;
 					}}
-					class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
+					class="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
 				>
 					Annuler
 				</button>
 				<button
 					type="submit"
 					disabled={isDeleteSubmitting}
-					class="rounded-xl bg-red-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-red-700 disabled:opacity-50"
+					class="cursor-pointer rounded-xl bg-red-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-red-700 disabled:opacity-50"
 				>
 					{isDeleteSubmitting ? 'Suppression...' : 'Supprimer définitivement'}
 				</button>
