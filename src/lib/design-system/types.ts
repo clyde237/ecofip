@@ -492,6 +492,8 @@ export interface DetailedEventItem {
 	speakers?: string[];
 	isFree?: boolean;
 	isFeatured?: boolean;
+	/** false = accès libre sans inscription (bouton « Participer / S'inscrire » masqué) */
+	registrationEnabled?: boolean;
 	startDate?: Date | string | null;
 	eventDate?: Date | string | null;
 	targetDate?: Date | string | null;

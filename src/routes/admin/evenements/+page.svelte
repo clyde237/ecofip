@@ -16,11 +16,12 @@
 		Search,
 		RotateCcw,
 		ChevronLeft,
-		ChevronRight
+		ChevronRight,
+		Ticket
 	} from '@lucide/svelte';
 	import { ImagePicker } from '$lib';
 	import { toast } from '$lib/design-system/toast.svelte.js';
-	import { formatEventSchedule } from '$lib/utils/eventDate.js';
+	import { formatEventSchedule, toCameroonDateString } from '$lib/utils/eventDate.js';
 	import type { PageData, ActionData } from './$types.js';
 
 	let { data }: { data: PageData; form: ActionData } = $props();
@@ -120,29 +121,19 @@
 	}
 
 	function getTodayDateString(): string {
-		const today = new Date();
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
+		return toCameroonDateString(new Date());
 	}
 
 	function toDateInputValue(d: unknown): string {
 		if (!d) return getTodayDateString();
 		if (d instanceof Date && !isNaN(d.getTime())) {
-			const year = d.getFullYear();
-			const month = String(d.getMonth() + 1).padStart(2, '0');
-			const day = String(d.getDate()).padStart(2, '0');
-			return `${year}-${month}-${day}`;
+			return toCameroonDateString(d);
 		}
 		if (typeof d === 'string') {
 			if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
 			const parsed = new Date(d);
 			if (!isNaN(parsed.getTime())) {
-				const year = parsed.getFullYear();
-				const month = String(parsed.getMonth() + 1).padStart(2, '0');
-				const day = String(parsed.getDate()).padStart(2, '0');
-				return `${year}-${month}-${day}`;
+				return toCameroonDateString(parsed);
 			}
 		}
 		return getTodayDateString();
@@ -177,6 +168,7 @@
 	let imageDataUrl = $state('');
 	let isPublished = $state(true);
 	let isFeatured = $state(false);
+	let registrationEnabled = $state(true);
 
 	let schedulePreview = $derived(
 		startDate
@@ -213,6 +205,7 @@
 		imageDataUrl = '';
 		isPublished = true;
 		isFeatured = false;
+		registrationEnabled = true;
 	}
 
 	// ==========================================
@@ -234,6 +227,7 @@
 	let editImageDataUrl = $state('');
 	let editIsPublished = $state(true);
 	let editIsFeatured = $state(false);
+	let editRegistrationEnabled = $state(true);
 
 	let editSchedulePreview = $derived(
 		editStartDate
@@ -272,6 +266,7 @@
 		editImageDataUrl = ev.imageUrl || '';
 		editIsPublished = Boolean(ev.isPublished);
 		editIsFeatured = Boolean(ev.isFeatured);
+		editRegistrationEnabled = ev.registrationEnabled ?? true;
 		openMenuId = null;
 		isEditModalOpen = true;
 	}
@@ -1164,6 +1159,42 @@
 					</p>
 				</div>
 
+				<!-- WIDGET SWITCH : INSCRIPTIONS (PLACES LIMITÉES) OU ACCÈS LIBRE -->
+				<div
+					class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 transition-colors"
+				>
+					<div class="flex items-center gap-3">
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700"
+						>
+							<Ticket size={16} />
+						</div>
+						<div>
+							<label for="create-ev-registration" class="block text-xs font-bold text-emerald-950">
+								Activer les inscriptions (places limitées)
+							</label>
+							<span class="block text-[11px] text-emerald-800">
+								{registrationEnabled
+									? 'Le bouton « Participer / S’inscrire » est affiché sur le site'
+									: 'Accès libre : le bouton « Participer / S’inscrire » est masqué'}
+							</span>
+						</div>
+					</div>
+
+					<label class="relative inline-flex cursor-pointer items-center select-none">
+						<input
+							id="create-ev-registration"
+							type="checkbox"
+							name="registrationEnabled"
+							bind:checked={registrationEnabled}
+							class="peer sr-only"
+						/>
+						<div
+							class="h-6 w-11 rounded-full bg-gray-200 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-focus-visible:ring-offset-2 after:absolute after:top-0.5 after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-xs after:transition-all after:content-[''] peer-checked:after:translate-x-full"
+						></div>
+					</label>
+				</div>
+
 				<!-- WIDGET SWITCH : METTRE EN AVANT SOUS LA HERO -->
 				<div
 					class="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 transition-colors"
@@ -1570,6 +1601,42 @@
 						Chaque ligne sera automatiquement mise en forme comme étape numérotée dans le programme
 						de la page détail.
 					</p>
+				</div>
+
+				<!-- WIDGET SWITCH : INSCRIPTIONS (PLACES LIMITÉES) OU ACCÈS LIBRE -->
+				<div
+					class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 transition-colors"
+				>
+					<div class="flex items-center gap-3">
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700"
+						>
+							<Ticket size={16} />
+						</div>
+						<div>
+							<label for="edit-ev-registration" class="block text-xs font-bold text-emerald-950">
+								Activer les inscriptions (places limitées)
+							</label>
+							<span class="block text-[11px] text-emerald-800">
+								{editRegistrationEnabled
+									? 'Le bouton « Participer / S’inscrire » est affiché sur le site'
+									: 'Accès libre : le bouton « Participer / S’inscrire » est masqué'}
+							</span>
+						</div>
+					</div>
+
+					<label class="relative inline-flex cursor-pointer items-center select-none">
+						<input
+							id="edit-ev-registration"
+							type="checkbox"
+							name="registrationEnabled"
+							bind:checked={editRegistrationEnabled}
+							class="peer sr-only"
+						/>
+						<div
+							class="h-6 w-11 rounded-full bg-gray-200 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-focus-visible:ring-offset-2 after:absolute after:top-0.5 after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-xs after:transition-all after:content-[''] peer-checked:after:translate-x-full"
+						></div>
+					</label>
 				</div>
 
 				<!-- WIDGET SWITCH : METTRE EN AVANT SOUS LA HERO -->

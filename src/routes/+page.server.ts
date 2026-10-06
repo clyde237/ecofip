@@ -78,6 +78,7 @@ export const load: PageServerLoad = async () => {
 					program: ev.program || null,
 					isFree: true,
 					isFeatured: true,
+					registrationEnabled: ev.registrationEnabled,
 					startDate: ev.startDate,
 					eventDate: ev.eventDate,
 					targetDate: target

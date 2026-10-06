@@ -365,14 +365,23 @@
 
 					<!-- Bouton d'action principal -->
 					<div class="mt-8 flex flex-wrap items-center gap-4">
-						<button
-							type="button"
-							onclick={() => (isRegisterModalOpen = true)}
-							class="inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-brand-primary px-7 py-3.5 font-body text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:bg-brand-primary-hover hover:shadow-xl"
-						>
-							<HeartHandshake size={18} />
-							<span>Participer / S'inscrire gratuitement</span>
-						</button>
+						{#if event.registrationEnabled !== false}
+							<button
+								type="button"
+								onclick={() => (isRegisterModalOpen = true)}
+								class="inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-brand-primary px-7 py-3.5 font-body text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:bg-brand-primary-hover hover:shadow-xl"
+							>
+								<HeartHandshake size={18} />
+								<span>Participer / S'inscrire gratuitement</span>
+							</button>
+						{:else}
+							<span
+								class="inline-flex items-center gap-2.5 rounded-xl border border-emerald-400/40 bg-emerald-950/60 px-6 py-3 font-body text-sm font-bold text-emerald-200 sm:text-base"
+							>
+								<ShieldCheck size={18} class="text-emerald-300" />
+								<span>Entrée libre · Sans inscription, venez directement</span>
+							</span>
+						{/if}
 					</div>
 				</div>
 			</div>
@@ -495,14 +504,23 @@
 						</div>
 
 						<div class="mt-8 border-t border-gray-100 pt-6">
-							<button
-								type="button"
-								onclick={() => (isRegisterModalOpen = true)}
-								class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-primary py-3 text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-md"
-							>
-								<HeartHandshake size={16} />
-								<span>S'inscrire à cet événement</span>
-							</button>
+							{#if event.registrationEnabled !== false}
+								<button
+									type="button"
+									onclick={() => (isRegisterModalOpen = true)}
+									class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-primary py-3 text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-md"
+								>
+									<HeartHandshake size={16} />
+									<span>S'inscrire à cet événement</span>
+								</button>
+							{:else}
+								<p
+									class="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 py-3 text-xs font-bold text-emerald-800"
+								>
+									<ShieldCheck size={16} class="text-emerald-600" />
+									<span>Aucune inscription requise</span>
+								</p>
+							{/if}
 						</div>
 					</div>
 				</div>

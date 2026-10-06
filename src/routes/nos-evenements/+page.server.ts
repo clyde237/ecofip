@@ -128,6 +128,7 @@ export const load: PageServerLoad = async () => {
 						program: ev.program || null,
 						isFree: true,
 						isFeatured: Boolean(ev.isFeatured),
+						registrationEnabled: ev.registrationEnabled,
 						startDate: ev.startDate,
 						eventDate: ev.eventDate,
 						targetDate: target
