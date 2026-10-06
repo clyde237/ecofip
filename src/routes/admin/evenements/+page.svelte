@@ -20,7 +20,7 @@
 	} from '@lucide/svelte';
 	import { ImagePicker } from '$lib';
 	import { toast } from '$lib/design-system/toast.svelte.js';
-	import { formatEventSchedule } from '$lib/utils/eventDate.js';
+	import { formatEventSchedule, toCameroonDateString } from '$lib/utils/eventDate.js';
 	import type { PageData, ActionData } from './$types.js';
 
 	let { data }: { data: PageData; form: ActionData } = $props();
@@ -120,29 +120,19 @@
 	}
 
 	function getTodayDateString(): string {
-		const today = new Date();
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
+		return toCameroonDateString(new Date());
 	}
 
 	function toDateInputValue(d: unknown): string {
 		if (!d) return getTodayDateString();
 		if (d instanceof Date && !isNaN(d.getTime())) {
-			const year = d.getFullYear();
-			const month = String(d.getMonth() + 1).padStart(2, '0');
-			const day = String(d.getDate()).padStart(2, '0');
-			return `${year}-${month}-${day}`;
+			return toCameroonDateString(d);
 		}
 		if (typeof d === 'string') {
 			if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
 			const parsed = new Date(d);
 			if (!isNaN(parsed.getTime())) {
-				const year = parsed.getFullYear();
-				const month = String(parsed.getMonth() + 1).padStart(2, '0');
-				const day = String(parsed.getDate()).padStart(2, '0');
-				return `${year}-${month}-${day}`;
+				return toCameroonDateString(parsed);
 			}
 		}
 		return getTodayDateString();

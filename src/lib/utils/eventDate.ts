@@ -32,6 +32,56 @@ const MONTHS_FULL_FR = [
 	'décembre'
 ];
 
+/**
+ * Les dates et heures saisies dans l'admin sont des heures locales du Cameroun
+ * (Africa/Douala, UTC+1, sans heure d'été). Tous les calculs passent par ces helpers
+ * pour ne pas dépendre du fuseau du serveur (Vercel = UTC) ni de celui du navigateur.
+ */
+const CAMEROON_UTC_OFFSET_MS = 60 * 60 * 1000;
+
+/** Instant absolu correspondant à une date/heure locale camerounaise. */
+export function cameroonDate(
+	year: number,
+	monthIndex: number,
+	day: number,
+	hours = 0,
+	minutes = 0
+): Date {
+	return new Date(Date.UTC(year, monthIndex, day, hours, minutes) - CAMEROON_UTC_OFFSET_MS);
+}
+
+/** Jour calendaire (heure du Cameroun) d'un instant. */
+export function toCameroonParts(date: Date): { year: number; monthIndex: number; day: number } {
+	const shifted = new Date(date.getTime() + CAMEROON_UTC_OFFSET_MS);
+	return {
+		year: shifted.getUTCFullYear(),
+		monthIndex: shifted.getUTCMonth(),
+		day: shifted.getUTCDate()
+	};
+}
+
+/** Date au format "YYYY-MM-DD" (heure du Cameroun) d'un instant. */
+export function toCameroonDateString(date: Date): string {
+	const { year, monthIndex, day } = toCameroonParts(date);
+	return `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** Extrait l'heure de début depuis "HH:mm" ou, à défaut, depuis un libellé "17h30 – 21h30". */
+function parseStartTime(
+	startTime?: string | null,
+	timeLabel?: string | null
+): { hours: number; minutes: number } | null {
+	if (startTime) {
+		const [h, m] = startTime.split(':').map(Number);
+		return { hours: h || 0, minutes: m || 0 };
+	}
+	const match = timeLabel?.match(/(\d{1,2})h(\d{2})?/);
+	if (match) {
+		return { hours: Number(match[1]), minutes: Number(match[2] || 0) };
+	}
+	return null;
+}
+
 export function formatTimeDisplay(timeStr?: string): string {
 	if (!timeStr) return '';
 	// Convertit "18:00" en "18h00"
@@ -69,7 +119,7 @@ export function formatEventSchedule(params: {
 	}
 
 	const [sYear, sMonth, sDay] = startDateStr.split('-').map(Number);
-	const start = new Date(sYear, sMonth - 1, sDay);
+	const start = cameroonDate(sYear, sMonth - 1, sDay);
 
 	// Construction du libellé horaire
 	let time = '';
@@ -97,7 +147,7 @@ export function formatEventSchedule(params: {
 		summaryText = `Le ${sDay} ${sMonthFull} ${sYear} · ${time}`;
 	} else {
 		const [eYear, eMonth, eDay] = endDateStr.split('-').map(Number);
-		end = new Date(eYear, eMonth - 1, eDay);
+		end = cameroonDate(eYear, eMonth - 1, eDay);
 		const eMonthLabel = MONTHS_FR[eMonth - 1] || 'OCT';
 		const eMonthFull = MONTHS_FULL_FR[eMonth - 1] || 'octobre';
 
@@ -120,11 +170,10 @@ export function formatEventSchedule(params: {
 	}
 
 	// eventDate pour les tris chronologiques
-	const eventDate = new Date(start);
-	if (startTimeStr) {
-		const [h, m] = startTimeStr.split(':').map(Number);
-		eventDate.setHours(h || 0, m || 0, 0, 0);
-	}
+	const startTime = parseStartTime(startTimeStr);
+	const eventDate = startTime
+		? cameroonDate(sYear, sMonth - 1, sDay, startTime.hours, startTime.minutes)
+		: new Date(start);
 
 	return {
 		dateDay,
@@ -150,19 +199,17 @@ export function getEventTargetDate(event: {
 	dateMonth?: string | null;
 	dateYear?: string | null;
 }): Date {
+	const startTime = parseStartTime(event.startTime, event.time);
+
 	if (event.startDate) {
 		const d = new Date(event.startDate);
 		if (!isNaN(d.getTime())) {
-			if (event.startTime) {
-				const [h, m] = event.startTime.split(':').map(Number);
-				d.setHours(h || 0, m || 0, 0, 0);
-			} else if (event.time && event.time.includes('h')) {
-				const match = event.time.match(/(\d{1,2})h(\d{2})?/);
-				if (match) {
-					d.setHours(Number(match[1]), Number(match[2] || 0), 0, 0);
-				}
-			}
-			return d;
+			// startDate est stocké à minuit (heure du Cameroun) : on relit le jour camerounais
+			// puis on applique l'heure de début, sans passer par le fuseau du serveur.
+			const { year, monthIndex, day } = toCameroonParts(d);
+			return startTime
+				? cameroonDate(year, monthIndex, day, startTime.hours, startTime.minutes)
+				: cameroonDate(year, monthIndex, day);
 		}
 	}
 
@@ -172,9 +219,9 @@ export function getEventTargetDate(event: {
 	}
 
 	// Parsing depuis dateDay et dateMonthYear / dateMonth / dateYear
-	const now = new Date();
-	let year = now.getFullYear();
-	let month = now.getMonth();
+	const today = toCameroonParts(new Date());
+	let year = today.year;
+	let month = today.monthIndex;
 	let day = 15;
 
 	if (event.dateYear) {
@@ -200,10 +247,5 @@ export function getEventTargetDate(event: {
 		}
 	}
 
-	const target = new Date(year, month, day, 18, 0, 0);
-	if (event.startTime) {
-		const [h, m] = event.startTime.split(':').map(Number);
-		target.setHours(h || 0, m || 0, 0, 0);
-	}
-	return target;
+	return cameroonDate(year, month, day, startTime?.hours ?? 18, startTime?.minutes ?? 0);
 }
