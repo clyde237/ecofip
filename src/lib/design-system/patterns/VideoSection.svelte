@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import Container from '../components/Container.svelte';
 	import LinkifiedText from '../components/LinkifiedText.svelte';
 	import {
@@ -68,54 +68,77 @@
 	// États du lecteur vidéo
 	let activeChapterIndex = $state(0);
 	let isPlaying = $state(false);
-	let isMuted = $state(false);
+	// Démarre en muet : les navigateurs n'autorisent la lecture automatique que sans le son
+	let isMuted = $state(true);
 	let videoEl: HTMLVideoElement | null = $state(null);
+	let playerEl: HTMLElement | null = $state(null);
 	let progress = $state(0);
 	let currentTimeFormatted = $state('00:00');
 
+	// Lecture automatique quand le lecteur est visible, sauf si le visiteur a mis en pause lui-même
+	let isPlayerInView = false;
+	let userPaused = false;
+
 	let activeChapter = $derived(chapters[activeChapterIndex] || defaultChapters[0]);
 
-	function selectChapter(index: number) {
+	function playVideo() {
+		if (!videoEl) return;
+		videoEl
+			.play()
+			.then(() => (isPlaying = true))
+			.catch((err: unknown) => {
+				// Lecture avec le son refusée par le navigateur : nouvelle tentative en muet.
+				// Les autres échecs (pause ou changement de source pendant le chargement) sont ignorés.
+				const blocked = err instanceof DOMException && err.name === 'NotAllowedError';
+				if (blocked && videoEl && !videoEl.muted) {
+					isMuted = true;
+					videoEl.muted = true;
+					videoEl
+						.play()
+						.then(() => (isPlaying = true))
+						.catch(() => (isPlaying = false));
+				} else if (videoEl?.paused) {
+					isPlaying = false;
+				}
+			});
+	}
+
+	function autoplay() {
+		if (!videoEl || userPaused || !isPlayerInView || !videoEl.paused) return;
+		playVideo();
+	}
+
+	async function selectChapter(index: number) {
 		activeChapterIndex = index;
-		isPlaying = false;
 		progress = 0;
 		currentTimeFormatted = '00:00';
-		if (videoEl) {
-			videoEl.pause();
-			videoEl.currentTime = 0;
-		}
+		userPaused = false;
+		// Attendre que la nouvelle source soit appliquée avant de lancer la lecture
+		await tick();
+		playVideo();
 	}
 
 	function togglePlay() {
-		if (!videoEl) {
-			isPlaying = !isPlaying;
-			return;
-		}
+		if (!videoEl) return;
 		if (videoEl.paused) {
-			videoEl
-				.play()
-				.then(() => (isPlaying = true))
-				.catch(() => (isPlaying = true));
+			userPaused = false;
+			playVideo();
 		} else {
+			userPaused = true;
 			videoEl.pause();
 			isPlaying = false;
 		}
 	}
 
 	function toggleMute() {
-		if (videoEl) {
-			videoEl.muted = !videoEl.muted;
-			isMuted = videoEl.muted;
-		} else {
-			isMuted = !isMuted;
-		}
+		isMuted = !isMuted;
 	}
 
 	function restartVideo() {
 		if (videoEl) {
 			videoEl.currentTime = 0;
-			videoEl.play();
-			isPlaying = true;
+			userPaused = false;
+			playVideo();
 		}
 	}
 
@@ -139,18 +162,38 @@
 	function handleVideoEnded() {
 		isPlaying = false;
 		progress = 100;
+		// Ne pas relancer automatiquement une vidéo terminée quand le lecteur revient à l'écran
+		userPaused = true;
 	}
 
 	onMount(() => {
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		if (prefersReducedMotion) {
+			// Pas de lecture automatique ni d'animation : le visiteur lance la vidéo lui-même
 			isVisible = true;
 			return;
 		}
 
+		// Lecture automatique quand au moins la moitié du lecteur est à l'écran, pause quand il en sort
+		const playerObserver = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					isPlayerInView = entry.isIntersecting;
+					if (isPlayerInView) {
+						autoplay();
+					} else if (videoEl && !videoEl.paused) {
+						videoEl.pause();
+						isPlaying = false;
+					}
+				}
+			},
+			{ threshold: 0.5 }
+		);
+		if (playerEl) playerObserver.observe(playerEl);
+
 		if (!sectionEl) {
 			isVisible = true;
-			return;
+			return () => playerObserver.disconnect();
 		}
 
 		const observer = new IntersectionObserver(
@@ -170,6 +213,7 @@
 
 		return () => {
 			observer.disconnect();
+			playerObserver.disconnect();
 		};
 	});
 </script>
@@ -232,13 +276,14 @@
 			style="transition-delay: 150ms;"
 		>
 			<!-- Ratio Cinéma 16:9 panoramique -->
-			<div class="relative aspect-video w-full">
+			<div bind:this={playerEl} class="relative aspect-video w-full">
 				<!-- Lecteur HTML5 Vidéo (actif en lecture) -->
 				<video
 					bind:this={videoEl}
 					src={activeChapter.videoUrl ||
 						'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'}
 					poster={activeChapter.thumbnail || mainVideoCover}
+					bind:muted={isMuted}
 					ontimeupdate={handleTimeUpdate}
 					onended={handleVideoEnded}
 					playsinline
@@ -271,7 +316,7 @@
 								class="flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 py-1.5 text-xs font-bold tracking-wider text-white backdrop-blur-md"
 							>
 								<span class="h-2 w-2 animate-pulse rounded-full bg-brand-primary"></span>
-								<span>RÉTROSPECTIVE OFFICIELLE</span>
+								<span>{activeChapter.isFeatured ? 'À LA UNE' : 'RÉTROSPECTIVE OFFICIELLE'}</span>
 							</div>
 
 							<div
@@ -338,6 +383,18 @@
 							</div>
 						</div>
 					</div>
+				{/if}
+
+				<!-- Invitation à activer le son pendant la lecture automatique muette -->
+				{#if isPlaying && isMuted}
+					<button
+						type="button"
+						onclick={toggleMute}
+						class="absolute top-4 right-4 z-20 inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 py-1.5 font-body text-xs font-bold text-white backdrop-blur-md transition-colors hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:top-6 sm:right-6"
+					>
+						<VolumeX size={15} />
+						<span>Activer le son</span>
+					</button>
 				{/if}
 
 				<!-- Barre de Contrôles Personnalisés (visible pendant la lecture) -->

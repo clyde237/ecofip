@@ -18,7 +18,8 @@ export const load: PageServerLoad = async () => {
 				.select()
 				.from(videos)
 				.where(eq(videos.isPublished, true))
-				.orderBy(asc(videos.displayOrder), desc(videos.createdAt));
+				// La vidéo à la une passe en tête : c'est elle que le lecteur charge et lance
+				.orderBy(desc(videos.isFeatured), asc(videos.displayOrder), desc(videos.createdAt));
 
 			if (videoItems.length > 0) {
 				publishedVideos = videoItems.map((v) => ({
@@ -28,7 +29,8 @@ export const load: PageServerLoad = async () => {
 					location: v.location,
 					thumbnail: formatMediaUrl(v.thumbnailUrl) || '/video-highlights-cover.jpg',
 					videoUrl: formatMediaUrl(v.videoUrl),
-					description: v.description ?? ''
+					description: v.description ?? '',
+					isFeatured: v.isFeatured
 				}));
 			}
 

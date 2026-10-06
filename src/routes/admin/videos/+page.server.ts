@@ -17,6 +17,7 @@ const fallbackVideos = [
 		description:
 			'Revivez la ferveur, les prières et les proclamations de foi lors de la grande croisade nationale.',
 		isPublished: true,
+		isFeatured: false,
 		displayOrder: 1,
 		createdAt: new Date('2026-08-20')
 	},
@@ -32,6 +33,7 @@ const fallbackVideos = [
 		description:
 			'Distribution de vivres, kits scolaires et soutien pastoral aux familles et orphelins dans les villages.',
 		isPublished: true,
+		isFeatured: false,
 		displayOrder: 2,
 		createdAt: new Date('2026-08-15')
 	},
@@ -47,6 +49,7 @@ const fallbackVideos = [
 		description:
 			'Immersion spirituelle, louange vibrante et formation biblique de la prochaine génération d’ouvriers.',
 		isPublished: true,
+		isFeatured: false,
 		displayOrder: 3,
 		createdAt: new Date('2026-08-10')
 	}
@@ -58,7 +61,7 @@ export const load: PageServerLoad = async () => {
 			const items = await db
 				.select()
 				.from(videos)
-				.orderBy(asc(videos.displayOrder), desc(videos.createdAt));
+				.orderBy(desc(videos.isFeatured), asc(videos.displayOrder), desc(videos.createdAt));
 
 			if (items.length > 0) {
 				return {
@@ -95,6 +98,7 @@ export const actions: Actions = {
 		const videoUrl = String(formData.get('videoUrl') ?? '').trim();
 		const thumbnailUrl = String(formData.get('thumbnailUrl') ?? '').trim();
 		const isPublished = formData.get('isPublished') === 'on';
+		const isFeatured = formData.get('isFeatured') === 'on';
 
 		if (!title) {
 			return fail(400, { error: 'Le titre de la vidéo est obligatoire.' });
@@ -117,6 +121,11 @@ export const actions: Actions = {
 
 		if (isDbConfigured && db) {
 			try {
+				if (isFeatured) {
+					// Une seule vidéo à la une à la fois
+					await db.update(videos).set({ isFeatured: false }).where(eq(videos.isFeatured, true));
+				}
+
 				await db.insert(videos).values({
 					title,
 					slug,
@@ -126,6 +135,7 @@ export const actions: Actions = {
 					videoUrl,
 					thumbnailUrl: finalThumbnail,
 					isPublished,
+					isFeatured,
 					displayOrder: 0
 				});
 				return { success: true, message: 'Vidéo ajoutée avec succès !' };
@@ -166,6 +176,54 @@ export const actions: Actions = {
 		}
 
 		return { success: true };
+	},
+
+	toggleFeatured: async ({ request }) => {
+		const formData = await request.formData();
+		const id = Number(formData.get('id'));
+		if (!Number.isInteger(id) || id <= 0) {
+			return fail(400, { error: 'Identifiant invalide.' });
+		}
+
+		const rawTarget = formData.get('target');
+
+		if (isDbConfigured && db) {
+			try {
+				const [existing] = await db
+					.select({ id: videos.id, title: videos.title, isFeatured: videos.isFeatured })
+					.from(videos)
+					.where(eq(videos.id, id))
+					.limit(1);
+
+				if (!existing) {
+					return fail(404, { error: 'Vidéo introuvable.' });
+				}
+
+				const nextFeatured =
+					rawTarget === 'true' ? true : rawTarget === 'false' ? false : !existing.isFeatured;
+
+				if (nextFeatured) {
+					// Une seule vidéo à la une à la fois
+					await db.update(videos).set({ isFeatured: false }).where(eq(videos.isFeatured, true));
+				}
+
+				await db
+					.update(videos)
+					.set({ isFeatured: nextFeatured, updatedAt: new Date() })
+					.where(eq(videos.id, id));
+
+				const message = nextFeatured
+					? `« ${existing.title} » est maintenant la vidéo à la une de la homepage.`
+					: `« ${existing.title} » a été retirée de la une.`;
+
+				return { success: true, message, isFeatured: nextFeatured };
+			} catch (err: unknown) {
+				console.error('Erreur mise en avant vidéo:', err);
+				return fail(500, { error: 'Erreur lors de la mise à jour de la mise en avant.' });
+			}
+		}
+
+		return { success: true, message: 'Mise en avant mise à jour (mode démonstration local).' };
 	},
 
 	delete: async ({ request }) => {

@@ -16,6 +16,7 @@
 		Image as ImageIcon,
 		Cloud,
 		ExternalLink,
+		Sparkles,
 		X
 	} from '@lucide/svelte';
 	import type { PageData, ActionData } from './$types.js';
@@ -42,6 +43,7 @@
 	let videoUrl = $state('');
 	let thumbnailUrl = $state('');
 	let isPublished = $state(true);
+	let isFeatured = $state(false);
 
 	// États d'upload Cloudflare R2
 	let videoFileInput: HTMLInputElement | null = $state(null);
@@ -422,6 +424,7 @@
 						description = '';
 						videoUrl = '';
 						thumbnailUrl = '';
+						isFeatured = false;
 						selectedVideoFile = null;
 						if (videoFileInput) videoFileInput.value = '';
 						if (localVideoPreviewUrl) {
@@ -646,6 +649,41 @@
 				</label>
 			</div>
 
+			<!-- WIDGET SWITCH : VIDÉO À LA UNE -->
+			<div
+				class="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 transition-colors"
+			>
+				<div class="flex items-center gap-3">
+					<div
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700"
+					>
+						<Sparkles size={16} />
+					</div>
+					<div>
+						<label for="isFeatured" class="block text-xs font-bold text-amber-950">
+							Mettre en avant sur la Homepage
+						</label>
+						<span class="block text-[11px] text-amber-800">
+							Vidéo chargée en premier dans le lecteur et lancée automatiquement (une seule à la
+							une)
+						</span>
+					</div>
+				</div>
+
+				<label class="relative inline-flex cursor-pointer items-center select-none">
+					<input
+						type="checkbox"
+						id="isFeatured"
+						name="isFeatured"
+						bind:checked={isFeatured}
+						class="peer sr-only"
+					/>
+					<div
+						class="h-6 w-11 rounded-full bg-gray-200 transition-colors peer-checked:bg-amber-500 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500 peer-focus-visible:ring-offset-2 after:absolute after:top-0.5 after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-xs after:transition-all after:content-[''] peer-checked:after:translate-x-full"
+					></div>
+				</label>
+			</div>
+
 			<!-- Bouton de soumission -->
 			<div class="pt-2">
 				<Button
@@ -738,6 +776,18 @@
 									<span>{video.duration}</span>
 								</div>
 
+								{#if video.isFeatured}
+									<!-- Badge À la une en haut à gauche -->
+									<div class="absolute top-3 left-3">
+										<span
+											class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 font-body text-[11px] font-bold text-amber-950 shadow-xs"
+										>
+											<Sparkles size={11} class="fill-amber-950" />
+											À la une
+										</span>
+									</div>
+								{/if}
+
 								<!-- Badge Statut en haut à droite -->
 								<div class="absolute top-3 right-3">
 									{#if video.isPublished}
@@ -782,7 +832,7 @@
 
 						<!-- Actions de gestion -->
 						<div
-							class="flex items-center justify-between border-t border-gray-100 bg-[#f8fafc] px-5 py-3"
+							class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 bg-[#f8fafc] px-5 py-3"
 						>
 							<!-- Basculer publication -->
 							<form method="POST" action="?/togglePublish" use:enhance>
@@ -798,6 +848,41 @@
 										<Eye size={14} />
 										<span>Publier</span>
 									{/if}
+								</button>
+							</form>
+
+							<!-- Basculer mise à la une -->
+							<form
+								method="POST"
+								action="?/toggleFeatured"
+								use:enhance={() => {
+									return async ({ result, update }) => {
+										if (result.type === 'success') {
+											toast.success(
+												(result.data as { message?: string })?.message ||
+													'Mise en avant mise à jour.'
+											);
+										} else if (result.type === 'failure') {
+											toast.error(
+												(result.data as { error?: string })?.error ||
+													'Erreur lors de la mise à jour.'
+											);
+										}
+										await update({ reset: false });
+									};
+								}}
+							>
+								<input type="hidden" name="id" value={video.id} />
+								<input type="hidden" name="target" value={video.isFeatured ? 'false' : 'true'} />
+								<button
+									type="submit"
+									aria-pressed={Boolean(video.isFeatured)}
+									class="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-semibold transition-colors {video.isFeatured
+										? 'text-amber-700 hover:text-amber-800'
+										: 'text-text-secondary hover:text-amber-700'}"
+								>
+									<Sparkles size={14} class={video.isFeatured ? 'fill-amber-400' : ''} />
+									<span>{video.isFeatured ? 'Retirer de la une' : 'Mettre à la une'}</span>
 								</button>
 							</form>
 

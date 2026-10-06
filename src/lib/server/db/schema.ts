@@ -81,6 +81,8 @@ export const videos = pgTable('videos', {
 	videoUrl: text('video_url').notNull(),
 	description: text('description'),
 	isPublished: boolean('is_published').default(true).notNull(),
+	// Vidéo à la une : affichée en premier dans le lecteur de la homepage (une seule à la fois)
+	isFeatured: boolean('is_featured').default(false).notNull(),
 	displayOrder: integer('display_order').default(0).notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
