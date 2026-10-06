@@ -41,7 +41,9 @@ export const actions: Actions = {
 
 		createAdminSession(cookies, user);
 
-		const redirectTo = url.searchParams.get('redirectTo') || '/admin';
+		// N'accepter qu'un chemin interne à l'admin (évite une redirection ouverte vers un autre site)
+		const requestedRedirect = url.searchParams.get('redirectTo') ?? '';
+		const redirectTo = /^\/admin(\/|\?|$)/.test(requestedRedirect) ? requestedRedirect : '/admin';
 		throw redirect(303, redirectTo);
 	}
 };

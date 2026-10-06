@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Lock, User, ArrowLeft, ShieldAlert } from '@lucide/svelte';
+	import { page } from '$app/state';
+	import { Lock, User, ArrowLeft, ShieldAlert, Clock } from '@lucide/svelte';
 	import type { ActionData } from './$types.js';
 
 	let { form }: { form: ActionData } = $props();
@@ -8,6 +9,8 @@
 	let username = $state('');
 	let password = $state('');
 	let isSubmitting = $state(false);
+
+	const isSessionExpired = $derived(page.url.searchParams.get('reason') === 'expired');
 
 	$effect(() => {
 		if (form?.username) {
@@ -54,6 +57,17 @@
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 		<div class="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-xl">
+			<!-- Session terminée par la déconnexion automatique -->
+			{#if isSessionExpired && !form?.error}
+				<div
+					class="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900"
+					role="status"
+				>
+					<Clock size={18} class="shrink-0 text-amber-600" />
+					<span>Votre session a expiré par sécurité. Veuillez vous reconnecter.</span>
+				</div>
+			{/if}
+
 			<!-- Message d'erreur éventuel -->
 			{#if form?.error}
 				<div

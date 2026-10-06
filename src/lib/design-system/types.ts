@@ -556,6 +556,7 @@ export interface VideoChapter {
 	thumbnail: string;
 	videoUrl?: string;
 	description?: string;
+	isFeatured?: boolean;
 }
 
 export interface VideoSectionProps {
