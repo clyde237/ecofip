@@ -84,6 +84,15 @@
 	<!-- SECTION 04 — CHIFFRES CLÉS / NOTRE IMPACT (10 Régions, 50K+ Vies touchées, 3 ans Projet national) -->
 	<StatsBar />
 
+	<!-- Événement Mis en Avant (si configuré), juste sous la barre des chiffres clés -->
+	{#if data.featuredEvent}
+		<EventsSpotlight
+			event={data.featuredEvent}
+			eyebrow="PROCHAIN GRAND RENDEZ-VOUS À LA UNE"
+			onRegister={handleOpenRegisterModal}
+		/>
+	{/if}
+
 	<!-- SECTION 05 — 10 RÉGIONS, 1 MESSAGE (Adamaoua, Centre, Est, Extrême-Nord, Littoral, Nord, Nord-Ouest, Ouest, Sud, Sud-Ouest) -->
 	<TenRegionsSection />
 
@@ -98,15 +107,6 @@
 
 	<!-- SECTION 09 — NOS PROJETS & MISSIONS (Croisades, Actions humanitaires, Séminaires) -->
 	<EventsSection events={data.events && data.events.length > 0 ? data.events : undefined} />
-
-	<!-- Événement Mis en Avant (si configuré) -->
-	{#if data.featuredEvent}
-		<EventsSpotlight
-			event={data.featuredEvent}
-			eyebrow="PROCHAIN GRAND RENDEZ-VOUS À LA UNE"
-			onRegister={handleOpenRegisterModal}
-		/>
-	{/if}
 
 	<!-- SECTION 11 — GALERIE PHOTOS & VIDÉOS (Revivez les moments forts de nos missions) -->
 	<VideoSection chapters={data.videos && data.videos.length > 0 ? data.videos : undefined} />
