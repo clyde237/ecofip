@@ -48,6 +48,8 @@ export const events = pgTable('events', {
 	imageUrl: text('image_url'),
 	isPublished: boolean('is_published').default(false).notNull(),
 	isFeatured: boolean('is_featured').default(false).notNull(),
+	// false = événement en accès libre : le bouton « Participer / S'inscrire » est masqué
+	registrationEnabled: boolean('registration_enabled').default(true).notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });

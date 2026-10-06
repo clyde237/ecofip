@@ -23,6 +23,7 @@ const fallbackEvents: EventRecord[] = [
 		imageUrl: '/event-croisade.jpg',
 		isPublished: true,
 		isFeatured: true,
+		registrationEnabled: true,
 		isSingleDay: true,
 		isAllDay: false,
 		startDate: new Date('2026-10-15T18:00:00'),
@@ -49,6 +50,7 @@ const fallbackEvents: EventRecord[] = [
 		imageUrl: '/event-seminaire.jpg',
 		isPublished: true,
 		isFeatured: false,
+		registrationEnabled: true,
 		isSingleDay: true,
 		isAllDay: false,
 		startDate: new Date('2026-10-22T09:00:00'),
@@ -75,6 +77,7 @@ const fallbackEvents: EventRecord[] = [
 		imageUrl: '/event-camp.jpg',
 		isPublished: false,
 		isFeatured: false,
+		registrationEnabled: true,
 		isSingleDay: false,
 		isAllDay: false,
 		startDate: new Date('2026-11-05T08:00:00'),
@@ -123,6 +126,7 @@ type ParsedEventForm =
 				imageUrl: string;
 				isPublished: boolean;
 				isFeatured: boolean;
+				registrationEnabled: boolean;
 				isSingleDay: boolean;
 				isAllDay: boolean;
 				startTime: string | null;
@@ -149,6 +153,8 @@ function parseEventForm(formData: FormData): ParsedEventForm {
 	const imageDataUrl = String(formData.get('imageDataUrl') ?? '').trim();
 	const isPublished = formData.get('isPublished') === 'on';
 	const isFeatured = formData.get('isFeatured') === 'on' || formData.get('isFeatured') === 'true';
+	const registrationEnabled =
+		formData.get('registrationEnabled') === 'on' || formData.get('registrationEnabled') === 'true';
 
 	const isSingleDay =
 		formData.get('isSingleDay') === 'on' || formData.get('isSingleDay') === 'true';
@@ -194,6 +200,7 @@ function parseEventForm(formData: FormData): ParsedEventForm {
 			imageUrl: imageDataUrl || getFallbackImage(category),
 			isPublished,
 			isFeatured,
+			registrationEnabled,
 			isSingleDay,
 			isAllDay,
 			startTime: startTime || null,

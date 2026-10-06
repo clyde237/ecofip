@@ -236,18 +236,28 @@
 
 					<!-- BOUTONS D'ACTION COMPACTS -->
 					<div class="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-5">
-						<button
-							type="button"
-							onclick={() => onRegister?.(event)}
-							class="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-4 py-2 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-sm sm:px-5 sm:py-2.5 sm:text-sm"
-						>
-							<HeartHandshake size={15} />
-							<span>Participer / S'inscrire</span>
-							<ArrowRight
-								size={14}
-								class="transition-transform duration-200 group-hover:translate-x-0.5"
-							/>
-						</button>
+						{#if event.registrationEnabled !== false}
+							<button
+								type="button"
+								onclick={() => onRegister?.(event)}
+								class="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-4 py-2 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-sm sm:px-5 sm:py-2.5 sm:text-sm"
+							>
+								<HeartHandshake size={15} />
+								<span>Participer / S'inscrire</span>
+								<ArrowRight
+									size={14}
+									class="transition-transform duration-200 group-hover:translate-x-0.5"
+								/>
+							</button>
+						{:else}
+							<!-- Accès libre : pas d'inscription, simple information non cliquable -->
+							<span
+								class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 font-body text-xs font-bold text-emerald-800 sm:px-5 sm:py-2.5 sm:text-sm"
+							>
+								<ShieldCheck size={15} class="text-emerald-600" />
+								<span>Entrée libre · Sans inscription</span>
+							</span>
+						{/if}
 
 						{#if event.slug || event.id}
 							<a

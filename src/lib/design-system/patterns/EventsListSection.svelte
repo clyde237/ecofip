@@ -10,6 +10,7 @@
 		ArrowRight,
 		Filter,
 		CheckCircle2,
+		ShieldCheck,
 		X
 	} from '@lucide/svelte';
 	import type { DetailedEventItem, EventsListProps } from '../types.js';
@@ -489,14 +490,23 @@
 									>
 										<span>Détails</span>
 									</a>
-									<button
-										type="button"
-										onclick={() => onRegister?.(item)}
-										class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-md"
-									>
-										<span>S'inscrire</span>
-										<ArrowRight size={13} />
-									</button>
+									{#if item.registrationEnabled !== false}
+										<button
+											type="button"
+											onclick={() => onRegister?.(item)}
+											class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 font-body text-xs font-bold text-white shadow-xs transition-all hover:bg-brand-primary-hover hover:shadow-md"
+										>
+											<span>S'inscrire</span>
+											<ArrowRight size={13} />
+										</button>
+									{:else}
+										<span
+											class="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 py-2.5 font-body text-xs font-bold text-emerald-800"
+										>
+											<ShieldCheck size={13} class="text-emerald-600" />
+											<span>Entrée libre</span>
+										</span>
+									{/if}
 								</div>
 							{:else}
 								<div
