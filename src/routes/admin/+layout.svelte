@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { ExternalLink, Menu, ShieldCheck, AlertTriangle } from '@lucide/svelte';
 	import { AdminSidebar } from '$lib';
+	import AdminSessionGuard from '$lib/design-system/components/AdminSessionGuard.svelte';
 	import type { LayoutData } from './$types.js';
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
@@ -18,6 +19,14 @@
 {#if isLoginPage}
 	{@render children()}
 {:else}
+	<!-- Déconnexion automatique après inactivité (avertissement avant expiration) -->
+	{#if data.session}
+		<AdminSessionGuard
+			expiresInMs={data.session.expiresInMs}
+			idleTimeoutMs={data.session.idleTimeoutMs}
+		/>
+	{/if}
+
 	<div class="min-h-screen bg-[#f8fafc] font-body text-text-primary">
 		<!-- Sidebar Fixe Réutilisable (Desktop Fixe non-scrollable + Tiroir Mobile) -->
 		<AdminSidebar
