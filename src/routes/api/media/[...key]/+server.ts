@@ -41,6 +41,9 @@ export const GET: RequestHandler = async ({ params, request }) => {
 			else if (key.endsWith('.jpg') || key.endsWith('.jpeg'))
 				headers.set('Content-Type', 'image/jpeg');
 			else if (key.endsWith('.png')) headers.set('Content-Type', 'image/png');
+			else if (key.endsWith('.webp')) headers.set('Content-Type', 'image/webp');
+			else if (key.endsWith('.avif')) headers.set('Content-Type', 'image/avif');
+			else if (key.endsWith('.gif')) headers.set('Content-Type', 'image/gif');
 			else headers.set('Content-Type', 'application/octet-stream');
 		}
 

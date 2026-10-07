@@ -9,6 +9,9 @@
 		AboutTeam,
 		AboutCtaSection
 	} from '$lib';
+	import type { PageData } from './$types.js';
+
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -50,8 +53,12 @@
 	<!-- Bannière Citation Biblique Rouge (1 Corinthiens 4:2) -->
 	<AboutQuoteBanner />
 
-	<!-- Section Notre Équipe (Fond Rouge & Cartes Glassmorphism) -->
-	<AboutTeam />
+	<!-- Section Notre Équipe (gérée depuis l'admin ; masquée si aucun membre n'est publié) -->
+	{#if data.teamMembers === null}
+		<AboutTeam />
+	{:else if data.teamMembers.length > 0}
+		<AboutTeam members={data.teamMembers} />
+	{/if}
 
 	<!-- Section Finale CTA (Vous souhaitez avancer avec nous ?) -->
 	<AboutCtaSection />

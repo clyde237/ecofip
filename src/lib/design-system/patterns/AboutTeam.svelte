@@ -1,33 +1,37 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
+	import TeamPhoto from '../components/TeamPhoto.svelte';
 	import type { AboutTeamProps, AboutTeamMember } from '../types.js';
 
 	const defaultMembers: AboutTeamMember[] = [
 		{
 			id: 'valery-tchamekwen',
 			tag: 'FONDATEUR',
-			role: 'Pasteur Valéry TCHAMEKWEN',
+			name: 'Pasteur Valéry TCHAMEKWEN',
+			role: 'Fondateur & Coordinateur National',
 			description:
-				'Fondateur & Coordinateur National — Vision, prédication et conduite du projet « Cameroun pour Jésus ».',
+				'Vision, prédication et conduite du projet national « Cameroun pour Jésus » à travers les 10 régions.',
 			image: '/team-member-direction.png',
 			imageAlt: 'Pasteur Valéry TCHAMEKWEN — Fondateur & Coordinateur National'
 		},
 		{
 			id: 'archange-fokam',
 			tag: 'MISSIONS',
-			role: 'Missionnaire Archange FOKAM',
+			name: 'Missionnaire Archange FOKAM',
+			role: 'Directeur des Missions',
 			description:
-				'Directeur des Missions — Organisation tactique, déploiement des équipes régionales et logistique terrain.',
+				'Organisation tactique, déploiement des équipes régionales et logistique sur le terrain.',
 			image: '/team-member-missions.png',
 			imageAlt: 'Missionnaire Archange FOKAM — Directeur des Missions'
 		},
 		{
 			id: 'germaine-amonde',
 			tag: 'INTERCESSION',
-			role: 'Germaine AMONDE',
+			name: 'Germaine AMONDE',
+			role: 'Responsable Intercession',
 			description:
-				'Responsable Intercession — Couverture spirituelle, coordination des réseaux de prière et veillées missionnaires.',
+				'Couverture spirituelle, coordination des réseaux de prière et veillées missionnaires.',
 			image: '/team-member-formation.png',
 			imageAlt: 'Germaine AMONDE — Responsable Intercession'
 		}
@@ -141,15 +145,14 @@
 						: 'translate-y-8 opacity-0'}"
 					style="transition-delay: {index * 150 + 100}ms;"
 				>
-					<!-- Conteneur d'image arrondie avec effet zoom au survol -->
+					<!-- Cadre portrait : la photo reste visible en entier, quel que soit son format -->
 					<div
-						class="relative aspect-[16/11] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/25 sm:aspect-[16/10]"
+						class="relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/25"
 					>
-						<img
+						<TeamPhoto
 							src={member.image}
-							alt={member.imageAlt || member.role}
-							class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-							loading="lazy"
+							alt={member.imageAlt || member.name || member.role}
+							class="h-full w-full"
 						/>
 						<!-- Voile dégradé doux pour faire le pont avec le fond translucide -->
 						<div
@@ -167,17 +170,26 @@
 							{member.tag}
 						</span>
 
-						<!-- Rôle principal -->
+						<!-- Nom du membre (à défaut, l'ancien format où le rôle portait le nom) -->
 						<h3
 							class="mt-2.5 font-display text-xl leading-snug font-bold tracking-tight text-white sm:text-[22px]"
 						>
-							{member.role}
+							{member.name || member.role}
 						</h3>
 
+						<!-- Fonction -->
+						{#if member.name && member.role}
+							<p class="mt-1 font-body text-sm font-semibold text-amber-200">
+								{member.role}
+							</p>
+						{/if}
+
 						<!-- Description / Responsabilités -->
-						<p class="mt-2 font-body text-xs leading-relaxed text-white/80 sm:text-sm">
-							{member.description}
-						</p>
+						{#if member.description}
+							<p class="mt-2 font-body text-xs leading-relaxed text-white/80 sm:text-sm">
+								{member.description}
+							</p>
+						{/if}
 					</div>
 				</div>
 			{/each}

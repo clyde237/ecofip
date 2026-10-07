@@ -1,4 +1,13 @@
-import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	date,
+	integer,
+	pgTable,
+	serial,
+	text,
+	timestamp,
+	varchar
+} from 'drizzle-orm/pg-core';
 
 // 1. Table des Administrateurs
 export const admins = pgTable('admins', {
@@ -88,6 +97,48 @@ export const videos = pgTable('videos', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// 6. Table de l'Équipe dirigeante (page À propos)
+export const teamMembers = pgTable('team_members', {
+	id: serial('id').primaryKey(),
+	name: varchar('name', { length: 150 }).notNull(),
+	// Fonction affichée sous le nom (ex: « Fondateur & Coordinateur National »)
+	role: varchar('role', { length: 150 }).notNull(),
+	// Étiquette courte du badge (ex: « FONDATEUR », « MISSIONS »)
+	tag: varchar('tag', { length: 50 }),
+	description: text('description'),
+	photoUrl: text('photo_url'),
+	// Clé de l'objet dans Cloudflare R2, pour supprimer la photo avec le membre
+	photoKey: text('photo_key'),
+	isPublished: boolean('is_published').default(true).notNull(),
+	displayOrder: integer('display_order').default(0).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// 7. Table de la Galerie (photos & vidéos de la page /galerie, fichiers sur Cloudflare R2)
+export const galleryItems = pgTable('gallery_items', {
+	id: serial('id').primaryKey(),
+	// « photo » ou « video »
+	type: varchar('type', { length: 10 }).default('photo').notNull(),
+	title: varchar('title', { length: 200 }).notNull(),
+	description: text('description'),
+	// Catégorie affichée et utilisée comme filtre (ex: « Croisades », « Actions sociales »)
+	category: varchar('category', { length: 100 }).notNull(),
+	location: varchar('location', { length: 150 }),
+	// Date de la prise de vue / de l'événement (facultative)
+	takenAt: date('taken_at'),
+	// Photo, ou affiche de la vidéo
+	imageUrl: text('image_url').notNull(),
+	imageKey: text('image_key'),
+	videoUrl: text('video_url'),
+	videoKey: text('video_key'),
+	duration: varchar('duration', { length: 20 }),
+	isPublished: boolean('is_published').default(true).notNull(),
+	displayOrder: integer('display_order').default(0).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Export des types inférés Drizzle
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
@@ -103,3 +154,9 @@ export type NewArticleRecord = typeof articles.$inferInsert;
 
 export type VideoRecord = typeof videos.$inferSelect;
 export type NewVideoRecord = typeof videos.$inferInsert;
+
+export type TeamMemberRecord = typeof teamMembers.$inferSelect;
+export type NewTeamMemberRecord = typeof teamMembers.$inferInsert;
+
+export type GalleryItemRecord = typeof galleryItems.$inferSelect;
+export type NewGalleryItemRecord = typeof galleryItems.$inferInsert;

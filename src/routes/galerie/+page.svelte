@@ -22,6 +22,9 @@
 		Film
 	} from '@lucide/svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
+	import type { PageData } from './$types.js';
+
+	let { data }: { data: PageData } = $props();
 
 	let isLightboxOpen = $state(false);
 	let currentMediaIndex = $state<number>(0);
@@ -38,8 +41,10 @@
 			: null
 	);
 
-	function handleOpenLightbox(media: MediaItem, index: number) {
-		currentMediaIndex = index;
+	// La visionneuse parcourt les médias affichés (filtre en cours compris)
+	function handleOpenLightbox(list: MediaItem[], index: number) {
+		currentMediaList = list;
+		currentMediaIndex = Math.max(index, 0);
 		hasCopiedLink = false;
 		isLightboxOpen = true;
 	}
@@ -102,10 +107,11 @@
 	/>
 
 	<!-- SECTIONS 03, 04, 05 — Filtres, Photos, Vidéos -->
+	<!-- Contenu géré depuis l'admin ; contenu par défaut si la base est indisponible -->
 	<GalleryGridSection
-		onSelectMedia={(media, index) => {
-			handleOpenLightbox(media, index);
-		}}
+		photos={data.gallery?.photos}
+		videos={data.gallery?.videos}
+		onSelectMedia={(_media, index, list) => handleOpenLightbox(list, index)}
 	/>
 
 	<!-- SECTION 06 — Réseaux sociaux -->
