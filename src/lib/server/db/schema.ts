@@ -1,13 +1,4 @@
-import {
-	boolean,
-	date,
-	integer,
-	pgTable,
-	serial,
-	text,
-	timestamp,
-	varchar
-} from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // 1. Table des Administrateurs
 export const admins = pgTable('admins', {
@@ -115,18 +106,36 @@ export const teamMembers = pgTable('team_members', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// 7. Table de la Galerie (photos & vidéos de la page /galerie, fichiers sur Cloudflare R2)
-export const galleryItems = pgTable('gallery_items', {
+// 7. Albums de la Galerie : chaque photo ou vidéo appartient à un album (page /galerie/[slug])
+export const galleryAlbums = pgTable('gallery_albums', {
 	id: serial('id').primaryKey(),
-	// « photo » ou « video »
-	type: varchar('type', { length: 10 }).default('photo').notNull(),
 	title: varchar('title', { length: 200 }).notNull(),
+	// Adresse publique de l'album, conservée si le titre change (liens partagés)
+	slug: varchar('slug', { length: 220 }).notNull().unique(),
 	description: text('description'),
 	// Catégorie affichée et utilisée comme filtre (ex: « Croisades », « Actions sociales »)
 	category: varchar('category', { length: 100 }).notNull(),
 	location: varchar('location', { length: 150 }),
-	// Date de la prise de vue / de l'événement (facultative)
-	takenAt: date('taken_at'),
+	// Année de l'événement photographié (facultative ; la date exacte est rarement connue)
+	year: integer('year'),
+	// Média utilisé comme couverture ; à défaut, la première photo de l'album
+	coverItemId: integer('cover_item_id'),
+	isPublished: boolean('is_published').default(true).notNull(),
+	displayOrder: integer('display_order').default(0).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// 8. Médias de la Galerie (photos & vidéos, fichiers sur Cloudflare R2)
+export const galleryItems = pgTable('gallery_items', {
+	id: serial('id').primaryKey(),
+	albumId: integer('album_id')
+		.notNull()
+		.references(() => galleryAlbums.id, { onDelete: 'cascade' }),
+	// « photo » ou « video »
+	type: varchar('type', { length: 10 }).default('photo').notNull(),
+	title: varchar('title', { length: 200 }).notNull(),
+	description: text('description'),
 	// Photo, ou affiche de la vidéo
 	imageUrl: text('image_url').notNull(),
 	imageKey: text('image_key'),
@@ -157,6 +166,9 @@ export type NewVideoRecord = typeof videos.$inferInsert;
 
 export type TeamMemberRecord = typeof teamMembers.$inferSelect;
 export type NewTeamMemberRecord = typeof teamMembers.$inferInsert;
+
+export type GalleryAlbumRecord = typeof galleryAlbums.$inferSelect;
+export type NewGalleryAlbumRecord = typeof galleryAlbums.$inferInsert;
 
 export type GalleryItemRecord = typeof galleryItems.$inferSelect;
 export type NewGalleryItemRecord = typeof galleryItems.$inferInsert;
