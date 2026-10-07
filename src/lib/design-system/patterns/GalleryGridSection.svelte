@@ -155,31 +155,54 @@
 	}: {
 		photos?: MediaItem[];
 		videos?: MediaItem[];
-		onSelectMedia?: (media: MediaItem, index: number) => void;
+		/** index et list : position du média dans la liste affichée (photos puis vidéos filtrées) */
+		onSelectMedia?: (media: MediaItem, index: number, list: MediaItem[]) => void;
 		class?: string;
 	} = $props();
 
-	let activeFilter = $state<'all' | '2023' | '2024' | 'croisades' | 'social'>('all');
+	// Filtres construits à partir du contenu : « Tout », puis chaque catégorie, puis chaque année
+	type FilterTab = { id: string; label: string; matches: (item: MediaItem) => boolean };
 
-	const filterTabs = [
-		{ id: 'all', label: 'Tout' },
-		{ id: '2023', label: '2023' },
-		{ id: '2024', label: '2024' },
-		{ id: 'croisades', label: 'Croisades' },
-		{ id: 'social', label: 'Actions sociales' }
-	] as const;
+	let filterTabs = $derived.by((): FilterTab[] => {
+		const allItems = [...photos, ...videos];
+		// Première occurrence de chaque catégorie, dans l'ordre d'affichage
+		const categories = allItems.filter(
+			(item, index) =>
+				allItems.findIndex((other) => other.categorySlug === item.categorySlug) === index
+		);
+		const years = Array.from(
+			new Set(allItems.map((item) => item.year).filter((year): year is string => Boolean(year)))
+		).sort((a, b) => b.localeCompare(a));
 
-	// Filtrage des photos
-	let filteredPhotos = $derived(
-		photos.filter((item) => {
-			if (activeFilter === 'all') return true;
-			if (activeFilter === '2023') return item.year === '2023';
-			if (activeFilter === '2024') return item.year === '2024';
-			if (activeFilter === 'croisades') return item.categorySlug === 'croisades';
-			if (activeFilter === 'social') return item.categorySlug === 'social';
-			return true;
-		})
-	);
+		return [
+			{ id: 'all', label: 'Tout', matches: () => true },
+			...categories.map(({ categorySlug, category }) => ({
+				id: `category:${categorySlug}`,
+				label: category,
+				matches: (item: MediaItem) => item.categorySlug === categorySlug
+			})),
+			...years.map((year) => ({
+				id: `year:${year}`,
+				label: year,
+				matches: (item: MediaItem) => item.year === year
+			}))
+		];
+	});
+
+	let activeFilter = $state('all');
+	let activeTab = $derived(filterTabs.find((tab) => tab.id === activeFilter) ?? filterTabs[0]);
+
+	let filteredPhotos = $derived(photos.filter((item) => activeTab.matches(item)));
+	let filteredVideos = $derived(videos.filter((item) => activeTab.matches(item)));
+	let visibleMedia = $derived([...filteredPhotos, ...filteredVideos]);
+
+	function selectMedia(media: MediaItem) {
+		onSelectMedia?.(
+			media,
+			visibleMedia.findIndex((item) => item.id === media.id),
+			visibleMedia
+		);
+	}
 
 	let sectionEl: HTMLElement | null = $state(null);
 	let isVisible = $state(false);
@@ -228,14 +251,15 @@
 		<div
 			class="flex flex-col items-center justify-center transition-all duration-700 ease-out {isVisible
 				? 'translate-y-0 opacity-100'
-				: 'translate-y-8 opacity-0'}"
+				: 'translate-y-8 opacity-0'} {filterTabs.length <= 1 ? 'hidden' : ''}"
 		>
 			<div
 				class="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-gray-200/80 bg-white p-2 shadow-xs"
 			>
-				{#each filterTabs as tab}
+				{#each filterTabs as tab (tab.id)}
 					<button
 						type="button"
+						aria-pressed={activeFilter === tab.id}
 						onclick={() => (activeFilter = tab.id)}
 						class="cursor-pointer rounded-xl px-4 py-2 font-body text-xs font-bold transition-all sm:text-sm {activeFilter ===
 						tab.id
@@ -276,15 +300,15 @@
 
 			{#if filteredPhotos.length > 0}
 				<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-					{#each filteredPhotos as item, index (item.id)}
+					{#each filteredPhotos as item (item.id)}
 						<div
 							role="button"
 							tabindex="0"
-							onclick={() => onSelectMedia?.(item, index)}
+							onclick={() => selectMedia(item)}
 							onkeydown={(e) => {
 								if (e.key === 'Enter' || e.key === ' ') {
 									e.preventDefault();
-									onSelectMedia?.(item, index);
+									selectMedia(item);
 								}
 							}}
 							class="group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/30 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-brand-primary"
@@ -347,8 +371,8 @@
 			{/if}
 		</div>
 
-		<!-- SECTION 05 — VIDÉOS -->
-		<div class="mt-16 sm:mt-20">
+		<!-- SECTION 05 — VIDÉOS (masquée tant qu'aucune vidéo n'est publiée) -->
+		<div class="mt-16 sm:mt-20 {videos.length === 0 ? 'hidden' : ''}">
 			<div class="mb-8 flex items-center justify-between border-b border-gray-200/80 pb-4">
 				<div class="flex items-center gap-3">
 					<div
@@ -369,16 +393,21 @@
 				</div>
 			</div>
 
+			{#if filteredVideos.length === 0}
+				<div class="rounded-3xl border border-gray-200 bg-white p-10 text-center">
+					<p class="font-body text-sm text-text-secondary">Aucune vidéo trouvée pour ce filtre.</p>
+				</div>
+			{/if}
 			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{#each videos as video, index (video.id)}
+				{#each filteredVideos as video (video.id)}
 					<div
 						role="button"
 						tabindex="0"
-						onclick={() => onSelectMedia?.(video, filteredPhotos.length + index)}
+						onclick={() => selectMedia(video)}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();
-								onSelectMedia?.(video, filteredPhotos.length + index);
+								selectMedia(video);
 							}
 						}}
 						class="group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/40 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-brand-primary"

@@ -43,7 +43,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			);
 		}
 
-		const allowedFolders = ['thumbnails', 'videos', 'uploads', 'team', 'events', 'articles'];
+		const allowedFolders = [
+			'thumbnails',
+			'videos',
+			'uploads',
+			'team',
+			'gallery',
+			'events',
+			'articles'
+		];
 		const targetFolder = allowedFolders.includes(folder) ? folder : 'videos';
 
 		const result = await createPresignedUploadUrl({

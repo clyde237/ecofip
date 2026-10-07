@@ -9,6 +9,7 @@
 		Database,
 		Users,
 		UsersRound,
+		Images,
 		LogOut,
 		X
 	} from '@lucide/svelte';
@@ -142,6 +143,11 @@
 				label: 'Équipe dirigeante',
 				icon: UsersRound,
 				badge: 'À propos'
+			},
+			{
+				href: '/admin/galerie',
+				label: 'Galerie photos & vidéos',
+				icon: Images
 			}
 		];
 
