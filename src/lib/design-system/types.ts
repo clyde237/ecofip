@@ -667,6 +667,21 @@ export interface MediaItem {
 	description?: string;
 }
 
+/** Album affiché sur la page Galerie (carte cliquable vers /galerie/[slug]) */
+export interface GalleryAlbumCard {
+	slug: string;
+	title: string;
+	category: string;
+	categorySlug: string;
+	location: string;
+	dateLabel: string;
+	year?: string;
+	description?: string;
+	coverUrl: string;
+	photoCount: number;
+	videoCount: number;
+}
+
 export interface GalleryHeroProps {
 	breadcrumbLabel?: string;
 	eyebrow?: string;

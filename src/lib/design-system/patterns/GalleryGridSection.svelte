@@ -151,12 +151,15 @@
 		photos = defaultPhotos,
 		videos = officialVideos,
 		onSelectMedia,
+		showFilters = true,
 		class: customClass = ''
 	}: {
 		photos?: MediaItem[];
 		videos?: MediaItem[];
 		/** index et list : position du média dans la liste affichée (photos puis vidéos filtrées) */
 		onSelectMedia?: (media: MediaItem, index: number, list: MediaItem[]) => void;
+		/** false dans un album : catégorie et date y sont communes à tous les médias */
+		showFilters?: boolean;
 		class?: string;
 	} = $props();
 
@@ -251,7 +254,7 @@
 		<div
 			class="flex flex-col items-center justify-center transition-all duration-700 ease-out {isVisible
 				? 'translate-y-0 opacity-100'
-				: 'translate-y-8 opacity-0'} {filterTabs.length <= 1 ? 'hidden' : ''}"
+				: 'translate-y-8 opacity-0'} {!showFilters || filterTabs.length <= 1 ? 'hidden' : ''}"
 		>
 			<div
 				class="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-gray-200/80 bg-white p-2 shadow-xs"
@@ -272,8 +275,8 @@
 			</div>
 		</div>
 
-		<!-- SECTION 04 — PHOTOS -->
-		<div class="mt-14">
+		<!-- SECTION 04 — PHOTOS (masquée quand il n'y a aucune photo, ex. album de vidéos) -->
+		<div class="mt-14 {photos.length === 0 ? 'hidden' : ''}">
 			<div class="mb-8 flex items-center justify-between border-b border-gray-200/80 pb-4">
 				<div class="flex items-center gap-3">
 					<div
