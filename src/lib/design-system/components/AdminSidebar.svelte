@@ -8,6 +8,7 @@
 		Film,
 		Database,
 		Users,
+		UsersRound,
 		LogOut,
 		X
 	} from '@lucide/svelte';
@@ -135,6 +136,12 @@
 				href: '/admin/articles',
 				label: 'Articles & Actualités',
 				icon: Newspaper
+			},
+			{
+				href: '/admin/equipe',
+				label: 'Équipe dirigeante',
+				icon: UsersRound,
+				badge: 'À propos'
 			}
 		];
 

@@ -88,6 +88,24 @@ export const videos = pgTable('videos', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// 6. Table de l'Équipe dirigeante (page À propos)
+export const teamMembers = pgTable('team_members', {
+	id: serial('id').primaryKey(),
+	name: varchar('name', { length: 150 }).notNull(),
+	// Fonction affichée sous le nom (ex: « Fondateur & Coordinateur National »)
+	role: varchar('role', { length: 150 }).notNull(),
+	// Étiquette courte du badge (ex: « FONDATEUR », « MISSIONS »)
+	tag: varchar('tag', { length: 50 }),
+	description: text('description'),
+	photoUrl: text('photo_url'),
+	// Clé de l'objet dans Cloudflare R2, pour supprimer la photo avec le membre
+	photoKey: text('photo_key'),
+	isPublished: boolean('is_published').default(true).notNull(),
+	displayOrder: integer('display_order').default(0).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Export des types inférés Drizzle
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
@@ -103,3 +121,6 @@ export type NewArticleRecord = typeof articles.$inferInsert;
 
 export type VideoRecord = typeof videos.$inferSelect;
 export type NewVideoRecord = typeof videos.$inferInsert;
+
+export type TeamMemberRecord = typeof teamMembers.$inferSelect;
+export type NewTeamMemberRecord = typeof teamMembers.$inferInsert;

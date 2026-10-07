@@ -59,11 +59,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const arrayBuffer = await file.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
 
+		const allowedFolders = ['thumbnails', 'videos', 'uploads', 'team', 'events', 'articles'];
+		const targetFolder = allowedFolders.includes(folder) ? folder : 'uploads';
+
 		const result = await uploadBufferToR2({
 			buffer,
 			filename: file.name,
 			contentType,
-			folder: folder === 'thumbnails' ? 'thumbnails' : 'uploads'
+			folder: targetFolder
 		});
 
 		return json({
