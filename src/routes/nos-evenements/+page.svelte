@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
 		EventsSpotlight,
@@ -81,19 +82,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Nos événements — Croisades, Séminaires & Camps | ECOFIP</title>
-	<meta
-		name="description"
-		content="Découvrez l’agenda complet des événements et rassemblements missionnaires ECOFIP : grandes croisades d’évangélisation, séminaires de discipulat, camps de jeunesse et cliniques médicales."
-	/>
-	<meta property="og:title" content="Nos événements & Rassemblements — ECOFIP" />
-	<meta
-		property="og:description"
-		content="Rejoignez les grands rendez-vous spirituels et missionnaires d'ECOFIP à travers tout le Cameroun."
-	/>
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Événements ECOFIP — Croisades et campagnes au Cameroun"
+	description="Agenda des croisades et campagnes d’évangélisation d’ECOFIP au Cameroun, dont « Bafoussam pour Jésus » du 27 au 31 octobre 2026 au Stade Omnisport Toket."
+	breadcrumbs={[{ name: 'Événements', path: '/nos-evenements' }]}
+/>
 
 <div>
 	<!-- 1. Bannière d'introduction avec fil d'ariane et badges -->

@@ -3,41 +3,43 @@
 	import Container from '../components/Container.svelte';
 	import { CircleDot, Sparkle, Clock, Heart } from '@lucide/svelte';
 	import type { StatItem, StatsBarProps } from '../types.js';
+	import { IMPACT } from '$lib/data/camerounPourJesus.js';
 
 	const defaultStats: StatItem[] = [
+		// Chiffres officiels du pressbook « Bafoussam pour Jésus » (src/lib/data/camerounPourJesus.ts)
 		{
 			id: 'regions',
-			value: 10,
+			value: IMPACT.regionsVisited,
 			prefix: '',
-			suffix: '',
-			label: 'Régions visitées',
+			suffix: ` / ${IMPACT.regionsTotal}`,
+			label: 'Régions parcourues',
 			icon: CircleDot,
 			fillIcon: false
 		},
 		{
 			id: 'impact',
-			value: 50,
+			value: IMPACT.peopleReached / 1000,
 			prefix: '',
-			suffix: 'K+',
-			label: 'Vies touchées',
+			suffix: ' 000+',
+			label: 'Personnes touchées',
 			icon: Sparkle,
 			fillIcon: true
 		},
 		{
-			id: 'mission',
-			value: 3,
+			id: 'campagnes',
+			value: IMPACT.campaigns,
 			prefix: '',
-			suffix: ' ans',
-			label: 'Projet national',
+			suffix: '',
+			label: 'Campagnes d’évangélisation',
 			icon: Clock,
 			fillIcon: false
 		},
 		{
-			id: 'croisades',
-			value: 15,
+			id: 'guerisons',
+			value: IMPACT.healings,
 			prefix: '+',
 			suffix: '',
-			label: 'Croisades organisées',
+			label: 'Guérisons miraculeuses',
 			icon: Heart,
 			fillIcon: true
 		}

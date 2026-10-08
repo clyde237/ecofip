@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
+	import { SITE_URL, absoluteUrl, shareableImageUrl } from '$lib/config/site.js';
+	import { CITY_COORDINATES } from '$lib/data/camerounPourJesus.js';
 	import {
 		Calendar,
 		Clock,
@@ -25,6 +28,12 @@
 	let { data }: { data: PageData } = $props();
 
 	let event = $derived(data.event);
+	// Ville reconnue dans le lieu ou le titre (ex. « Bafoussam pour Jésus »), pour l'adresse Google
+	let eventCity = $derived(
+		Object.keys(CITY_COORDINATES).find((city) =>
+			`${event.location} ${event.title}`.toLowerCase().includes(city.toLowerCase())
+		) ?? (event.city !== 'Cameroun' ? event.city : undefined)
+	);
 
 	interface ProgramStep {
 		indexStr: string;
@@ -161,14 +170,49 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{event.title} — Événement ECOFIP</title>
-	<meta name="description" content={event.description} />
-	<meta property="og:title" content="{event.title} — ECOFIP" />
-	<meta property="og:description" content={event.description} />
-	<meta property="og:image" content={event.image} />
-	<meta property="og:type" content="article" />
-</svelte:head>
+<Seo
+	title="{event.title} — {event.dateDay} {event.dateMonth} {event.dateYear} | ECOFIP"
+	description={event.description ||
+		`${event.title} : ${event.categoryLabel.toLowerCase()} organisée par ECOFIP, ${event.location}.`}
+	image={event.image}
+	imageAlt={event.imageAlt}
+	canonicalPath="/nos-evenements/{event.slug ?? event.id}"
+	noindex={!data.isIndexable}
+	breadcrumbs={[
+		{ name: 'Événements', path: '/nos-evenements' },
+		{ name: event.title, path: `/nos-evenements/${event.slug ?? event.id}` }
+	]}
+	jsonLd={{
+		'@type': 'Event',
+		name: event.title,
+		description: event.description || undefined,
+		startDate: data.schedule.start,
+		endDate: data.schedule.end ?? undefined,
+		eventStatus: 'https://schema.org/EventScheduled',
+		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+		image: [shareableImageUrl(event.image)],
+		location: {
+			'@type': 'Place',
+			name: event.location,
+			address: {
+				'@type': 'PostalAddress',
+				streetAddress: event.location,
+				addressLocality: eventCity,
+				addressCountry: 'CM'
+			}
+		},
+		organizer: { '@id': `${SITE_URL}/#organization` },
+		performer: event.speakers?.map((name) => ({ '@type': 'Person', name })),
+		isAccessibleForFree: true,
+		offers: {
+			'@type': 'Offer',
+			price: 0,
+			priceCurrency: 'XAF',
+			availability: 'https://schema.org/InStock',
+			url: absoluteUrl(`/nos-evenements/${event.slug ?? event.id}`)
+		}
+	}}
+/>
 
 <div class="min-h-screen bg-[#f8fafc] pb-24">
 	<!-- 1. FIL D'ARIANE & BANNIÈRE HAUTE -->

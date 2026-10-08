@@ -14,6 +14,7 @@
 
 <svelte:head>
 	<title>Panneau d'Administration — ECOFIP</title>
+	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 {#if isLoginPage}

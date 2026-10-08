@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
+	import { SITE_URL } from '$lib/config/site.js';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
 		ContactChannelsSection,
@@ -16,19 +18,16 @@
 	let isDonationModalOpen = $state(false);
 </script>
 
-<svelte:head>
-	<title>Contact — Restons en Contact | ECOFIP</title>
-	<meta
-		name="description"
-		content="Contactez ECOFIP au Cameroun : Quartier Tamja, Bafoussam. Téléphone, WhatsApp, email et équipe d'intercession disponible pour vos besoins de prière."
-	/>
-	<meta property="og:title" content="Contactez-nous — ECOFIP" />
-	<meta
-		property="og:description"
-		content="Une question ? Une suggestion ? Besoin de prière ? N'hésitez pas à nous contacter."
-	/>
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Contact ECOFIP — Bafoussam, Cameroun"
+	description="Contactez ECOFIP à Bafoussam (quartier Tamja) : téléphone, WhatsApp, email et équipe d’intercession disponible pour vos sujets de prière."
+	breadcrumbs={[{ name: 'Contact', path: '/contact' }]}
+	jsonLd={{
+		'@type': 'ContactPage',
+		name: 'Contacter ECOFIP',
+		about: { '@id': `${SITE_URL}/#organization` }
+	}}
+/>
 
 <div>
 	<!-- SECTION 02 — Introduction Contact -->

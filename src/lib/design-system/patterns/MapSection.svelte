@@ -4,106 +4,72 @@
 	import Map from '../../Map.svelte';
 	import { ArrowRight, MapPin } from '@lucide/svelte';
 	import type { CampaignLocation, MapSectionProps } from '../types.js';
+	import {
+		CITY_COORDINATES,
+		EDITIONS,
+		FINAL_CRUSADE,
+		IMPACT,
+		formatNumber,
+		type Edition
+	} from '$lib/data/camerounPourJesus.js';
 
-	const defaultLocations: CampaignLocation[] = [
-		{
-			id: 'bafoussam',
-			name: 'Bafoussam',
-			region: 'Région de l’Ouest',
-			coordinates: [5.477, 10.417],
-			campaignType: 'Siège National & Foyer Spirituel ECOFIP',
-			date: 'Centre de coordination permanente',
-			impact: 'Quartier Tamja • Mobilisation des 10 Régions',
-			isFeatured: true,
-			badge: 'Siège National • Ouest'
-		},
-		{
-			id: 'yaounde',
-			name: 'Yaoundé',
-			region: 'Région du Centre',
-			coordinates: [3.848, 11.502],
-			campaignType: 'Capitale & Rassemblements Nationaux',
-			date: 'Missions permanentes',
-			impact: '+25 000 personnes touchées'
-		},
-		{
-			id: 'douala',
-			name: 'Douala',
-			region: 'Région du Littoral',
-			coordinates: [4.051, 9.767],
-			campaignType: 'Grande Croisade & Réveil Évangélique',
-			date: 'Campagne annuelle',
-			impact: '+20 000 participants'
-		},
-		{
-			id: 'garoua',
-			name: 'Garoua',
-			region: 'Région du Nord',
-			coordinates: [9.301, 13.397],
-			campaignType: 'Implantation & Formation de Disciples',
-			date: 'Mission Nord-Cameroun',
-			impact: '+6 500 personnes touchées'
-		},
-		{
-			id: 'maroua',
-			name: 'Maroua',
-			region: 'Région de l’Extrême-Nord',
-			coordinates: [10.597, 14.315],
-			campaignType: 'Secours Humanitaire & Compassion',
-			date: 'Missions frontalières',
-			impact: '+7 200 familles secourues'
-		},
-		{
-			id: 'ngaoundere',
-			name: 'Ngaoundéré',
-			region: 'Région de l’Adamaoua',
-			coordinates: [7.316, 13.583],
-			campaignType: 'Évangélisation en Terre de Savane',
-			date: 'Croisade régionale',
-			impact: '+5 000 personnes touchées'
-		},
-		{
-			id: 'bertoua',
-			name: 'Bertoua',
-			region: 'Région de l’Est',
-			coordinates: [4.577, 13.684],
-			campaignType: 'Mission Forestière & Réveil Communautaire',
-			date: 'Campagnes rurales et urbaines',
-			impact: '+4 800 personnes touchées'
-		},
-		{
-			id: 'bamenda',
-			name: 'Bamenda',
-			region: 'Région du Nord-Ouest',
-			coordinates: [5.959, 10.159],
-			campaignType: 'Message de Paix, Réconciliation & Espoir',
-			date: 'Missions des Hauts Plateaux',
-			impact: '+6 000 personnes touchées'
-		},
-		{
-			id: 'ebolowa',
-			name: 'Ebolowa',
-			region: 'Région du Sud',
-			coordinates: [2.916, 11.15],
-			campaignType: 'Croisades Régionales & Actions Sociales',
-			date: 'Missions Sud-Cameroun',
-			impact: '+5 500 participants'
-		},
-		{
-			id: 'buea',
-			name: 'Buea',
-			region: 'Région du Sud-Ouest',
-			coordinates: [4.155, 9.243],
-			campaignType: 'Campus Universitaire & Réveil Jeunesse',
-			date: 'Missions Mont Cameroun',
-			impact: '+8 500 jeunes et familles'
+	// Parcours officiel de « Cameroun Pour Jésus » : une étape par ville (Tombel a accueilli
+	// deux campagnes), et Bafoussam en vedette pour la croisade de clôture.
+	function buildOfficialLocations(): CampaignLocation[] {
+		const byCity: Record<string, Edition[]> = {};
+		for (const edition of EDITIONS) {
+			byCity[edition.city] = [...(byCity[edition.city] ?? []), edition];
 		}
-	];
+		const visited: CampaignLocation[] = Object.entries(byCity).map(([city, editions]) => {
+			const people = editions.reduce((sum, e) => sum + e.peopleReached, 0);
+			const testimonies = editions.reduce((sum, e) => sum + e.testimonies, 0);
+			return {
+				id: slug(city),
+				name: city,
+				region: `Région ${regionLabel(editions[0].region)}`,
+				coordinates: CITY_COORDINATES[city],
+				campaignType:
+					editions.length > 1
+						? `${editions.length} campagnes d’évangélisation`
+						: 'Campagne d’évangélisation',
+				date: editions.map((e) => e.dates).join(' et '),
+				impact: `${formatNumber(people)} personnes touchées • ${testimonies} témoignages`
+			};
+		});
+		return [
+			{
+				id: 'bafoussam',
+				name: FINAL_CRUSADE.city,
+				region: `Région ${regionLabel(FINAL_CRUSADE.region)}`,
+				coordinates: CITY_COORDINATES[FINAL_CRUSADE.city],
+				campaignType: `Croisade de clôture « ${FINAL_CRUSADE.name} »`,
+				date: FINAL_CRUSADE.dates,
+				impact: `${FINAL_CRUSADE.venue} • Siège national ECOFIP`,
+				isFeatured: true
+			},
+			...visited
+		];
+	}
+
+	function slug(value: string): string {
+		return value
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/[^a-z0-9]+/g, '-');
+	}
+
+	/** « Ouest » → « de l’Ouest », « Sud » → « du Sud », « Extrême-Nord » → « de l’Extrême-Nord » */
+	function regionLabel(region: string): string {
+		return /^[AEÉIOU]/.test(region) ? `de l’${region}` : `du ${region}`;
+	}
+
+	const defaultLocations = buildOfficialLocations();
 
 	let {
 		eyebrow = 'MISSION NATIONALE — LES 10 RÉGIONS DU CAMEROUN',
-		title = 'Carte des 10 régions & parcours',
-		description = 'Découvrez l’implantation et les missions d’ECOFIP à travers les 10 régions du Cameroun, coordonnées depuis son siège national et foyer spirituel à Bafoussam (Région de l’Ouest).',
+		title = 'Le Cameroun parcouru',
+		description = `${IMPACT.campaigns} campagnes d’évangélisation dans ${IMPACT.cities} villes et ${IMPACT.regionsVisited} des ${IMPACT.regionsTotal} régions depuis 2024, jusqu’à la croisade de clôture à Bafoussam. ECOFIP coordonne ces missions depuis son siège national de Bafoussam (Région de l’Ouest).`,
 		ctaLabel = 'Afficher toute la carte',
 		locations = defaultLocations,
 		class: customClass = ''

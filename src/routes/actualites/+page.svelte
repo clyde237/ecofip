@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
 	import ArticleCard from '$lib/design-system/components/ArticleCard.svelte';
@@ -20,15 +21,13 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Actualités — Cameroun pour Jésus | ECOFIP</title>
-	<meta
-		name="description"
-		content="Rapports de mission, témoignages, enseignements et nouvelles de l’action d’ECOFIP au Cameroun."
-	/>
-	<meta property="og:title" content="Actualités — ECOFIP" />
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Actualités — Cameroun pour Jésus | ECOFIP"
+	description="Rapports de mission, témoignages et enseignements : suivez les campagnes d’évangélisation d’ECOFIP et du programme « Cameroun pour Jésus »."
+	canonicalPath="/actualites"
+	noindex={Boolean(data.query)}
+	breadcrumbs={[{ name: 'Actualités', path: '/actualites' }]}
+/>
 
 <PageBanner
 	title="Actualités"

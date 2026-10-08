@@ -68,5 +68,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		};
 	}
 
-	return resolve(event);
+	const response = await resolve(event);
+	// L'espace d'administration et les API ne doivent jamais apparaître dans les moteurs de recherche
+	if (event.url.pathname.startsWith('/admin') || event.url.pathname.startsWith('/api/')) {
+		response.headers.set('x-robots-tag', 'noindex, nofollow');
+	}
+	return response;
 };

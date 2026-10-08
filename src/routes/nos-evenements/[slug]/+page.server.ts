@@ -5,7 +5,30 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 import type { DetailedEventItem } from '$lib/design-system/types.js';
 import { formatMediaUrl } from '$lib/server/r2.js';
-import { getEventTargetDate } from '$lib/utils/eventDate.js';
+import { cameroonDate, getEventTargetDate, toCameroonParts } from '$lib/utils/eventDate.js';
+import { toCameroonIso } from '$lib/config/site.js';
+
+/**
+ * Fin de l'événement pour les données structurées Google : dernier jour à l'heure de fin,
+ * le jour seul (AAAA-MM-JJ) si l'heure n'est pas connue, ou null pour un événement d'un jour sans heure de fin.
+ */
+function getEventEndIso(ev: {
+	startDate: Date | null;
+	endDate: Date | null;
+	endTime: string | null;
+}): string | null {
+	const lastDay = ev.endDate ?? ev.startDate;
+	if (!lastDay) return null;
+	const { year, monthIndex, day } = toCameroonParts(new Date(lastDay));
+	const endTime = ev.endTime?.match(/^(\d{1,2}):(\d{2})/);
+	if (endTime) {
+		return toCameroonIso(
+			cameroonDate(year, monthIndex, day, Number(endTime[1]), Number(endTime[2]))
+		);
+	}
+	if (!ev.endDate) return null;
+	return `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
 
 const fallbackEvents: DetailedEventItem[] = [
 	{
@@ -81,6 +104,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	const numericId = Number(rawSlug);
 
 	let foundEvent: DetailedEventItem | null = null;
+	let endIso: string | null = null;
+	// Seuls les événements publiés en base sont proposés à Google (pas les exemples ni les brouillons)
+	let isIndexable = false;
 
 	if (isDbConfigured && db) {
 		try {
@@ -142,6 +168,8 @@ export const load: PageServerLoad = async ({ params }) => {
 					eventDate: ev.eventDate,
 					targetDate: target
 				};
+				endIso = getEventEndIso(ev);
+				isIndexable = ev.isPublished;
 			}
 		} catch (err) {
 			console.error('Erreur recherche événement par slug:', err);
@@ -165,6 +193,11 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	return {
-		event: foundEvent
+		event: foundEvent,
+		schedule: {
+			start: toCameroonIso(new Date(foundEvent.targetDate ?? getEventTargetDate(foundEvent))),
+			end: endIso
+		},
+		isIndexable
 	};
 };

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
 		GalleryGridSection,
@@ -31,19 +32,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Galerie — Photothèque & Vidéothèque de la Mission | ECOFIP</title>
-	<meta
-		name="description"
-		content="Explorez les archives photos et vidéos des grandes croisades, cliniques mobiles gratuites, camps de jeunesse et actions communautaires portées par ECOFIP au Cameroun."
-	/>
-	<meta property="og:title" content="Galerie Multimédia & Archives Missionnaires — ECOFIP" />
-	<meta
-		property="og:description"
-		content="Revivez la mission ECOFIP en photos haute définition et reportages vidéos immersifs."
-	/>
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Galerie photos et vidéos des missions | ECOFIP"
+	description="Photos et vidéos des croisades, campagnes de guérison et actions sociales d’ECOFIP à travers les régions du Cameroun, classées par album et par année."
+	breadcrumbs={[{ name: 'Galerie', path: '/galerie' }]}
+/>
 
 <div>
 	<!-- SECTION 02 — Introduction -->

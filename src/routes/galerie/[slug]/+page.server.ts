@@ -48,6 +48,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		album: {
+			slug: album.slug,
 			title: album.title,
 			category: album.category,
 			location: album.location ?? '',

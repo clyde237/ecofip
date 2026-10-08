@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
+	import { SITE_URL } from '$lib/config/site.js';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
 		AboutPresentation,
@@ -14,19 +16,16 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
-<svelte:head>
-	<title>À propos d'ECOFIP — Vision, Histoire & Mission Chrétienne</title>
-	<meta
-		name="description"
-		content="Découvrez l'histoire, la vision biblique et les actions d'ECOFIP : un mouvement chrétien engagé pour le réveil spirituel, la formation de disciples et le soutien aux communautés au Cameroun."
-	/>
-	<meta property="og:title" content="À propos d'ECOFIP — Économes Fidèles et Prudents" />
-	<meta
-		property="og:description"
-		content="Découvrez l'histoire, la vision biblique et les actions d'ECOFIP au Cameroun."
-	/>
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="À propos d’ECOFIP — Vision, histoire et mission au Cameroun"
+	description="ECOFIP, département d’évangélisation de Go International Ministry fondé par le Pasteur Valéry Tchamekwen : vision, valeurs, équipe et programme « Cameroun pour Jésus »."
+	breadcrumbs={[{ name: 'À propos', path: '/a-propos' }]}
+	jsonLd={{
+		'@type': 'AboutPage',
+		name: 'À propos d’ECOFIP',
+		about: { '@id': `${SITE_URL}/#organization` }
+	}}
+/>
 
 <div>
 	<!-- Bannière principale de la page À Propos -->

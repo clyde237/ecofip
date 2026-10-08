@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
+	import { SITE_URL, absoluteUrl, shareableImageUrl } from '$lib/config/site.js';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import { onMount } from 'svelte';
 	import { ArrowLeft, Link as LinkIcon, CheckCircle2, MessageCircle, Share2 } from '@lucide/svelte';
@@ -13,6 +15,7 @@
 	let { data }: { data: PageData } = $props();
 
 	let article = $derived(data.article);
+	let articlePath = $derived(article.href ?? '/actualites');
 	let hasCopied = $state(false);
 	let shareText = $derived(encodeURIComponent(`${article.title} — ${data.canonicalUrl}`));
 	let encodedUrl = $derived(encodeURIComponent(data.canonicalUrl));
@@ -43,18 +46,32 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{article.title} — Actualités | ECOFIP</title>
-	<meta name="description" content={article.excerpt} />
-	<link rel="canonical" href={data.canonicalUrl} />
-	<meta property="og:type" content="article" />
-	<meta property="og:title" content={article.title} />
-	<meta property="og:description" content={article.excerpt} />
-	<meta property="og:url" content={data.canonicalUrl} />
-	{#if article.image.startsWith('http')}
-		<meta property="og:image" content={article.image} />
-	{/if}
-</svelte:head>
+<Seo
+	title="{article.title} | ECOFIP"
+	description={article.excerpt}
+	image={article.image}
+	imageAlt={article.imageAlt}
+	type="article"
+	canonicalPath={articlePath}
+	publishedTime={data.publishedAt}
+	breadcrumbs={[
+		{ name: 'Actualités', path: '/actualites' },
+		{ name: article.title, path: articlePath }
+	]}
+	jsonLd={{
+		'@type': 'NewsArticle',
+		headline: article.title.slice(0, 110),
+		description: article.excerpt,
+		image: [shareableImageUrl(article.image)],
+		datePublished: data.publishedAt,
+		dateModified: data.modifiedAt,
+		articleSection: article.category,
+		inLanguage: 'fr',
+		mainEntityOfPage: absoluteUrl(articlePath),
+		author: { '@type': 'Person', name: article.authorName },
+		publisher: { '@id': `${SITE_URL}/#organization` }
+	}}
+/>
 
 <!-- En-tête de l'article -->
 <PageBanner
