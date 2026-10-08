@@ -20,7 +20,12 @@
 	import Button from '$lib/design-system/components/Button.svelte';
 	import Modal from '$lib/design-system/components/Modal.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
-	import { compressImage, toUploadFilename, uploadToR2 } from '$lib/utils/r2Upload.js';
+	import {
+		compressImage,
+		isAbortError,
+		toUploadFilename,
+		uploadToR2
+	} from '$lib/utils/r2Upload.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -142,6 +147,10 @@
 	let posterKey = $state('');
 	let posterPreview = $state<string | null>(null);
 	let isAnalysing = $state(false);
+	// Envoi R2 en cours, interrompu si le formulaire est fermé ou annulé
+	let createUpload: AbortController | null = null;
+	// Change à chaque remise à zéro : un enregistrement lancé avant n'agit plus sur le formulaire
+	let createRun = 0;
 
 	let warnings = $derived.by(() => {
 		const list: string[] = [];
@@ -168,6 +177,10 @@
 	}
 
 	function resetCreate() {
+		createUpload?.abort();
+		createUpload = null;
+		createRun++;
+		isCreating = false;
 		videoFile = null;
 		videoInfo = null;
 		videoKey = '';
@@ -218,13 +231,14 @@
 	}
 
 	/** Envoie sur R2 ce qui ne l'est pas encore (reprise possible après une erreur) */
-	async function uploadCreateFiles(): Promise<boolean> {
+	async function uploadCreateFiles(signal: AbortSignal): Promise<boolean> {
 		try {
 			if (videoFile && !videoKey) {
 				const result = await uploadToR2(videoFile, {
 					filename: videoFile.name,
 					folder: FOLDER,
-					onProgress: (percent) => (videoProgress = percent)
+					onProgress: (percent) => (videoProgress = percent),
+					signal
 				});
 				videoKey = result.key;
 			}
@@ -233,15 +247,25 @@
 				const blob = customPoster ? await compressImage(customPoster, 1280) : posterSource;
 				const result = await uploadToR2(blob, {
 					filename: customPoster ? toUploadFilename(customPoster.name, blob) : 'affiche.jpg',
-					folder: FOLDER
+					folder: FOLDER,
+					signal
 				});
 				posterKey = result.key;
 			}
-			return true;
+			return !signal.aborted;
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
+			// Une annulation volontaire n'est pas une erreur à signaler
+			if (!isAbortError(err)) {
+				toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
+			}
 			return false;
 		}
+	}
+
+	/** Annuler ou fermer le formulaire : l'envoi en cours est interrompu et rien n'est enregistré */
+	function closeCreate() {
+		isCreateOpen = false;
+		resetCreate();
 	}
 
 	// ==========================================
@@ -253,8 +277,19 @@
 	let editPosterFile = $state<File | null>(null);
 	let editPosterKey = $state('');
 	let editPosterPreview = $state<string | null>(null);
+	let editUpload: AbortController | null = null;
+	let editRun = 0;
+
+	function closeEdit() {
+		editUpload?.abort();
+		editUpload = null;
+		editRun++;
+		isSaving = false;
+		isEditOpen = false;
+	}
 
 	function openEdit(sermon: Sermon) {
+		closeEdit();
 		editing = sermon;
 		editPosterFile = null;
 		editPosterKey = '';
@@ -565,7 +600,7 @@
 </div>
 
 <!-- ==================== CRÉATION ==================== -->
-<Modal bind:open={isCreateOpen} title="Nouvelle prédication">
+<Modal bind:open={isCreateOpen} title="Nouvelle prédication" onclose={closeCreate}>
 	<form
 		id="sermon-create-form"
 		method="POST"
@@ -577,7 +612,17 @@
 				return;
 			}
 			isCreating = true;
-			if (!(await uploadCreateFiles())) {
+			const run = createRun;
+			const upload = new AbortController();
+			createUpload = upload;
+			const uploaded = await uploadCreateFiles(upload.signal);
+			// Formulaire annulé pendant l'envoi : resetCreate a déjà tout remis à zéro
+			if (upload.signal.aborted) {
+				cancel();
+				return;
+			}
+			createUpload = null;
+			if (!uploaded) {
 				isCreating = false;
 				cancel();
 				return;
@@ -585,8 +630,13 @@
 			formData.set('videoKey', videoKey);
 			formData.set('posterKey', posterKey);
 			return async ({ result, update }) => {
-				isCreating = false;
 				showActionResult(result as { type: string; data?: Record<string, unknown> });
+				// Formulaire fermé pendant l'enregistrement : seule la liste est rafraîchie
+				if (run !== createRun) {
+					await update({ reset: false });
+					return;
+				}
+				isCreating = false;
 				if (result.type === 'success') {
 					isCreateOpen = false;
 					resetCreate();
@@ -676,7 +726,7 @@
 	</form>
 
 	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isCreateOpen = false)}>Annuler</Button>
+		<Button variant="outline" size="md" onclick={closeCreate}>Annuler</Button>
 		<Button
 			type="submit"
 			form="sermon-create-form"
@@ -694,7 +744,7 @@
 </Modal>
 
 <!-- ==================== MODIFICATION ==================== -->
-<Modal bind:open={isEditOpen} title="Modifier la prédication">
+<Modal bind:open={isEditOpen} title="Modifier la prédication" onclose={closeEdit}>
 	{#if editing}
 		<form
 			id="sermon-edit-form"
@@ -702,26 +752,41 @@
 			action="?/update"
 			use:enhance={async ({ formData, cancel }) => {
 				isSaving = true;
+				const run = editRun;
 				if (editPosterFile && !editPosterKey) {
+					const upload = new AbortController();
+					editUpload = upload;
 					try {
 						const blob = await compressImage(editPosterFile, 1280);
 						const result = await uploadToR2(blob, {
 							filename: toUploadFilename(editPosterFile.name, blob),
-							folder: FOLDER
+							folder: FOLDER,
+							signal: upload.signal
 						});
 						editPosterKey = result.key;
 					} catch (err) {
-						toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
-						isSaving = false;
+						if (!isAbortError(err)) {
+							toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
+							isSaving = false;
+						}
 						cancel();
 						return;
 					}
+					// Formulaire fermé pendant l'envoi : closeEdit a déjà tout remis à zéro
+					if (upload.signal.aborted) {
+						cancel();
+						return;
+					}
+					editUpload = null;
 				}
 				formData.set('posterKey', editPosterKey);
 				return async ({ result, update }) => {
-					isSaving = false;
 					showActionResult(result as { type: string; data?: Record<string, unknown> });
-					if (result.type === 'success') isEditOpen = false;
+					// Formulaire fermé pendant l'enregistrement : il ne doit pas refermer le suivant
+					if (run === editRun) {
+						isSaving = false;
+						if (result.type === 'success') isEditOpen = false;
+					}
 					await update({ reset: false });
 				};
 			}}
@@ -776,7 +841,7 @@
 	{/if}
 
 	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isEditOpen = false)}>Annuler</Button>
+		<Button variant="outline" size="md" onclick={closeEdit}>Annuler</Button>
 		<Button type="submit" form="sermon-edit-form" variant="primary" size="md" disabled={isSaving}>
 			{isSaving ? 'Enregistrement…' : 'Enregistrer'}
 		</Button>
