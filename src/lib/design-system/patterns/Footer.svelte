@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SOCIAL_LINKS } from '$lib/config/social.js';
 	import { MapPin, Phone, Mail } from '@lucide/svelte';
 	import Container from '../components/Container.svelte';
 	import { toast } from '../toast.svelte.js';
@@ -63,77 +64,21 @@
 					gloire de Dieu.
 				</p>
 
-				<!-- Social Networks Circular Outlines -->
+				<!-- Réseaux sociaux -->
 				<div class="mt-1 flex items-center gap-3">
-					<a
-						href="https://facebook.com"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="Facebook ECOFIP"
-						class="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 text-white transition-all hover:border-white hover:bg-white hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-white"
-					>
-						<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-							<path
-								d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"
-							/>
-						</svg>
-					</a>
-
-					<a
-						href="https://instagram.com"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="Instagram ECOFIP"
-						class="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 text-white transition-all hover:border-white hover:bg-white hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-white"
-					>
-						<svg
-							class="h-4 w-4 fill-none stroke-current"
-							viewBox="0 0 24 24"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
+					{#each SOCIAL_LINKS as social (social.name)}
+						<a
+							href={social.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label={social.label}
+							class="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 text-white transition-all hover:border-white hover:bg-white hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-white"
 						>
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-						</svg>
-					</a>
-
-					<a
-						href="https://youtube.com"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="Chaîne YouTube ECOFIP"
-						class="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 text-white transition-all hover:border-white hover:bg-white hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-white"
-					>
-						<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-							<path
-								d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-							/>
-						</svg>
-					</a>
-
-					<a
-						href="/actualites/podcast"
-						aria-label="Podcast et Radio ECOFIP"
-						class="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 text-white transition-all hover:border-white hover:bg-white hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-white"
-					>
-						<svg
-							class="h-4 w-4 fill-none stroke-current"
-							viewBox="0 0 24 24"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
-							<path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
-							<circle cx="12" cy="12" r="2" />
-							<path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
-							<path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
-						</svg>
-					</a>
+							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+								<path d={social.iconPath} />
+							</svg>
+						</a>
+					{/each}
 				</div>
 			</div>
 

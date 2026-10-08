@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SOCIAL_LINKS } from '$lib/config/social.js';
 	import './layout.css';
 	import { page } from '$app/state';
 	import { Header, Footer, ToastContainer } from '$lib';
@@ -28,7 +29,11 @@
 			logo: absoluteUrl(LOGO_PATH),
 			description: ORGANIZATION.description,
 			parentOrganization: { '@type': 'Organization', name: ORGANIZATION.parentOrganization },
-			founder: { '@type': 'Person', name: ORGANIZATION.founder },
+			founder: {
+				'@type': 'Person',
+				name: ORGANIZATION.founder,
+				sameAs: SOCIAL_LINKS.map((social) => social.url)
+			},
 			areaServed: { '@type': 'Country', name: ORGANIZATION.country },
 			address: {
 				'@type': 'PostalAddress',
