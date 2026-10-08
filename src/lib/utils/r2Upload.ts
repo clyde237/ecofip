@@ -12,14 +12,31 @@ export interface R2UploadResult {
 
 export type UploadProgressHandler = (percent: number) => void;
 
+/** Vrai si l'erreur vient d'un envoi annulé volontairement (AbortController) */
+export function isAbortError(err: unknown): boolean {
+	return err instanceof DOMException && err.name === 'AbortError';
+}
+
+function abortError(): DOMException {
+	return new DOMException('Envoi annulé.', 'AbortError');
+}
+
 // Marge sous la limite de 4,5 Mo du corps de requête des fonctions serverless Vercel
 const MAX_DIRECT_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export async function uploadToR2(
 	file: Blob,
-	options: { filename: string; folder: string; onProgress?: UploadProgressHandler }
+	options: {
+		filename: string;
+		folder: string;
+		onProgress?: UploadProgressHandler;
+		/** Permet d'interrompre l'envoi (fermeture du formulaire…) */
+		signal?: AbortSignal;
+	}
 ): Promise<R2UploadResult> {
 	const contentType = file.type || 'application/octet-stream';
+	const { signal } = options;
+	if (signal?.aborted) throw abortError();
 
 	if (file.size <= MAX_DIRECT_UPLOAD_BYTES) {
 		const formData = new FormData();
@@ -27,7 +44,7 @@ export async function uploadToR2(
 		formData.append('folder', options.folder);
 		options.onProgress?.(30);
 
-		const response = await fetch('/api/upload', { method: 'POST', body: formData });
+		const response = await fetch('/api/upload', { method: 'POST', body: formData, signal });
 		const result = await response.json().catch(() => ({}));
 		if (!response.ok || !result.success) {
 			throw new Error(result.error || 'Échec de l’envoi vers Cloudflare R2.');
@@ -39,15 +56,21 @@ export async function uploadToR2(
 	const presignResponse = await fetch('/api/upload-url', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ filename: options.filename, contentType, folder: options.folder })
+		body: JSON.stringify({ filename: options.filename, contentType, folder: options.folder }),
+		signal
 	});
 	const presign = await presignResponse.json().catch(() => ({}));
 	if (!presignResponse.ok || !presign.success) {
 		throw new Error(presign.error || 'Impossible d’obtenir l’autorisation d’envoi Cloudflare R2.');
 	}
 
+	if (signal?.aborted) throw abortError();
 	await new Promise<void>((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
+		const abort = () => xhr.abort();
+		signal?.addEventListener('abort', abort, { once: true });
+		xhr.onloadend = () => signal?.removeEventListener('abort', abort);
+		xhr.onabort = () => reject(abortError());
 		xhr.open('PUT', presign.uploadUrl, true);
 		xhr.setRequestHeader('Content-Type', contentType);
 		xhr.upload.onprogress = (event) => {
