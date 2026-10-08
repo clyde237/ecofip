@@ -519,6 +519,8 @@ export interface PublicSermon {
 	posterUrl: string | null;
 	duration: string;
 	dateLabel: string;
+	/** Lien YouTube de la prédication complète, null si non renseigné */
+	fullVideoUrl: string | null;
 }
 
 /** Témoignage publié (écrit ou vidéo), tel qu'affiché sur le site */

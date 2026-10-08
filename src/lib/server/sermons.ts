@@ -7,6 +7,7 @@ import { sermons, type SermonRecord } from '$lib/server/db/schema.js';
 import { and, desc, eq, like, ne } from 'drizzle-orm';
 import { deleteFromR2, formatMediaUrl, isR2KeyInFolder } from '$lib/server/r2.js';
 import type { PublicSermon } from '$lib/design-system/types.js';
+import { normalizeYoutubeUrl } from '$lib/utils/youtube.js';
 
 export const SERMONS_R2_FOLDER = 'sermons';
 
@@ -32,6 +33,7 @@ export type SermonFields = {
 	description: string | null;
 	preachedOn: string | null;
 	duration: string | null;
+	fullVideoUrl: string | null;
 	isPublished: boolean;
 };
 
@@ -70,6 +72,14 @@ export function parseSermonForm(formData: FormData): Parsed<SermonFields> {
 	if (duration && !DURATION_PATTERN.test(duration)) {
 		return { error: 'La durée doit être au format mm:ss (ex: 01:30).' };
 	}
+	const fullVideoInput = text(formData, 'fullVideoUrl');
+	const fullVideoUrl = fullVideoInput ? normalizeYoutubeUrl(fullVideoInput) : null;
+	if (fullVideoInput && !fullVideoUrl) {
+		return {
+			error:
+				'Le lien de la prédication complète doit être une vidéo YouTube (ex : https://www.youtube.com/watch?v=…).'
+		};
+	}
 
 	return {
 		value: {
@@ -80,6 +90,7 @@ export function parseSermonForm(formData: FormData): Parsed<SermonFields> {
 			description: values.description || null,
 			preachedOn: preachedOn || null,
 			duration: duration || null,
+			fullVideoUrl,
 			isPublished: formData.get('isPublished') === 'on'
 		}
 	};
@@ -152,7 +163,8 @@ export function toPublicSermon(row: SermonRecord): PublicSermon {
 		videoUrl: formatMediaUrl(row.videoUrl),
 		posterUrl: formatMediaUrl(row.posterUrl) || null,
 		duration: row.duration ?? '',
-		dateLabel: formatDate(row)
+		dateLabel: formatDate(row),
+		fullVideoUrl: row.fullVideoUrl
 	};
 }
 

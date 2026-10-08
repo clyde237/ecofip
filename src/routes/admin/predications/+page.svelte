@@ -13,6 +13,7 @@
 		CloudOff,
 		AlertTriangle,
 		ExternalLink,
+		MonitorPlay,
 		Image as ImageIcon
 	} from '@lucide/svelte';
 	import type { PageData } from './$types.js';
@@ -346,6 +347,25 @@
 			class={inputClass}>{sermon?.description ?? ''}</textarea
 		>
 	</div>
+	<div>
+		<label for="{prefix}-full-video" class={labelClass}>
+			Lien YouTube de la prédication complète (facultatif)
+		</label>
+		<input
+			id="{prefix}-full-video"
+			name="fullVideoUrl"
+			type="url"
+			inputmode="url"
+			maxlength="500"
+			value={sermon?.fullVideoUrl ?? ''}
+			placeholder="Ex : https://www.youtube.com/watch?v=…"
+			aria-describedby="{prefix}-full-video-help"
+			class={inputClass}
+		/>
+		<p id="{prefix}-full-video-help" class="mt-1 text-[11px] text-text-secondary">
+			Un bouton « Voir la prédication complète » s’affichera sous le short.
+		</p>
+	</div>
 {/snippet}
 
 <div class="space-y-6">
@@ -479,6 +499,16 @@
 							<p class="mt-0.5 flex items-center gap-1 truncate text-[11px] text-brand-primary">
 								<BookOpen size={11} />{sermon.scripture}
 							</p>
+						{/if}
+						{#if sermon.fullVideoUrl}
+							<a
+								href={sermon.fullVideoUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-[#c4302b] hover:underline"
+							>
+								<MonitorPlay size={11} />Version complète
+							</a>
 						{/if}
 					</div>
 					<div
