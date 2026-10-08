@@ -1,6 +1,6 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
-		ContactHero,
 		ContactChannelsSection,
 		ContactFormSection,
 		ContactMapSection,
@@ -32,7 +32,12 @@
 
 <div>
 	<!-- SECTION 02 — Introduction Contact -->
-	<ContactHero />
+	<PageBanner
+		title="Restons en Contact"
+		subtitle="Une question ? Une suggestion ? Besoin de prière ? N'hésitez pas à nous contacter. Nous serions ravis d'échanger avec vous !"
+		breadcrumbLabel="Contact"
+		backgroundImage="/about-mission.jpg"
+	/>
 
 	<!-- SECTION 03 — Coordonnées -->
 	<ContactChannelsSection />

@@ -10,6 +10,7 @@
 		Users,
 		UsersRound,
 		Images,
+		Clapperboard,
 		LogOut,
 		X
 	} from '@lucide/svelte';
@@ -95,7 +96,7 @@
 				},
 				{
 					href: '/admin/temoignages',
-					label: 'Témoignages visiteurs',
+					label: 'Témoignages',
 					icon: MessageSquareHeart,
 					badge: 'Validation'
 				}
@@ -124,7 +125,7 @@
 			},
 			{
 				href: '/admin/temoignages',
-				label: 'Témoignages visiteurs',
+				label: 'Témoignages',
 				icon: MessageSquareHeart,
 				badge: 'Validation'
 			},
@@ -148,6 +149,11 @@
 				href: '/admin/galerie',
 				label: 'Galerie photos & vidéos',
 				icon: Images
+			},
+			{
+				href: '/admin/predications',
+				label: 'Prédications vidéo',
+				icon: Clapperboard
 			}
 		];
 
@@ -164,6 +170,15 @@
 		return items;
 	});
 
+	/** Fait défiler la liste des rubriques jusqu'à la rubrique active (utile quand elles débordent) */
+	function revealWhenActive(node: HTMLElement, active: boolean) {
+		const reveal = (isActive: boolean) => {
+			if (isActive) node.scrollIntoView({ block: 'nearest' });
+		};
+		reveal(active);
+		return { update: reveal };
+	}
+
 	function isItemActive(href: string, exact = false) {
 		if (exact) {
 			return page.url.pathname === href;
@@ -173,15 +188,16 @@
 </script>
 
 <!-- ==============================================================================
-     SIDEBAR DESKTOP FIXE ET NON SCROLLABLE
-     Restée ancrée sur la gauche, 100% de la hauteur de l'écran, sans scroll
+     SIDEBAR DESKTOP FIXE
+     Ancrée à gauche sur toute la hauteur : logo en haut et profil/déconnexion en bas
+     restent toujours visibles ; seule la liste des rubriques défile si elle est trop longue.
      ============================================================================== -->
 <aside
-	class="fixed top-0 bottom-0 left-0 z-30 hidden h-screen w-64 flex-col justify-between overflow-hidden border-r border-gray-200/80 bg-white select-none lg:flex"
+	class="fixed top-0 bottom-0 left-0 z-30 hidden h-screen w-64 flex-col overflow-hidden border-r border-gray-200/80 bg-white select-none lg:flex"
 	aria-label="Navigation principale de l'administration ECOFIP"
 >
-	<!-- Haut : Logo ECOFIP & Titre Admin -->
-	<div>
+	<!-- Haut : Logo ECOFIP & Titre Admin (fixe) -->
+	<div class="shrink-0">
 		<div class="flex h-16 items-center gap-3 border-b border-gray-100 px-6">
 			<div
 				class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-primary/10 bg-brand-subtle p-1.5"
@@ -196,36 +212,39 @@
 				</span>
 			</div>
 		</div>
-
-		<!-- Navigation Links -->
-		<nav class="space-y-1.5 px-3 py-5">
-			{#each navItems as item (item.href)}
-				{@const active = isItemActive(item.href, item.exact)}
-				<a
-					href={item.href}
-					class="group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150 {active
-						? 'bg-brand-primary text-white shadow-sm'
-						: 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'}"
-				>
-					<div class="flex items-center gap-3">
-						<item.icon
-							size={18}
-							class={active ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'}
-						/>
-						<span>{item.label}</span>
-					</div>
-					{#if item.badge && !active}
-						<span class="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-							{item.badge}
-						</span>
-					{/if}
-				</a>
-			{/each}
-		</nav>
 	</div>
 
-	<!-- Bas : Profil Admin & Déconnexion (Fixé en bas de la sidebar) -->
-	<div class="border-t border-gray-100 p-4">
+	<!-- Milieu : rubriques (défilent quand elles dépassent la hauteur de l'écran) -->
+	<nav
+		class="min-h-0 flex-1 [scrollbar-width:thin] space-y-1.5 overflow-y-auto overscroll-contain px-3 py-5"
+	>
+		{#each navItems as item (item.href)}
+			{@const active = isItemActive(item.href, item.exact)}
+			<a
+				href={item.href}
+				use:revealWhenActive={active}
+				class="group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150 {active
+					? 'bg-brand-primary text-white shadow-sm'
+					: 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'}"
+			>
+				<div class="flex items-center gap-3">
+					<item.icon
+						size={18}
+						class={active ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'}
+					/>
+					<span>{item.label}</span>
+				</div>
+				{#if item.badge && !active}
+					<span class="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+						{item.badge}
+					</span>
+				{/if}
+			</a>
+		{/each}
+	</nav>
+
+	<!-- Bas : Profil Admin & Déconnexion (toujours visible) -->
+	<div class="shrink-0 border-t border-gray-100 p-4">
 		<div
 			class="mb-3 flex items-center gap-3 rounded-xl border border-gray-200/60 bg-gray-50/70 p-3"
 		>
@@ -270,10 +289,10 @@
 
 	<!-- Tiroir coulissant latéral -->
 	<aside
-		class="fixed top-0 bottom-0 left-0 z-50 flex h-screen w-72 max-w-[85vw] flex-col justify-between border-r border-gray-200 bg-white shadow-2xl lg:hidden"
+		class="fixed top-0 bottom-0 left-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col overflow-hidden border-r border-gray-200 bg-white shadow-2xl lg:hidden"
 		aria-label="Menu de navigation mobile"
 	>
-		<div>
+		<div class="shrink-0">
 			<div class="flex h-16 items-center justify-between border-b border-gray-100 px-5">
 				<div class="flex items-center gap-3">
 					<div
@@ -294,34 +313,32 @@
 					<X size={18} />
 				</button>
 			</div>
-
-			<nav class="space-y-1.5 p-3">
-				{#each navItems as item (item.href)}
-					{@const active = isItemActive(item.href, item.exact)}
-					<a
-						href={item.href}
-						onclick={() => (mobileOpen = false)}
-						class="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold {active
-							? 'bg-brand-primary text-white shadow-sm'
-							: 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'}"
-					>
-						<div class="flex items-center gap-3">
-							<item.icon size={18} />
-							<span>{item.label}</span>
-						</div>
-						{#if item.badge && !active}
-							<span
-								class="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800"
-							>
-								{item.badge}
-							</span>
-						{/if}
-					</a>
-				{/each}
-			</nav>
 		</div>
 
-		<div class="border-t border-gray-100 p-4">
+		<nav class="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain p-3">
+			{#each navItems as item (item.href)}
+				{@const active = isItemActive(item.href, item.exact)}
+				<a
+					href={item.href}
+					onclick={() => (mobileOpen = false)}
+					class="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold {active
+						? 'bg-brand-primary text-white shadow-sm'
+						: 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'}"
+				>
+					<div class="flex items-center gap-3">
+						<item.icon size={18} />
+						<span>{item.label}</span>
+					</div>
+					{#if item.badge && !active}
+						<span class="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+							{item.badge}
+						</span>
+					{/if}
+				</a>
+			{/each}
+		</nav>
+
+		<div class="shrink-0 border-t border-gray-100 p-4">
 			<form method="POST" action="/admin/logout">
 				<button
 					type="submit"

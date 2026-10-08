@@ -1,314 +1,303 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Plus, Newspaper, Clock, Trash2, CheckCircle2, Eye, EyeOff, X } from '@lucide/svelte';
-	import { ImagePicker } from '$lib';
-	import type { PageData, ActionData } from './$types.js';
+	import { page } from '$app/state';
+	import {
+		Plus,
+		Search,
+		Pencil,
+		Eye,
+		EyeOff,
+		Star,
+		ExternalLink,
+		Trash2,
+		Newspaper,
+		CloudOff
+	} from '@lucide/svelte';
+	import type { PageData } from './$types.js';
+	import Modal from '$lib/design-system/components/Modal.svelte';
+	import Button from '$lib/design-system/components/Button.svelte';
+	import { toast } from '$lib/design-system/toast.svelte.js';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let { data }: { data: PageData } = $props();
 
-	let isCreateModalOpen = $state(false);
-	let isSubmitting = $state(false);
+	type Article = (typeof data.articles)[number];
 
-	let title = $state('');
-	let category = $state('Mission');
-	let excerpt = $state('');
-	let content = $state('');
-	let readTime = $state('4 min');
-	let imageDataUrl = $state('');
-	let isPublished = $state(true);
+	let statusFilter = $state<'all' | 'published' | 'draft'>('all');
+	let categoryFilter = $state('all');
+	let search = $state('');
+	let toDelete = $state<Article | null>(null);
+	let isDeleteOpen = $state(false);
 
-	function resetForm() {
-		title = '';
-		category = 'Mission';
-		excerpt = '';
-		content = '';
-		readTime = '4 min';
-		imageDataUrl = '';
-		isPublished = true;
+	let categories = $derived(Array.from(new Set(data.articles.map((a) => a.category))));
+	let publishedCount = $derived(data.articles.filter((a) => a.isPublished).length);
+	let filtered = $derived(
+		data.articles.filter((a) => {
+			const query = search.trim().toLowerCase();
+			return (
+				(statusFilter === 'all' || (statusFilter === 'published') === a.isPublished) &&
+				(categoryFilter === 'all' || a.category === categoryFilter) &&
+				(!query ||
+					a.title.toLowerCase().includes(query) ||
+					(a.authorName ?? '').toLowerCase().includes(query))
+			);
+		})
+	);
+
+	$effect(() => {
+		if (page.url.searchParams.get('deleted') === '1') {
+			toast.success('Article supprimé.');
+			history.replaceState(history.state, '', page.url.pathname);
+		}
+	});
+
+	function formatDate(value: Date | string | null): string {
+		if (!value) return '';
+		return new Date(value).toLocaleDateString('fr-FR', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
+
+	function showActionResult(result: { type: string; data?: Record<string, unknown> }) {
+		if (result.type === 'success') {
+			toast.success(String(result.data?.message ?? 'Articles mis à jour.'));
+		} else if (result.type === 'failure') {
+			toast.error(String(result.data?.error ?? 'Une erreur est survenue.'), 'Erreur');
+		}
+	}
+
+	const quickAction =
+		() =>
+		async ({
+			result,
+			update
+		}: {
+			result: { type: string; data?: Record<string, unknown> };
+			update: (options?: { reset?: boolean }) => Promise<void>;
+		}) => {
+			showActionResult(result);
+			await update({ reset: false });
+		};
 </script>
 
-<div class="mx-auto max-w-7xl space-y-6">
-	<!-- En-tête -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<svelte:head>
+	<title>Articles — Administration ECOFIP</title>
+</svelte:head>
+
+<div class="space-y-6">
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 		<div>
-			<h1 class="font-display text-2xl font-bold text-text-primary sm:text-3xl">
-				Articles & Actualités
+			<p class="text-xs font-bold tracking-widest text-brand-primary uppercase">Page Actualités</p>
+			<h1 class="mt-1 font-display text-2xl font-bold text-text-primary sm:text-3xl">
+				Articles & actualités
 			</h1>
-			<p class="mt-1 text-sm text-text-secondary">
-				Rédigez, modifiez et publiez les articles et nouvelles de la mission ECOFIP.
+			<p class="mt-1 max-w-2xl text-sm text-text-secondary">
+				{data.articles.length} article{data.articles.length > 1 ? 's' : ''}, dont {publishedCount} publié{publishedCount >
+				1
+					? 's'
+					: ''}. Les articles publiés apparaissent sur la page
+				<a href="/actualites" target="_blank" class="font-semibold text-brand-primary underline"
+					>Actualités</a
+				> et les 3 plus récents sur l’accueil.
 			</p>
 		</div>
-
-		<button
-			type="button"
-			onclick={() => {
-				resetForm();
-				isCreateModalOpen = true;
-			}}
-			class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-brand-primary-hover hover:shadow-md sm:text-sm"
+		<a
+			href="/admin/articles/nouveau"
+			class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-primary-hover"
 		>
-			<Plus size={16} />
-			<span>Rédiger un article</span>
-		</button>
+			<Plus size={17} /> Nouvel article
+		</a>
 	</div>
 
-	<!-- Message de retour -->
-	{#if form?.message}
+	{#if !data.usingNeonDb}
 		<div
-			class="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-bold text-emerald-800"
+			class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+			role="alert"
 		>
-			<CheckCircle2 size={16} class="text-emerald-600" />
-			<span>{form.message}</span>
+			<CloudOff size={18} class="mt-0.5 shrink-0 text-amber-600" />
+			La base de données Neon est indisponible : les articles ne peuvent pas être gérés.
 		</div>
 	{/if}
 
-	<!-- Liste des articles -->
-	<div class="space-y-4">
-		{#each data.articles as art (art.id)}
-			<div
-				class="flex flex-col gap-4 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs transition-all hover:border-gray-300 sm:flex-row sm:items-center sm:justify-between"
-			>
-				<div class="flex items-start gap-4">
-					<!-- Thumbnail -->
-					<div
-						class="h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100"
-					>
-						{#if art.imageUrl}
-							<img src={art.imageUrl} alt={art.title} class="h-full w-full object-cover" />
-						{:else}
-							<div class="flex h-full w-full items-center justify-center text-text-disabled">
-								<Newspaper size={20} />
-							</div>
-						{/if}
-					</div>
-
-					<!-- Infos -->
-					<div>
-						<div class="flex flex-wrap items-center gap-2">
-							<span
-								class="rounded-md bg-red-50 px-2 py-0.5 text-[10px] font-bold text-brand-primary"
-							>
-								{art.category}
-							</span>
-							{#if art.isPublished}
-								<span
-									class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700"
-								>
-									Publié
-								</span>
-							{:else}
-								<span
-									class="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-text-disabled"
-								>
-									Brouillon
-								</span>
-							{/if}
-							<span class="flex items-center gap-1 text-[11px] text-text-disabled">
-								<Clock size={11} />
-								{art.readTime || '3 min'}
-							</span>
-						</div>
-
-						<h3 class="mt-1 font-display text-base font-bold text-text-primary">
-							{art.title}
-						</h3>
-
-						{#if art.excerpt}
-							<p class="mt-0.5 line-clamp-1 max-w-xl text-xs text-text-secondary">
-								{art.excerpt}
-							</p>
-						{/if}
-					</div>
-				</div>
-
-				<!-- Actions -->
-				<div class="flex items-center gap-2 border-t border-gray-100 pt-3 sm:border-0 sm:pt-0">
-					<!-- Basculer statut de publication -->
-					<form method="POST" action="?/togglePublish" use:enhance>
-						<input type="hidden" name="id" value={art.id} />
-						<input type="hidden" name="currentStatus" value={String(art.isPublished)} />
-						<button
-							type="submit"
-							class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors {art.isPublished
-								? 'border-gray-200 bg-white text-text-secondary hover:border-gray-300'
-								: 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}"
-						>
-							{#if art.isPublished}
-								<EyeOff size={13} />
-								<span>Dépublier</span>
-							{:else}
-								<Eye size={13} />
-								<span>Publier</span>
-							{/if}
-						</button>
-					</form>
-
-					<!-- Supprimer -->
-					<form method="POST" action="?/delete" use:enhance>
-						<input type="hidden" name="id" value={art.id} />
-						<button
-							type="submit"
-							onclick={(e) => {
-								if (!confirm('Supprimer cet article ?')) e.preventDefault();
-							}}
-							class="cursor-pointer rounded-lg p-2 text-text-disabled transition-colors hover:bg-red-50 hover:text-brand-primary"
-							title="Supprimer l'article"
-						>
-							<Trash2 size={16} />
-						</button>
-					</form>
-				</div>
-			</div>
-		{/each}
-	</div>
-</div>
-
-<!-- Modale de rédaction d'article -->
-{#if isCreateModalOpen}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
-		role="dialog"
-		aria-modal="true"
-	>
+	<!-- Filtres -->
+	<div class="flex flex-col gap-3 lg:flex-row lg:items-center">
 		<div
-			class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
+			class="flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 text-xs font-semibold"
 		>
-			<div class="flex items-center justify-between border-b border-gray-100 pb-4">
-				<h3 class="font-display text-lg font-bold text-text-primary">Rédiger un nouvel article</h3>
+			{#each [{ id: 'all', label: 'Tous' }, { id: 'published', label: 'Publiés' }, { id: 'draft', label: 'Brouillons' }] as option (option.id)}
 				<button
 					type="button"
-					onclick={() => (isCreateModalOpen = false)}
-					class="rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
+					aria-pressed={statusFilter === option.id}
+					onclick={() => (statusFilter = option.id as typeof statusFilter)}
+					class="cursor-pointer rounded-lg px-3 py-1.5 {statusFilter === option.id
+						? 'bg-brand-primary text-white'
+						: 'text-text-secondary hover:text-text-primary'}"
 				>
-					<X size={18} />
+					{option.label}
 				</button>
-			</div>
-
-			<form
-				method="POST"
-				action="?/create"
-				use:enhance={() => {
-					isSubmitting = true;
-					return async ({ update }) => {
-						isSubmitting = false;
-						isCreateModalOpen = false;
-						await update();
-					};
-				}}
-				class="mt-5 space-y-4 text-xs sm:text-sm"
+			{/each}
+		</div>
+		{#if categories.length > 1}
+			<label class="sr-only" for="article-category-filter">Catégorie</label>
+			<select
+				id="article-category-filter"
+				bind:value={categoryFilter}
+				class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold"
 			>
-				<div>
-					<label for="art-title" class="block font-semibold text-text-primary"
-						>Titre de l’article *</label
-					>
-					<input
-						id="art-title"
-						name="title"
-						bind:value={title}
-						required
-						placeholder="Ex: Impact de la mission au Nord-Cameroun"
-						class="mt-1 h-10 w-full rounded-xl border border-border px-3 text-text-primary focus:border-brand-primary focus:outline-none"
-					/>
-				</div>
-
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<label for="art-cat" class="block font-semibold text-text-primary">Catégorie</label>
-						<select
-							id="art-cat"
-							name="category"
-							bind:value={category}
-							class="mt-1 h-10 w-full rounded-xl border border-border px-3 text-text-primary focus:border-brand-primary focus:outline-none"
-						>
-							<option value="Mission">Mission</option>
-							<option value="Témoignage">Témoignage</option>
-							<option value="Évangélisation">Évangélisation</option>
-							<option value="Enseignement">Enseignement</option>
-						</select>
-					</div>
-
-					<div>
-						<label for="art-time" class="block font-semibold text-text-primary"
-							>Temps de lecture</label
-						>
-						<input
-							id="art-time"
-							name="readTime"
-							bind:value={readTime}
-							placeholder="4 min"
-							class="mt-1 h-10 w-full rounded-xl border border-border px-3 text-text-primary focus:border-brand-primary focus:outline-none"
-						/>
-					</div>
-				</div>
-
-				<!-- CHAMP SÉLECTION IMAGE DEPUIS L'APPAREIL AVEC PRÉVISUALISATION -->
-				<ImagePicker
-					id="art-image"
-					name="imageDataUrl"
-					label="Image de couverture (sélectionnez depuis votre appareil)"
-					bind:value={imageDataUrl}
-					helpText="Sélectionnez une photo de couverture depuis votre appareil (JPG, PNG, WebP)"
-				/>
-
-				<div>
-					<label for="art-excerpt" class="block font-semibold text-text-primary"
-						>Bref résumé / Accroche</label
-					>
-					<input
-						id="art-excerpt"
-						name="excerpt"
-						bind:value={excerpt}
-						placeholder="Court aperçu de l'article pour les cartes..."
-						class="mt-1 h-10 w-full rounded-xl border border-border px-3 text-text-primary focus:border-brand-primary focus:outline-none"
-					/>
-				</div>
-
-				<div>
-					<label for="art-content" class="block font-semibold text-text-primary"
-						>Corps de l'article *</label
-					>
-					<textarea
-						id="art-content"
-						name="content"
-						bind:value={content}
-						required
-						rows={4}
-						placeholder="Rédigez le contenu complet de votre article..."
-						class="mt-1 w-full rounded-xl border border-border p-3 text-text-primary focus:border-brand-primary focus:outline-none"
-					></textarea>
-				</div>
-
-				<div class="flex items-center gap-2 pt-1">
-					<input
-						id="art-published"
-						name="isPublished"
-						type="checkbox"
-						bind:checked={isPublished}
-						class="h-4 w-4 rounded text-brand-primary focus:ring-brand-primary"
-					/>
-					<label for="art-published" class="text-xs font-semibold text-text-primary">
-						Publier immédiatement sur la page d'accueil
-					</label>
-				</div>
-
-				<div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
-					<button
-						type="button"
-						onclick={() => (isCreateModalOpen = false)}
-						class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
-					>
-						Annuler
-					</button>
-					<button
-						type="submit"
-						disabled={isSubmitting}
-						class="rounded-xl bg-brand-primary px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:opacity-50"
-					>
-						{isSubmitting ? 'Enregistrement...' : 'Enregistrer l’article'}
-					</button>
-				</div>
-			</form>
+				<option value="all">Toutes les catégories</option>
+				{#each categories as category (category)}
+					<option value={category}>{category}</option>
+				{/each}
+			</select>
+		{/if}
+		<div class="relative lg:ml-auto lg:w-72">
+			<Search size={15} class="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+			<label class="sr-only" for="article-search">Rechercher</label>
+			<input
+				id="article-search"
+				bind:value={search}
+				placeholder="Rechercher un titre, un auteur…"
+				class="w-full rounded-xl border border-gray-200 bg-white py-2 pr-3 pl-9 text-xs"
+			/>
 		</div>
 	</div>
-{/if}
+
+	<!-- Liste -->
+	{#if filtered.length === 0}
+		<div
+			class="rounded-2xl border border-gray-200 bg-white py-14 text-center text-sm text-text-secondary"
+		>
+			<Newspaper size={36} class="mx-auto mb-3 opacity-40" />
+			{data.articles.length === 0
+				? 'Aucun article pour le moment. Rédigez le premier !'
+				: 'Aucun article ne correspond à ces filtres.'}
+		</div>
+	{:else}
+		<div
+			class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white"
+		>
+			{#each filtered as article (article.id)}
+				<div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+					<a href="/admin/articles/{article.id}" class="shrink-0">
+						<img
+							src={article.imageUrl}
+							alt=""
+							class="h-20 w-full rounded-xl object-cover sm:w-32"
+							loading="lazy"
+						/>
+					</a>
+					<div class="min-w-0 flex-1">
+						<div class="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
+							<span
+								class="rounded-full px-2.5 py-0.5 {article.isPublished
+									? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+									: 'border border-gray-200 bg-gray-50 text-text-secondary'}"
+							>
+								{article.isPublished ? 'Publié' : 'Brouillon'}
+							</span>
+							{#if article.isFeatured}
+								<span
+									class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-amber-950"
+								>
+									<Star size={10} class="fill-amber-950" /> À la une
+								</span>
+							{/if}
+							<span class="rounded-full bg-brand-subtle px-2.5 py-0.5 text-brand-primary"
+								>{article.category}</span
+							>
+						</div>
+						<a
+							href="/admin/articles/{article.id}"
+							class="mt-1.5 block truncate font-display text-base font-bold text-text-primary hover:text-brand-primary"
+						>
+							{article.title}
+						</a>
+						<p class="mt-0.5 text-xs text-text-secondary">
+							{article.authorName ?? 'Équipe ECOFIP'} · {article.readTime ?? ''} ·
+							{article.isPublished
+								? `publié le ${formatDate(article.publishedAt)}`
+								: `modifié le ${formatDate(article.updatedAt)}`}
+						</p>
+					</div>
+					<div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold">
+						<a
+							href="/admin/articles/{article.id}"
+							class="inline-flex items-center gap-1 text-text-secondary hover:text-brand-primary"
+						>
+							<Pencil size={13} /> Modifier
+						</a>
+						<form method="POST" action="?/togglePublish" use:enhance={quickAction}>
+							<input type="hidden" name="id" value={article.id} />
+							<button
+								type="submit"
+								class="inline-flex cursor-pointer items-center gap-1 text-text-secondary hover:text-brand-primary"
+							>
+								{#if article.isPublished}<EyeOff size={13} /> Retirer{:else}<Eye size={13} /> Publier{/if}
+							</button>
+						</form>
+						{#if article.isPublished}
+							<form method="POST" action="?/toggleFeatured" use:enhance={quickAction}>
+								<input type="hidden" name="id" value={article.id} />
+								<button
+									type="submit"
+									class="inline-flex cursor-pointer items-center gap-1 text-text-secondary hover:text-amber-700"
+								>
+									<Star
+										size={13}
+										class={article.isFeatured ? 'fill-amber-400 text-amber-500' : ''}
+									/>
+									{article.isFeatured ? 'Retirer de la une' : 'À la une'}
+								</button>
+							</form>
+							<a
+								href="/actualites/{article.slug}"
+								target="_blank"
+								class="inline-flex items-center gap-1 text-text-secondary hover:text-brand-primary"
+							>
+								<ExternalLink size={13} /> Voir
+							</a>
+						{/if}
+						<button
+							type="button"
+							onclick={() => {
+								toDelete = article;
+								isDeleteOpen = true;
+							}}
+							class="inline-flex cursor-pointer items-center gap-1 text-red-600 hover:text-red-700"
+						>
+							<Trash2 size={13} /> Supprimer
+						</button>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+</div>
+
+<Modal bind:open={isDeleteOpen} title="Supprimer cet article ?">
+	{#if toDelete}
+		<p class="text-sm text-text-secondary">
+			« {toDelete.title} » sera supprimé définitivement, ainsi que son image de couverture et les images
+			de son texte sur Cloudflare R2.
+		</p>
+	{/if}
+	{#snippet actions()}
+		<Button variant="outline" size="md" onclick={() => (isDeleteOpen = false)}>Annuler</Button>
+		{#if toDelete}
+			<form
+				method="POST"
+				action="?/delete"
+				use:enhance={() =>
+					async ({ result, update }) => {
+						showActionResult(result as { type: string; data?: Record<string, unknown> });
+						isDeleteOpen = false;
+						await update({ reset: false });
+					}}
+			>
+				<input type="hidden" name="id" value={toDelete.id} />
+				<Button type="submit" variant="primary" size="md">Supprimer définitivement</Button>
+			</form>
+		{/if}
+	{/snippet}
+</Modal>

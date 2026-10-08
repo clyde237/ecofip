@@ -1,159 +1,146 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
 import { articles } from '$lib/server/db/schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { and, desc, eq, ne } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
+import { formatMediaUrl } from '$lib/server/r2.js';
+import { DEFAULT_ARTICLE_IMAGE, deleteArticleFiles } from '$lib/server/articles.js';
 
-const fallbackArticles = [
-	{
-		id: 1,
-		title: 'Retour sur nos dernières actions missionnaires',
-		slug: 'actions-missionnaires',
-		category: 'Mission',
-		excerpt: 'Bilan complet de nos récentes croisades et actions d’évangélisation.',
-		content:
-			'Nos équipes ont parcouru plusieurs localités pour porter l’Évangile et distribuer des vivres...',
-		imageUrl: '/article-bible.jpg',
-		readTime: '4 min',
-		isPublished: true,
-		createdAt: new Date('2026-09-12')
-	},
-	{
-		id: 2,
-		title: 'Des vies restaurées par la puissance de Dieu',
-		slug: 'vies-restaurees',
-		category: 'Témoignage',
-		excerpt: 'Récits émouvants de délivrance et de relèvement spirituel.',
-		content:
-			'Découvrez les témoignages marquants des jeunes et des familles touchées par la grâce...',
-		imageUrl: '/article-communaute.jpg',
-		readTime: '3 min',
-		isPublished: true,
-		createdAt: new Date('2026-09-08')
-	},
-	{
-		id: 3,
-		title: 'Porter l’Évangile jusque dans les localités',
-		slug: 'porter-evangile',
-		category: 'Évangélisation',
-		excerpt: 'La vision d’implantation et de formation de nouveaux disciples.',
-		content: 'Comment ECOFIP prépare les responsables de demain à travers le pays...',
-		imageUrl: '/article-evangelisation.jpg',
-		readTime: '5 min',
-		isPublished: true,
-		createdAt: new Date('2026-09-01')
-	}
-];
+const DB_UNAVAILABLE = 'La base de données Neon n’est pas configurée.';
+
+function parseId(formData: FormData): number | null {
+	const id = Number(formData.get('id'));
+	return Number.isInteger(id) && id > 0 ? id : null;
+}
 
 export const load: PageServerLoad = async () => {
 	if (isDbConfigured && db) {
 		try {
-			const items = await db.select().from(articles).orderBy(desc(articles.createdAt));
-			if (items.length > 0) {
-				return { articles: items, usingNeonDb: true };
-			}
-		} catch {
-			// En attente de migration
+			const rows = await db
+				.select({
+					id: articles.id,
+					title: articles.title,
+					slug: articles.slug,
+					category: articles.category,
+					imageUrl: articles.imageUrl,
+					authorName: articles.authorName,
+					readTime: articles.readTime,
+					isPublished: articles.isPublished,
+					isFeatured: articles.isFeatured,
+					publishedAt: articles.publishedAt,
+					updatedAt: articles.updatedAt
+				})
+				.from(articles)
+				.orderBy(desc(articles.updatedAt));
+			return {
+				articles: rows.map((row) => ({
+					...row,
+					imageUrl: formatMediaUrl(row.imageUrl) || DEFAULT_ARTICLE_IMAGE
+				})),
+				usingNeonDb: true
+			};
+		} catch (err) {
+			console.error('Erreur lecture articles:', err);
 		}
 	}
-
-	return {
-		articles: fallbackArticles,
-		usingNeonDb: false
-	};
+	return { articles: [], usingNeonDb: false };
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
-		const formData = await request.formData();
-		const title = String(formData.get('title') ?? '').trim();
-		const category = String(formData.get('category') ?? 'Mission').trim();
-		const excerpt = String(formData.get('excerpt') ?? '').trim();
-		const content = String(formData.get('content') ?? '').trim();
-		const readTime = String(formData.get('readTime') ?? '4 min').trim();
-		const imageDataUrl = String(formData.get('imageDataUrl') ?? '').trim();
-		const isPublished = formData.get('isPublished') === 'on';
+	togglePublish: async ({ request }) => {
+		const id = parseId(await request.formData());
+		if (!id) return fail(400, { error: 'Identifiant invalide.' });
+		if (!db) return fail(503, { error: DB_UNAVAILABLE });
 
-		if (!title || !content) {
-			return fail(400, { error: 'Le titre et le contenu de l’article sont obligatoires.' });
+		try {
+			const [existing] = await db
+				.select({ isPublished: articles.isPublished, publishedAt: articles.publishedAt })
+				.from(articles)
+				.where(eq(articles.id, id))
+				.limit(1);
+			if (!existing) return fail(404, { error: 'Article introuvable.' });
+
+			const publish = !existing.isPublished;
+			await db
+				.update(articles)
+				.set({
+					isPublished: publish,
+					// La date de première publication est conservée (ordre des articles sur le site)
+					publishedAt: publish ? (existing.publishedAt ?? new Date()) : existing.publishedAt,
+					// Un article retiré du site ne peut plus être à la une
+					...(publish ? {} : { isFeatured: false }),
+					updatedAt: new Date()
+				})
+				.where(eq(articles.id, id));
+			return {
+				success: true,
+				message: publish ? 'Article publié sur le site.' : 'Article retiré du site.'
+			};
+		} catch (err) {
+			console.error(`Erreur publication article #${id}:`, err);
+			return fail(500, { error: 'Erreur lors de la mise à jour de la publication.' });
 		}
-
-		const slug = title
-			.toLowerCase()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/(^-|-$)+/g, '');
-
-		// Image uploadée depuis l'appareil ou image par défaut selon catégorie
-		const fallbackImage =
-			category === 'Témoignage'
-				? '/article-communaute.jpg'
-				: category === 'Évangélisation'
-					? '/article-evangelisation.jpg'
-					: '/article-bible.jpg';
-		const imageUrl = imageDataUrl || fallbackImage;
-
-		if (isDbConfigured && db) {
-			try {
-				await db.insert(articles).values({
-					title,
-					slug: slug || `article-${Date.now()}`,
-					category,
-					excerpt: excerpt || title,
-					content,
-					imageUrl,
-					readTime: readTime || '4 min',
-					isPublished,
-					publishedAt: isPublished ? new Date() : null
-				});
-			} catch {
-				return fail(500, { error: 'Erreur lors de la création de l’article sur Neon.' });
-			}
-		}
-
-		return { success: true, message: 'Article créé et enregistré avec succès !' };
 	},
 
-	togglePublish: async ({ request }) => {
-		const formData = await request.formData();
-		const id = Number(formData.get('id'));
-		const currentStatus = formData.get('currentStatus') === 'true';
+	/** Un seul article à la une : en mettre un à la une retire les autres */
+	toggleFeatured: async ({ request }) => {
+		const id = parseId(await request.formData());
+		if (!id) return fail(400, { error: 'Identifiant invalide.' });
+		if (!db) return fail(503, { error: DB_UNAVAILABLE });
 
-		if (!id) return fail(400, { error: 'Identifiant invalide' });
+		try {
+			const [existing] = await db
+				.select({ isFeatured: articles.isFeatured, isPublished: articles.isPublished })
+				.from(articles)
+				.where(eq(articles.id, id))
+				.limit(1);
+			if (!existing) return fail(404, { error: 'Article introuvable.' });
+			if (!existing.isFeatured && !existing.isPublished) {
+				return fail(400, { error: 'Publiez l’article avant de le mettre à la une.' });
+			}
 
-		if (isDbConfigured && db) {
-			try {
+			const feature = !existing.isFeatured;
+			if (feature) {
 				await db
 					.update(articles)
-					.set({
-						isPublished: !currentStatus,
-						publishedAt: !currentStatus ? new Date() : null,
-						updatedAt: new Date()
-					})
-					.where(eq(articles.id, id));
-			} catch {
-				return fail(500, { error: 'Erreur lors de la mise à jour' });
+					.set({ isFeatured: false })
+					.where(and(eq(articles.isFeatured, true), ne(articles.id, id)));
 			}
+			await db
+				.update(articles)
+				.set({ isFeatured: feature, updatedAt: new Date() })
+				.where(eq(articles.id, id));
+			return {
+				success: true,
+				message: feature
+					? 'Article mis à la une de la page Actualités.'
+					: 'Article retiré de la une.'
+			};
+		} catch (err) {
+			console.error(`Erreur mise à la une article #${id}:`, err);
+			return fail(500, { error: 'Erreur lors de la mise à la une.' });
 		}
-
-		return { success: true, message: 'Statut de publication de l’article mis à jour.' };
 	},
 
 	delete: async ({ request }) => {
-		const formData = await request.formData();
-		const id = Number(formData.get('id'));
+		const id = parseId(await request.formData());
+		if (!id) return fail(400, { error: 'Identifiant invalide.' });
+		if (!db) return fail(503, { error: DB_UNAVAILABLE });
 
-		if (!id) return fail(400, { error: 'Identifiant invalide' });
-
-		if (isDbConfigured && db) {
-			try {
-				await db.delete(articles).where(eq(articles.id, id));
-			} catch {
-				return fail(500, { error: 'Erreur lors de la suppression' });
-			}
+		let deleted: { imageKey: string | null; content: string } | undefined;
+		try {
+			[deleted] = await db
+				.delete(articles)
+				.where(eq(articles.id, id))
+				.returning({ imageKey: articles.imageKey, content: articles.content });
+		} catch (err) {
+			console.error(`Erreur suppression article #${id}:`, err);
+			return fail(500, { error: 'Erreur lors de la suppression.' });
 		}
+		if (!deleted) return fail(404, { error: 'Article introuvable.' });
 
-		return { success: true, message: 'Article supprimé avec succès.' };
+		// Couverture et images insérées dans le texte ne sont retirées de R2 qu'une fois l'article supprimé
+		await deleteArticleFiles(deleted.imageKey, deleted.content);
+		return { success: true, message: 'Article supprimé.' };
 	}
 };

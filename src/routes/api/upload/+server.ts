@@ -65,6 +65,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			'uploads',
 			'team',
 			'gallery',
+			'testimonials',
+			'sermons',
 			'events',
 			'articles'
 		];

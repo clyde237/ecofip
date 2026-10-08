@@ -2,9 +2,83 @@ import { db, isDbConfigured } from '$lib/server/db/index.js';
 import { events, videos } from '$lib/server/db/schema.js';
 import { eq, asc, desc, and } from 'drizzle-orm';
 import type { PageServerLoad } from './$types.js';
-import type { DetailedEventItem, EventItem, VideoChapter } from '$lib/design-system/types.js';
+import type {
+	ArticleItem,
+	PublicSermon,
+	DetailedEventItem,
+	EventItem,
+	TestimonialItem,
+	VideoChapter
+} from '$lib/design-system/types.js';
 import { formatMediaUrl } from '$lib/server/r2.js';
 import { getEventTargetDate } from '$lib/utils/eventDate.js';
+import { loadPublishedTestimonials } from '$lib/server/testimonials.js';
+import { loadPublishedArticles, toPublicArticle } from '$lib/server/articles.js';
+import { loadPublishedSermons, toPublicSermon } from '$lib/server/sermons.js';
+
+const HOME_TESTIMONIALS_COUNT = 3;
+const HOME_ARTICLES_COUNT = 3;
+const HOME_SERMONS_COUNT = 8;
+
+/** Dernières prédications publiées (bandeau masqué si aucune ou base indisponible) */
+async function loadHomeSermons(): Promise<PublicSermon[]> {
+	if (!isDbConfigured || !db) return [];
+	try {
+		return (await loadPublishedSermons(HOME_SERMONS_COUNT)).map(toPublicSermon);
+	} catch (err) {
+		console.error('Erreur chargement prédications homepage:', err);
+		return [];
+	}
+}
+
+/** Les 3 derniers articles publiés. null : base indisponible, la section garde son contenu par défaut. */
+async function loadHomeArticles(): Promise<ArticleItem[] | null> {
+	if (!isDbConfigured || !db) return null;
+	try {
+		return (await loadPublishedArticles(HOME_ARTICLES_COUNT)).map((row) => {
+			const article = toPublicArticle(row);
+			return {
+				id: article.id,
+				title: article.title,
+				category: article.category,
+				date: article.date,
+				image: article.image,
+				imageAlt: article.imageAlt,
+				href: article.href,
+				readTime: article.readTime
+			};
+		});
+	} catch (err) {
+		console.error('Erreur chargement articles homepage:', err);
+		return null;
+	}
+}
+
+/**
+ * Les 3 derniers témoignages écrits publiés (créés par l'admin ou validés).
+ * null : base indisponible, la section garde ses témoignages par défaut.
+ */
+async function loadHomeTestimonials(): Promise<TestimonialItem[] | null> {
+	if (!isDbConfigured || !db) return null;
+	try {
+		const published = await loadPublishedTestimonials({
+			type: 'text',
+			limit: HOME_TESTIMONIALS_COUNT
+		});
+		return published.map((item) => ({
+			id: item.id,
+			name: item.name,
+			membership: [item.role, item.city].filter(Boolean).join(' · ') || 'Témoignage',
+			quote: `« ${item.quote} »`,
+			avatar: item.avatar,
+			verified: true,
+			rating: 5
+		}));
+	} catch (err) {
+		console.error('Erreur chargement témoignages homepage:', err);
+		return null;
+	}
+}
 
 export const load: PageServerLoad = async () => {
 	let publishedVideos: VideoChapter[] = [];
@@ -126,6 +200,9 @@ export const load: PageServerLoad = async () => {
 	return {
 		videos: publishedVideos,
 		featuredEvent,
-		events: homeEvents
+		events: homeEvents,
+		testimonials: await loadHomeTestimonials(),
+		news: await loadHomeArticles(),
+		sermons: await loadHomeSermons()
 	};
 };

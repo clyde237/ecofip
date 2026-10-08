@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import { onMount } from 'svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
 	import Button from '$lib/design-system/components/Button.svelte';
@@ -21,7 +22,6 @@
 		BookOpen,
 		Sparkles,
 		Quote,
-		ArrowRight,
 		PhoneCall,
 		Copy
 	} from '@lucide/svelte';
@@ -137,67 +137,11 @@
 
 <div>
 	<!-- SECTION 02 — INTRODUCTION AU DON (HERO) -->
-	<section
-		class="relative flex w-full flex-col justify-center overflow-hidden bg-[#0d1c1d] pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-36 lg:pb-24"
-		aria-labelledby="don-hero-title"
-	>
-		<div
-			class="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity"
-			style="background-image: url('/donate_mission_bg_1790673652029.jpg');"
-			aria-hidden="true"
-		></div>
-
-		<div
-			class="absolute inset-0 bg-gradient-to-b from-[#0d1c1d]/95 via-[#0d1c1d]/85 to-[#171B25]/95 sm:bg-gradient-to-r sm:from-[#0d1c1d]/95 sm:via-[#171B25]/90 sm:to-[#96000A]/70"
-			aria-hidden="true"
-		></div>
-
-		<Container class="relative z-10">
-			<div class="mx-auto max-w-3xl text-center">
-				<div class="mb-4 inline-flex items-center justify-center">
-					<span
-						class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3.5 py-1.5 font-body text-xs font-bold tracking-widest text-brand-accent uppercase shadow-xs backdrop-blur-md"
-					>
-						<Sparkles size={13} class="text-brand-accent" aria-hidden="true" />
-						<span>Soutenez la mission</span>
-					</span>
-				</div>
-
-				<h1
-					id="don-hero-title"
-					class="font-display text-4xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl"
-				>
-					Faire un Don
-				</h1>
-
-				<p
-					class="mt-5 font-body text-base leading-relaxed text-white/85 sm:text-lg sm:leading-relaxed"
-				>
-					Votre générosité permet à l'Évangile d'être annoncé dans les coins les plus reculés du
-					Cameroun. Chaque don, petit ou grand, fait une différence éternelle.
-				</p>
-
-				<div class="mt-8 flex flex-wrap items-center justify-center gap-4">
-					<button
-						type="button"
-						onclick={() => (isDonationModalOpen = true)}
-						class="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-7 py-3.5 font-body text-base font-bold text-white shadow-lg transition-all hover:scale-102 hover:bg-brand-primary-hover"
-					>
-						<Heart size={18} class="fill-white" />
-						<span>Donner en ligne</span>
-					</button>
-
-					<a
-						href="#moyens-de-don"
-						class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 font-body text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20"
-					>
-						<span>Voir les moyens de don</span>
-						<ArrowRight size={16} />
-					</a>
-				</div>
-			</div>
-		</Container>
-	</section>
+	<PageBanner
+		title="Faire un don"
+		subtitle="Votre générosité permet à l’Évangile d’être annoncé dans les coins les plus reculés du Cameroun. Chaque don, petit ou grand, fait une différence éternelle."
+		backgroundImage="/donate_mission_bg_1790673652029.jpg"
+	/>
 
 	<!-- SECTION 03 — VERSET BIBLIQUE -->
 	<section class="bg-brand-primary py-10 text-white sm:py-12" aria-label="Fondement biblique">

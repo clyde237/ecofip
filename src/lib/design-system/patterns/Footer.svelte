@@ -14,6 +14,8 @@
 		{ label: 'Nos événements', href: '/nos-evenements' },
 		{ label: 'Actualités', href: '/actualites' },
 		{ label: 'Galerie', href: '/galerie' },
+		{ label: 'Témoignages', href: '/temoignages' },
+		{ label: 'Prédications', href: '/predications' },
 		{ label: 'Nous rejoindre', href: '/nous-rejoindre' },
 		{ label: 'Contact', href: '/contact' }
 	];

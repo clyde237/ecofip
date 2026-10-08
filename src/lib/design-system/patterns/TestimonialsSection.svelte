@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
-	import { Quote, Star, CheckCircle2, ArrowRight } from '@lucide/svelte';
+	import { Quote, Star, CheckCircle2, ArrowRight, MessageSquareQuote } from '@lucide/svelte';
 	import type { TestimonialItem, TestimonialsSectionProps } from '../types.js';
 
 	const defaultTestimonials: TestimonialItem[] = [
@@ -45,6 +45,7 @@
 		testimonials = defaultTestimonials,
 		ctaLabel = 'Partager mon témoignage',
 		ctaHref = '/contact',
+		allHref,
 		class: customClass = ''
 	}: TestimonialsSectionProps = $props();
 
@@ -140,8 +141,13 @@
 			{/if}
 		</div>
 
-		<!-- Grille des 3 Cartes de Témoignages Glassmorphism -->
-		<div class="mt-12 grid grid-cols-1 gap-6 sm:mt-16 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+		<!-- Grille des 3 Cartes de Témoignages Glassmorphism (masquée tant qu'aucun n'est publié) -->
+		<div
+			class="mt-12 grid grid-cols-1 gap-6 sm:mt-16 md:grid-cols-2 lg:grid-cols-3 lg:gap-8 {testimonials.length ===
+			0
+				? 'hidden'
+				: ''}"
+		>
 			{#each testimonials as item, index (item.id)}
 				<article
 					class="group relative flex flex-col justify-between rounded-2xl border border-white/20 bg-white/[0.09] p-6 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:border-white/40 hover:bg-white/[0.14] sm:rounded-3xl sm:p-8 {isVisible
@@ -179,12 +185,21 @@
 
 					<!-- Auteur avec Photo Portrait HD, Rôle & Statut vérifié -->
 					<div class="mt-8 flex items-center gap-4 border-t border-white/15 pt-5">
-						<img
-							src={item.avatar}
-							alt="Portrait de {item.name}"
-							class="h-13 w-13 shrink-0 rounded-full object-cover shadow-md ring-2 ring-white/40 sm:h-14 sm:w-14"
-							loading="lazy"
-						/>
+						{#if item.avatar}
+							<img
+								src={item.avatar}
+								alt="Portrait de {item.name}"
+								class="h-13 w-13 shrink-0 rounded-full object-cover shadow-md ring-2 ring-white/40 sm:h-14 sm:w-14"
+								loading="lazy"
+							/>
+						{:else}
+							<div
+								class="flex h-13 w-13 shrink-0 items-center justify-center rounded-full bg-white/20 font-display text-lg font-bold text-white ring-2 ring-white/40 sm:h-14 sm:w-14"
+								aria-hidden="true"
+							>
+								{item.name.charAt(0).toUpperCase()}
+							</div>
+						{/if}
 
 						<div class="min-w-0">
 							<div class="font-display text-base font-bold text-white sm:text-lg">
@@ -235,6 +250,15 @@
 						/>
 					</a>
 				</div>
+				{#if allHref}
+					<a
+						href={allHref}
+						class="mt-4 inline-flex items-center gap-1.5 font-body text-sm font-semibold text-white/90 underline-offset-4 hover:text-white hover:underline"
+					>
+						<MessageSquareQuote size={16} aria-hidden="true" />
+						Lire tous les témoignages, écrits et vidéos
+					</a>
+				{/if}
 			</div>
 		{/if}
 	</Container>

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
-		JoinHero,
 		JoinWhyUsSection,
 		JoinRolesSection,
 		JoinApplicationSection,
@@ -35,7 +35,11 @@
 
 <div>
 	<!-- SECTION 02 — Appel à la mission -->
-	<JoinHero />
+	<PageBanner
+		title="Nous rejoindre"
+		subtitle="Le champ est vaste au Cameroun et la moisson est abondante. Nous avons besoin d’ouvriers fidèles, engagés et passionnés pour participer à cette grande œuvre. Quel que soit votre don ou votre disponibilité, il y a une place pour vous dans cette mission."
+		backgroundImage="/article-communaute.jpg"
+	/>
 
 	<!-- SECTION 03 — Comment s'impliquer ? -->
 	<JoinWhyUsSection />

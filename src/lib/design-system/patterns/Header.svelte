@@ -49,6 +49,11 @@
 			label: 'Nous rejoindre',
 			href: '/nous-rejoindre',
 			description: 'Engagez-vous comme bénévole, équipier ou donateur'
+		},
+		{
+			label: 'Témoignages',
+			href: '/temoignages',
+			description: 'Des vies transformées, en textes et en vidéos'
 		}
 	];
 
@@ -65,7 +70,8 @@
 		return (
 			currentPath.startsWith('/a-propos') ||
 			currentPath.startsWith('/projets-missions') ||
-			currentPath.startsWith('/nous-rejoindre')
+			currentPath.startsWith('/nous-rejoindre') ||
+			currentPath.startsWith('/temoignages')
 		);
 	}
 </script>
@@ -243,6 +249,25 @@
 				{/if}
 			</a>
 
+			<!-- Prédications -->
+			<a
+				href="/predications"
+				aria-current={isLinkActive('/predications') ? 'page' : undefined}
+				class="relative py-2 text-sm font-semibold transition-colors duration-150 xl:text-[15px] {isLinkActive(
+					'/predications'
+				)
+					? 'font-bold text-brand-primary'
+					: 'text-text-primary hover:text-brand-primary'}"
+			>
+				Prédications
+				{#if isLinkActive('/predications')}
+					<span
+						class="absolute right-0 -bottom-2 left-0 h-[2.5px] rounded-full bg-brand-primary"
+						aria-hidden="true"
+					></span>
+				{/if}
+			</a>
+
 			<!-- Contact -->
 			<a
 				href="/contact"
@@ -383,6 +408,19 @@
 						: 'text-text-primary hover:bg-surface'}"
 				>
 					<span>Galerie</span>
+				</a>
+
+				<!-- Prédications -->
+				<a
+					href="/predications"
+					onclick={() => (isMobileMenuOpen = false)}
+					class="flex items-center justify-between rounded-lg p-3 text-base font-semibold transition-colors {isLinkActive(
+						'/predications'
+					)
+						? 'bg-brand-subtle text-brand-primary'
+						: 'text-text-primary hover:bg-surface'}"
+				>
+					<span>Prédications</span>
 				</a>
 
 				<!-- Contact -->

@@ -16,6 +16,7 @@
 		toast
 	} from '$lib';
 	import TenRegionsSection from '$lib/design-system/patterns/TenRegionsSection.svelte';
+	import SermonsStrip from '$lib/design-system/patterns/SermonsStrip.svelte';
 	import type { DetailedEventItem } from '$lib/design-system/types.js';
 	import type { PageData } from './$types.js';
 	import { CheckCircle2 } from '@lucide/svelte';
@@ -93,14 +94,11 @@
 		/>
 	{/if}
 
-	<!-- SECTION 05 — 10 RÉGIONS, 1 MESSAGE (Adamaoua, Centre, Est, Extrême-Nord, Littoral, Nord, Nord-Ouest, Ouest, Sud, Sud-Ouest) -->
-	<TenRegionsSection />
-
-	<!-- SECTION 06 — TÉMOIGNAGES (Des vies transformées par la puissance de l'Évangile) -->
-	<TestimonialsSection />
-
 	<!-- SECTION 07 — À PROPOS D'ECOFIP (Les Économes Fidèles et Prudents — Notre vision & Direction) -->
 	<AboutSection />
+
+	<!-- SECTION 05 — 10 RÉGIONS, 1 MESSAGE (Adamaoua, Centre, Est, Extrême-Nord, Littoral, Nord, Nord-Ouest, Ouest, Sud, Sud-Ouest) -->
+	<TenRegionsSection />
 
 	<!-- SECTION 08 — CARTE DES MISSIONS (Villes visitées et à venir) -->
 	<MapSection />
@@ -108,11 +106,28 @@
 	<!-- SECTION 09 — NOS PROJETS & MISSIONS (Croisades, Actions humanitaires, Séminaires) -->
 	<EventsSection events={data.events && data.events.length > 0 ? data.events : undefined} />
 
+	<!-- SECTION 06 — TÉMOIGNAGES (Des vies transformées par la puissance de l'Évangile) -->
+	<TestimonialsSection
+		testimonials={data.testimonials ?? undefined}
+		ctaHref="/temoignages#partager"
+		allHref="/temoignages"
+	/>
+
+	<!-- PRÉDICATIONS — Dernières prédications vidéo (masqué tant qu'aucune n'est publiée) -->
+	{#if data.sermons.length > 0}
+		<SermonsStrip sermons={data.sermons} />
+	{/if}
+
 	<!-- SECTION 11 — GALERIE PHOTOS & VIDÉOS (Revivez les moments forts de nos missions) -->
 	<VideoSection chapters={data.videos && data.videos.length > 0 ? data.videos : undefined} />
 
 	<!-- SECTION 12 — ACTUALITÉS & TÉMOIGNAGES (Dernières nouvelles de la moisson) -->
-	<NewsSection />
+	<!-- Masquée tant qu'aucun article n'est publié -->
+	{#if data.news === null}
+		<NewsSection />
+	{:else if data.news.length > 0}
+		<NewsSection articles={data.news} />
+	{/if}
 
 	<!-- SECTION 10 — REJOIGNEZ LA MISSION (Participer à la mission ou Faire un don) -->
 	<DonationCtaSection
