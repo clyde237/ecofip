@@ -15,6 +15,7 @@
 		HeartHandshake
 	} from '@lucide/svelte';
 	import type { VideoChapter, VideoSectionProps } from '../types.js';
+	import { IMPACT, formatNumber } from '$lib/data/camerounPourJesus.js';
 
 	const defaultChapters: VideoChapter[] = [
 		{
@@ -548,8 +549,12 @@
 					<Globe size={20} />
 				</div>
 				<div>
-					<div class="font-display text-base font-bold text-white sm:text-lg">10 Régions</div>
-					<div class="font-body text-[11px] text-white/70 sm:text-xs">Cameroun & au-delà</div>
+					<div class="font-display text-base font-bold text-white sm:text-lg">
+						{IMPACT.campaigns} campagnes
+					</div>
+					<div class="font-body text-[11px] text-white/70 sm:text-xs">
+						Dans 9 régions du Cameroun
+					</div>
 				</div>
 			</div>
 
@@ -560,8 +565,10 @@
 					<Flame size={20} />
 				</div>
 				<div>
-					<div class="font-display text-base font-bold text-white sm:text-lg">50 000+</div>
-					<div class="font-body text-[11px] text-white/70 sm:text-xs">Vies touchées</div>
+					<div class="font-display text-base font-bold text-white sm:text-lg">
+						{formatNumber(IMPACT.peopleReached)}+
+					</div>
+					<div class="font-body text-[11px] text-white/70 sm:text-xs">Personnes touchées</div>
 				</div>
 			</div>
 

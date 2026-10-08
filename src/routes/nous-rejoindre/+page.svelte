@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
 		JoinWhyUsSection,
@@ -19,19 +20,11 @@
 	let selectedDonationCause = $state<'mission' | 'sante' | 'jeunesse'>('mission');
 </script>
 
-<svelte:head>
-	<title>Nous rejoindre — Devenir Bénévole & Servir la Mission | ECOFIP</title>
-	<meta
-		name="description"
-		content="Engagez-vous aux côtés d'ECOFIP : évangélisation, intercession, logistique, multimédia, action sociale, formation. Mettez vos talents au service du Royaume au Cameroun."
-	/>
-	<meta property="og:title" content="Nous rejoindre — Devenir Bénévole & Serviteur ECOFIP" />
-	<meta
-		property="og:description"
-		content="Rejoignez la famille missionnaire ECOFIP. Mettez vos dons au service de l'Évangile et de l'aide humanitaire."
-	/>
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Nous rejoindre — Bénévolat et service missionnaire | ECOFIP"
+	description="Engagez-vous avec ECOFIP : évangélisation, intercession, logistique, multimédia, action sociale. Mettez vos dons au service de « Cameroun pour Jésus »."
+	breadcrumbs={[{ name: 'Nous rejoindre', path: '/nous-rejoindre' }]}
+/>
 
 <div>
 	<!-- SECTION 02 — Appel à la mission -->

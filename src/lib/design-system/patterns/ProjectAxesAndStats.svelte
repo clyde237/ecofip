@@ -1,13 +1,7 @@
 <script lang="ts">
 	import Container from '../components/Container.svelte';
-	import {
-		Sparkles,
-		Megaphone,
-		BookOpen,
-		HeartHandshake,
-		Church,
-		CheckCircle2
-	} from '@lucide/svelte';
+	import { IMPACT, formatNumber } from '$lib/data/camerounPourJesus.js';
+	import { Sparkles, Megaphone, BookOpen, HeartHandshake, Church } from '@lucide/svelte';
 
 	let { class: customClass = '' }: { class?: string } = $props();
 
@@ -42,15 +36,16 @@
 		}
 	];
 
+	// Chiffres officiels du pressbook « Bafoussam pour Jésus » (src/lib/data/camerounPourJesus.ts)
 	const stats = [
-		{ value: '2', label: 'Ans de prédication' },
-		{ value: '10', label: 'Régions visitées' },
-		{ value: '14', label: 'Villes touchées' },
-		{ value: '15', label: 'Croisades organisées' },
-		{ value: '~19 000', label: 'Personnes exposées' },
-		{ value: '~5 000', label: 'Convertis' },
-		{ value: '~1 000', label: 'Engagés dans les églises' },
-		{ value: '>500', label: 'Guérisons enregistrées' }
+		{ value: `${IMPACT.regionsVisited} / ${IMPACT.regionsTotal}`, label: 'Régions parcourues' },
+		{ value: String(IMPACT.campaigns), label: 'Campagnes d’évangélisation' },
+		{ value: String(IMPACT.cities), label: 'Villes touchées' },
+		{ value: `${formatNumber(IMPACT.kilometers)}+`, label: 'Kilomètres parcourus' },
+		{ value: `${formatNumber(IMPACT.peopleReached)}+`, label: 'Personnes touchées' },
+		{ value: `${IMPACT.healings}+`, label: 'Guérisons miraculeuses' },
+		{ value: `${IMPACT.deliverances}+`, label: 'Délivrances' },
+		{ value: `${IMPACT.peopleCounselled}+`, label: 'Personnes écoutées et conseillées' }
 	];
 </script>
 
@@ -107,7 +102,9 @@
 				>
 				<h3 class="mt-1 font-display text-2xl font-bold sm:text-3xl">Chiffres clés du projet</h3>
 				<p class="mt-2 text-sm text-white/80 sm:text-base">
-					L'impact de « Cameroun pour Jésus » depuis son lancement dans les 10 régions du pays.
+					L'impact de « Cameroun pour Jésus » depuis 2024, plus {IMPACT.literatureDistributed} littératures
+					chrétiennes distribuées et une campagne de santé ({IMPACT.healthCampaign.caregivers} soignants,
+					{IMPACT.healthCampaign.patients} malades consultés).
 				</p>
 			</div>
 

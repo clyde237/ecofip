@@ -7,6 +7,7 @@ import {
 	toPublicArticle
 } from '$lib/server/articles.js';
 import { loadPublishedSermons, toPublicSermon } from '$lib/server/sermons.js';
+import { toCameroonIso } from '$lib/config/site.js';
 import type { PageServerLoad } from './$types.js';
 
 const RECENT_COUNT = 5;
@@ -30,6 +31,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	return {
 		article,
 		content: row.content,
+		publishedAt: toCameroonIso(row.publishedAt ?? row.createdAt),
+		modifiedAt: toCameroonIso(row.updatedAt),
 		canonicalUrl: `${url.origin}/actualites/${row.slug}`,
 		// Colonne latérale : articles récents et catégories (article courant compris dans les comptes)
 		recent: others.slice(0, RECENT_COUNT).map(toPublicArticle),

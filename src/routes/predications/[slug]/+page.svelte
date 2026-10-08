@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
+	import { SITE_URL, absoluteUrl, shareableImageUrl, toIsoDuration } from '$lib/config/site.js';
 	import { onMount } from 'svelte';
 	import {
 		Home,
@@ -20,6 +22,10 @@
 	let { data }: { data: PageData } = $props();
 
 	let sermon = $derived(data.sermon);
+	let sermonDescription = $derived(
+		sermon.description ||
+			`${sermon.title}${sermon.preacher ? ` — ${sermon.preacher}` : ''}${sermon.scripture ? ` (${sermon.scripture})` : ''}. Prédication en vidéo d’ECOFIP.`
+	);
 	let copied = $state(false);
 	let canNativeShare = $state(false);
 	let isFeedOpen = $state(false);
@@ -51,22 +57,32 @@
 	}
 </script>
 
+<Seo
+	title="{sermon.title} — Prédication | ECOFIP"
+	description={sermonDescription}
+	image={sermon.posterUrl}
+	imageAlt={sermon.title}
+	type="video.other"
+	canonicalPath={sermon.href}
+	breadcrumbs={[
+		{ name: 'Prédications', path: '/predications' },
+		{ name: sermon.title, path: sermon.href }
+	]}
+	jsonLd={{
+		'@type': 'VideoObject',
+		name: sermon.title,
+		description: sermonDescription,
+		thumbnailUrl: [shareableImageUrl(sermon.posterUrl)],
+		uploadDate: data.uploadedAt,
+		contentUrl: absoluteUrl(sermon.videoUrl),
+		duration: sermon.duration ? toIsoDuration(sermon.duration) : undefined,
+		inLanguage: 'fr',
+		publisher: { '@id': `${SITE_URL}/#organization` }
+	}}
+/>
 <svelte:head>
-	<title>{sermon.title} — Prédications | ECOFIP</title>
-	<meta
-		name="description"
-		content={sermon.description ||
-			`${sermon.title}${sermon.preacher ? ` — ${sermon.preacher}` : ''}${sermon.scripture ? ` (${sermon.scripture})` : ''}`}
-	/>
-	<link rel="canonical" href={data.canonicalUrl} />
-	<meta property="og:type" content="video.other" />
-	<meta property="og:title" content={sermon.title} />
-	<meta property="og:url" content={data.canonicalUrl} />
-	{#if sermon.posterUrl?.startsWith('http')}
-		<meta property="og:image" content={sermon.posterUrl} />
-	{/if}
-	{#if sermon.videoUrl.startsWith('http')}
-		<meta property="og:video" content={sermon.videoUrl} />
+	{#if sermon.videoUrl}
+		<meta property="og:video" content={absoluteUrl(sermon.videoUrl)} />
 	{/if}
 </svelte:head>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
 	import { Video } from '@lucide/svelte';
@@ -41,15 +42,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Prédications — Messages courts en vidéo | ECOFIP</title>
-	<meta
-		name="description"
-		content="Prédications courtes en vidéo d’ECOFIP : des messages de foi à regarder et partager."
-	/>
-	<meta property="og:title" content="Prédications — ECOFIP" />
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Prédications en vidéo — Messages de foi | ECOFIP"
+	description="Prédications courtes en vidéo d’ECOFIP : des messages de foi, d’encouragement et d’enseignement biblique à regarder et à partager."
+	breadcrumbs={[{ name: 'Prédications', path: '/predications' }]}
+/>
 
 <PageBanner
 	title="Prédications"

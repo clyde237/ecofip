@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
 		ProjectsListSection,
@@ -11,21 +12,24 @@
 		Input
 	} from '$lib';
 	import ProjectAxesAndStats from '$lib/design-system/patterns/ProjectAxesAndStats.svelte';
+	import CpjTimelineSection from '$lib/design-system/patterns/CpjTimelineSection.svelte';
+	import CpjEditionsSection from '$lib/design-system/patterns/CpjEditionsSection.svelte';
+	import type { PageData } from './$types.js';
 	import TestimonyCategoriesSection from '$lib/design-system/patterns/TestimonyCategoriesSection.svelte';
 	import { Heart } from '@lucide/svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
+
+	let { data }: { data: PageData } = $props();
 
 	let isDonationModalOpen = $state(false);
 	let selectedProjectCause = $state<'evangelisation' | 'sante' | 'disciples'>('evangelisation');
 </script>
 
-<svelte:head>
-	<title>Projets & Missions — Cameroun pour Jésus | ECOFIP</title>
-	<meta
-		name="description"
-		content="« Cameroun pour Jésus » : stratégie missionnaire sur 3 ans (2024-2026) visant à toucher systématiquement les 10 régions du pays avec l'Évangile et des actions humanitaires."
-	/>
-</svelte:head>
+<Seo
+	title="Cameroun pour Jésus 2024-2026 — Projets et missions | ECOFIP"
+	description="Programme « Cameroun pour Jésus » : 20 campagnes dans 19 villes et 9 régions, plus de 20 000 personnes touchées. Bilan par édition et croisade de clôture à Bafoussam."
+	breadcrumbs={[{ name: 'Projets & Missions', path: '/projets-missions' }]}
+/>
 
 <div>
 	<!-- SECTION 02 — INTRODUCTION DU PROJET (Cameroun pour Jésus - 2024-2026) -->
@@ -38,6 +42,12 @@
 
 	<!-- SECTION 03, 04, 05 — LE PROJET EN DÉTAIL, LES 4 AXES & CHIFFRES CLÉS -->
 	<ProjectAxesAndStats />
+
+	<!-- Chronologie 2024-2026 et croisade de clôture (pressbook « Bafoussam pour Jésus ») -->
+	<CpjTimelineSection finalCrusadeHref={data.finalCrusadeHref} />
+
+	<!-- Les 20 campagnes précédentes, ville par ville -->
+	<CpjEditionsSection />
 
 	<!-- Catalogue des projets de terrain -->
 	<ProjectsListSection />

@@ -5,6 +5,7 @@ import {
 	loadPublishedSermonBySlug,
 	toPublicSermon
 } from '$lib/server/sermons.js';
+import { toCameroonIso } from '$lib/config/site.js';
 import type { PageServerLoad } from './$types.js';
 
 const OTHERS_COUNT = 12;
@@ -24,6 +25,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 
 	return {
 		sermon,
+		uploadedAt: toCameroonIso(row.publishedAt ?? row.createdAt),
 		canonicalUrl: `${url.origin}/predications/${row.slug}`,
 		others: [...sameSeries, ...others.filter((other) => !sameSeries.includes(other))].slice(
 			0,

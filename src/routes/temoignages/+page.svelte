@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
@@ -78,15 +79,11 @@
 	const labelClass = 'block font-body text-sm font-semibold text-text-primary';
 </script>
 
-<svelte:head>
-	<title>Témoignages — Des vies transformées | ECOFIP</title>
-	<meta
-		name="description"
-		content="Lisez et regardez les témoignages de personnes touchées, restaurées et guéries lors des missions ECOFIP au Cameroun, et partagez le vôtre."
-	/>
-	<meta property="og:title" content="Témoignages — ECOFIP" />
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Témoignages — Vies transformées au Cameroun | ECOFIP"
+	description="Témoignages écrits et vidéo de personnes touchées, guéries et restaurées lors des campagnes d’ECOFIP au Cameroun. Partagez aussi le vôtre."
+	breadcrumbs={[{ name: 'Témoignages', path: '/temoignages' }]}
+/>
 
 <!-- En-tête -->
 <PageBanner

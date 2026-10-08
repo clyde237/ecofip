@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import {
 		Hero,
 		StatsBar,
@@ -70,13 +71,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>ECOFIP — Les Économes Fidèles et Prudents | Cameroun pour Jésus</title>
-	<meta
-		name="description"
-		content="ECOFIP — Les Économes Fidèles et Prudents parcourt les 10 régions du Cameroun pour annoncer l'Évangile, transformer des vies et apporter l'espoir à travers des croisades d'évangélisation et des actions humanitaires."
-	/>
-</svelte:head>
+<Seo
+	title="ECOFIP — Cameroun pour Jésus | Évangélisation au Cameroun"
+	description="ECOFIP, Les Économes Fidèles et Prudents, porte « Cameroun pour Jésus » : 20 campagnes d’évangélisation et de guérison dans 9 régions. Clôture à Bafoussam du 27 au 31 octobre 2026."
+	imageAlt="ECOFIP — Cameroun pour Jésus"
+/>
 
 <div>
 	<!-- SECTION 02 — HERO / MISSION NATIONALE : Cameroun pour Jésus -->

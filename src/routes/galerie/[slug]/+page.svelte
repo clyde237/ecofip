@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import { GalleryGridSection } from '$lib';
 	import GalleryLightbox from '$lib/design-system/components/GalleryLightbox.svelte';
@@ -33,19 +34,17 @@
 	);
 </script>
 
-<svelte:head>
-	<title>{data.album.title} — Galerie | ECOFIP</title>
-	<meta
-		name="description"
-		content={data.album.description ||
-			`${data.album.title} : ${countLabel} de la mission ECOFIP${data.album.location ? ` à ${data.album.location}` : ''}.`}
-	/>
-	<meta property="og:title" content="{data.album.title} — Galerie ECOFIP" />
-	<meta property="og:type" content="website" />
-	{#if data.album.coverUrl.startsWith('http')}
-		<meta property="og:image" content={data.album.coverUrl} />
-	{/if}
-</svelte:head>
+<Seo
+	title="{data.album.title} — Galerie | ECOFIP"
+	description={data.album.description ||
+		`${data.album.title} : ${countLabel} de la mission ECOFIP${data.album.location ? ` à ${data.album.location}` : ''}.`}
+	image={data.album.coverUrl}
+	imageAlt={data.album.title}
+	breadcrumbs={[
+		{ name: 'Galerie', path: '/galerie' },
+		{ name: data.album.title, path: `/galerie/${data.album.slug}` }
+	]}
+/>
 
 <!-- En-tête de l'album -->
 <PageBanner

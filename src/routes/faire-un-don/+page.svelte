@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import { onMount } from 'svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
@@ -121,19 +122,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Faire un Don — Soutenez la Mission | ECOFIP</title>
-	<meta
-		name="description"
-		content="Votre générosité permet à l'Évangile d'être annoncé dans les coins les plus reculés du Cameroun. Soutenez les 10 régions de la mission Cameroun pour Jésus."
-	/>
-	<meta property="og:title" content="Faire un Don — ECOFIP" />
-	<meta
-		property="og:description"
-		content="Donnez, et il vous sera donné — Luc 6:38. Participez à l'évangélisation et aux secours humanitaires."
-	/>
-	<meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+	title="Faire un don — Soutenir Cameroun pour Jésus | ECOFIP"
+	description="Soutenez les campagnes d’évangélisation, de guérison et d’action sociale d’ECOFIP dans les régions du Cameroun. Chaque don porte l’Évangile plus loin."
+	breadcrumbs={[{ name: 'Faire un don', path: '/faire-un-don' }]}
+/>
 
 <div>
 	<!-- SECTION 02 — INTRODUCTION AU DON (HERO) -->
