@@ -1,6 +1,6 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
-		ProjectsHero,
 		ProjectsListSection,
 		ProjectsSpotlight,
 		ProjectsHowToEngage,
@@ -29,7 +29,12 @@
 
 <div>
 	<!-- SECTION 02 — INTRODUCTION DU PROJET (Cameroun pour Jésus - 2024-2026) -->
-	<ProjectsHero />
+	<PageBanner
+		title="Cameroun pour Jésus"
+		subtitle="Une stratégie missionnaire nationale (2024–2026) : 1 croisade par région et par an, en collaboration étroite avec les églises locales pour impacter durablement notre nation."
+		breadcrumbLabel="Projets & Missions"
+		backgroundImage="/article-evangelisation.jpg"
+	/>
 
 	<!-- SECTION 03, 04, 05 — LE PROJET EN DÉTAIL, LES 4 AXES & CHIFFRES CLÉS -->
 	<ProjectAxesAndStats />

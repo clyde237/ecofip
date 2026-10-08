@@ -1,41 +1,22 @@
 <script lang="ts">
-	import {
-		NewsHero,
-		NewsFeaturedArticle,
-		NewsPreviousCrusadesGallery,
-		NewsMarkingTestimonies,
-		NewsListSection,
-		NewsNewsletterSection,
-		DonationCtaSection,
-		Modal,
-		Button,
-		Input
-	} from '$lib';
-	import type { DetailedArticleItem } from '$lib/design-system/types.js';
-	import { Calendar, Clock, Heart, Share2, CheckCircle2 } from '@lucide/svelte';
-	import { toast } from '$lib/design-system/toast.svelte.js';
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
+	import Container from '$lib/design-system/components/Container.svelte';
+	import ArticleCard from '$lib/design-system/components/ArticleCard.svelte';
+	import NewsCategoriesCard from '$lib/design-system/components/NewsCategoriesCard.svelte';
+	import SupportMissionCard from '$lib/design-system/components/SupportMissionCard.svelte';
+	import { Search, X, ChevronLeft, ChevronRight, Newspaper } from '@lucide/svelte';
+	import type { PageData } from './$types.js';
 
-	let isArticleModalOpen = $state(false);
-	let selectedArticle = $state<DetailedArticleItem | null>(null);
+	let { data }: { data: PageData } = $props();
 
-	let isDonationModalOpen = $state(false);
-	let hasCopiedLink = $state(false);
-
-	function handleOpenArticle(article: DetailedArticleItem) {
-		selectedArticle = article;
-		hasCopiedLink = false;
-		isArticleModalOpen = true;
-	}
-
-	function handleShare() {
-		if (typeof window !== 'undefined') {
-			navigator.clipboard?.writeText(window.location.href);
-			hasCopiedLink = true;
-			toast.success('Lien copié dans le presse-papiers !', 'Partage');
-			setTimeout(() => {
-				hasCopiedLink = false;
-			}, 3000);
-		}
+	/** Adresse de la page en conservant le filtre et la recherche en cours */
+	function pageHref(page: number): string {
+		const params = [
+			data.categorySlug ? `categorie=${encodeURIComponent(data.categorySlug)}` : '',
+			data.query ? `q=${encodeURIComponent(data.query)}` : '',
+			page > 1 ? `page=${page}` : ''
+		].filter(Boolean);
+		return `/actualites${params.length ? `?${params.join('&')}` : ''}#articles`;
 	}
 </script>
 
@@ -43,191 +24,185 @@
 	<title>Actualités — Cameroun pour Jésus | ECOFIP</title>
 	<meta
 		name="description"
-		content="Consultez les dernières nouvelles de la mission ECOFIP : rapports de la dernière ligne droite de Cameroun pour Jésus, galeries des croisades et témoignages marquants."
+		content="Rapports de mission, témoignages, enseignements et nouvelles de l’action d’ECOFIP au Cameroun."
 	/>
-	<meta property="og:title" content="Actualités & Témoignages — ECOFIP" />
-	<meta
-		property="og:description"
-		content="Restez informés de nos dernières missions et témoignages de vies transformées à travers le Cameroun."
-	/>
+	<meta property="og:title" content="Actualités — ECOFIP" />
 	<meta property="og:type" content="website" />
 </svelte:head>
 
-<div>
-	<!-- SECTION 02 — Introduction -->
-	<NewsHero
-		eyebrow="Actualités"
-		title="Actualités"
-		subtitle="Restez informés de nos dernières missions et témoignages de vies transformées."
-	/>
+<PageBanner
+	title="Actualités"
+	subtitle="Rapports de mission, témoignages, enseignements et nouvelles de l’œuvre au Cameroun."
+	backgroundImage="/article-evangelisation.jpg"
+/>
 
-	<!-- SECTION 03 — Dernière Grande Mission -->
-	<NewsFeaturedArticle onReadArticle={handleOpenArticle} />
-
-	<!-- SECTION 04 — Galerie des croisades précédentes -->
-	<NewsPreviousCrusadesGallery />
-
-	<!-- SECTION 05 — Témoignages marquants -->
-	<NewsMarkingTestimonies />
-
-	<!-- Tous les articles & chroniques complémentaires -->
-	<NewsListSection onReadArticle={handleOpenArticle} />
-
-	<!-- Boîte d'inscription à la newsletter -->
-	<NewsNewsletterSection />
-
-	<!-- Appel au don -->
-	<DonationCtaSection
-		eyebrow="PROPAGER LA BONNE NOUVELLE"
-		title="Soutenez l’annonce de l’Évangile et nos prochaines expéditions"
-		description="Chaque don que vous faites permet de financer les déplacements missionnaires, d’offrir des bibles et de soigner gratuitement les malades."
-		ctaLabel="Soutenir les missions"
-		onCtaClick={() => (isDonationModalOpen = true)}
-	/>
-</div>
-
-<!-- Modal de lecture intégrale d'un article ou témoignage -->
-<Modal
-	bind:open={isArticleModalOpen}
-	title={selectedArticle?.category || 'Publication ECOFIP'}
-	description={selectedArticle ? `${selectedArticle.date} • ${selectedArticle.readTime}` : ''}
->
-	{#if selectedArticle}
-		<div class="space-y-5 py-1">
-			<!-- Image d'en-tête de l'article -->
-			<div class="relative h-60 w-full overflow-hidden rounded-2xl bg-gray-100 sm:h-72">
-				<img
-					src={selectedArticle.image}
-					alt={selectedArticle.imageAlt}
-					class="h-full w-full object-cover"
-				/>
-				<div class="absolute bottom-3 left-3">
-					<span
-						class="rounded-full bg-brand-primary px-3.5 py-1 font-body text-xs font-bold tracking-wider text-white uppercase shadow-md"
-					>
-						{selectedArticle.category}
-					</span>
-				</div>
-			</div>
-
-			<!-- Titre H3 de l'article -->
-			<h3 class="font-display text-2xl leading-snug font-bold text-text-primary sm:text-3xl">
-				{selectedArticle.title}
-			</h3>
-
-			<!-- Métadonnées Auteur -->
-			<div class="flex items-center justify-between border-y border-gray-100 py-3">
-				<div class="flex items-center gap-3">
-					<div class="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-gray-200">
-						<img
-							src={selectedArticle.authorAvatar || '/avatar-jean-pierre.jpg'}
-							alt={selectedArticle.authorName}
-							class="h-full w-full object-cover"
-						/>
-					</div>
-					<div>
-						<span class="block font-body text-xs font-bold text-text-primary sm:text-sm">
-							{selectedArticle.authorName}
-						</span>
-						{#if selectedArticle.authorRole}
-							<span class="block font-body text-[11px] text-text-secondary">
-								{selectedArticle.authorRole}
-							</span>
-						{/if}
-					</div>
-				</div>
-
-				<button
-					type="button"
-					onclick={handleShare}
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 font-body text-xs font-semibold text-text-secondary transition-colors hover:border-gray-300 hover:text-text-primary"
-				>
-					{#if hasCopiedLink}
-						<CheckCircle2 size={14} class="text-emerald-600" />
-						<span class="text-emerald-600">Lien copié</span>
-					{:else}
-						<Share2 size={14} />
-						<span>Partager</span>
-					{/if}
-				</button>
-			</div>
-
-			<!-- Paragraphes de contenu intégral -->
-			<div
-				class="space-y-4 font-body text-sm leading-relaxed text-text-secondary sm:text-base sm:leading-relaxed"
+<section id="articles" class="scroll-mt-24 bg-[#f8fafc] py-12 sm:py-16" aria-label="Articles">
+	<Container>
+		{#if !data.available}
+			<p
+				class="mx-auto max-w-xl rounded-3xl border border-gray-200 bg-white p-10 text-center font-body text-sm text-text-secondary"
 			>
-				{#if selectedArticle.fullContent && selectedArticle.fullContent.length > 0}
-					{#each selectedArticle.fullContent as paragraph}
-						<p>{paragraph}</p>
-					{/each}
-				{:else}
-					<p>{selectedArticle.excerpt}</p>
-				{/if}
-			</div>
-		</div>
-	{/if}
+				Les actualités sont momentanément indisponibles. Merci de réessayer dans quelques instants.
+			</p>
+		{:else}
+			<div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+				<!-- Grille des articles -->
+				<div class="min-w-0">
+					<!-- Catégories en défilement horizontal sur mobile (la colonne latérale passe en bas) -->
+					{#if data.categories.length > 0}
+						<nav
+							aria-label="Catégories"
+							class="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden"
+						>
+							<a
+								href="/actualites#articles"
+								class="shrink-0 rounded-xl px-3.5 py-2 font-body text-xs font-bold {!data.categorySlug
+									? 'bg-brand-primary text-white'
+									: 'border border-gray-200 bg-white text-text-secondary'}">Tout</a
+							>
+							{#each data.categories as category (category.slug)}
+								<a
+									href="/actualites?categorie={category.slug}#articles"
+									class="shrink-0 rounded-xl px-3.5 py-2 font-body text-xs font-bold {category.slug ===
+									data.categorySlug
+										? 'bg-brand-primary text-white'
+										: 'border border-gray-200 bg-white text-text-secondary'}">{category.label}</a
+								>
+							{/each}
+						</nav>
+					{/if}
 
-	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isArticleModalOpen = false)}>Fermer</Button>
-		<Button
-			variant="primary"
-			size="md"
-			onclick={() => {
-				isArticleModalOpen = false;
-				isDonationModalOpen = true;
-			}}
-		>
-			<Heart size={16} class="mr-1.5 fill-white text-white" />
-			Soutenir cette œuvre
-		</Button>
-	{/snippet}
-</Modal>
+					<div class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
+						<h2 class="font-display text-2xl font-bold text-text-primary">
+							{data.activeCategoryLabel ?? 'Tous les articles'}
+						</h2>
+						<p class="font-body text-sm text-text-secondary">
+							{data.totalCount} article{data.totalCount > 1 ? 's' : ''}
+							{#if data.query}pour « {data.query} »{/if}
+							{#if data.categorySlug || data.query}
+								· <a
+									href="/actualites#articles"
+									class="font-semibold text-brand-primary hover:underline">Tout afficher</a
+								>
+							{/if}
+						</p>
+					</div>
 
-<!-- Modal interactive de soutien/don missionnaire -->
-<Modal
-	bind:open={isDonationModalOpen}
-	title="Semer dans l’œuvre missionnaire ECOFIP"
-	description="« Vous serez enrichis à tous égards pour toute espèce de libéralités, qui feront produire par nous des actions de grâces à Dieu. »"
->
-	<div class="space-y-4 py-2">
-		<p class="font-body text-sm font-semibold text-text-primary">
-			Sélectionnez l'impact direct de votre don :
-		</p>
-		<div class="grid grid-cols-3 gap-2.5">
-			<div class="rounded-xl border-2 border-brand-primary bg-brand-subtle p-3 text-center">
-				<div class="text-xs font-bold text-brand-primary sm:text-sm">Bibles & Livrets</div>
-				<div class="mt-0.5 text-[11px] text-text-secondary">Nouveaux convertis</div>
-			</div>
-			<div class="rounded-xl border border-border bg-white p-3 text-center">
-				<div class="text-xs font-bold text-text-primary sm:text-sm">Soins gratuits</div>
-				<div class="mt-0.5 text-[11px] text-text-secondary">Cliniques mobiles</div>
-			</div>
-			<div class="rounded-xl border border-border bg-white p-3 text-center">
-				<div class="text-xs font-bold text-text-primary sm:text-sm">Logistique</div>
-				<div class="mt-0.5 text-[11px] text-text-secondary">Croisades & Équipes</div>
-			</div>
-		</div>
+					{#if data.articles.length === 0}
+						<div class="rounded-3xl border border-gray-200 bg-white p-10 text-center">
+							<Newspaper size={36} class="mx-auto mb-3 text-gray-300" />
+							<p class="font-body text-sm text-text-secondary">
+								{data.publishedCount === 0
+									? 'Aucun article publié pour le moment. Revenez bientôt !'
+									: 'Aucun article ne correspond à votre recherche.'}
+							</p>
+						</div>
+					{:else}
+						<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+							{#each data.articles as article (article.id)}
+								{@const isFeatured = article.id === data.featuredId}
+								<ArticleCard
+									{article}
+									wide={isFeatured}
+									featuredBadge={isFeatured}
+									class={isFeatured ? 'sm:col-span-2' : ''}
+								/>
+							{/each}
+						</div>
 
-		<Input label="Montant du don (FCFA)" type="number" placeholder="Ex: 25 000" />
-	</div>
+						{#if data.pageCount > 1}
+							<nav
+								aria-label="Pagination"
+								class="mt-10 flex items-center justify-center gap-2 font-body text-sm font-semibold"
+							>
+								{#if data.currentPage > 1}
+									<a
+										href={pageHref(data.currentPage - 1)}
+										class="flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-2 hover:border-brand-primary hover:text-brand-primary"
+									>
+										<ChevronLeft size={16} /> Précédent
+									</a>
+								{/if}
+								{#each Array.from({ length: data.pageCount }, (_, index) => index + 1) as pageNumber (pageNumber)}
+									<a
+										href={pageHref(pageNumber)}
+										aria-current={pageNumber === data.currentPage ? 'page' : undefined}
+										class="flex h-10 min-w-10 items-center justify-center rounded-xl px-3 {pageNumber ===
+										data.currentPage
+											? 'bg-brand-primary text-white'
+											: 'border border-gray-200 bg-white hover:border-brand-primary hover:text-brand-primary'}"
+									>
+										{pageNumber}
+									</a>
+								{/each}
+								{#if data.currentPage < data.pageCount}
+									<a
+										href={pageHref(data.currentPage + 1)}
+										class="flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-2 hover:border-brand-primary hover:text-brand-primary"
+									>
+										Suivant <ChevronRight size={16} />
+									</a>
+								{/if}
+							</nav>
+						{/if}
+					{/if}
+				</div>
 
-	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isDonationModalOpen = false)}>
-			Annuler
-		</Button>
-		<Button
-			variant="primary"
-			size="md"
-			onclick={() => {
-				isDonationModalOpen = false;
-				toast.success(
-					'Merci de tout cœur pour votre soutien à la propagation de l’Évangile !',
-					'Don enregistré'
-				);
-			}}
-		>
-			<Heart size={16} class="mr-1.5 fill-white text-white" />
-			Valider mon don
-		</Button>
-	{/snippet}
-</Modal>
+				<!-- Colonne latérale -->
+				<aside class="space-y-6 lg:sticky lg:top-28 lg:self-start" aria-label="Filtres et liens">
+					<form
+						method="GET"
+						action="/actualites#articles"
+						role="search"
+						class="rounded-3xl border border-gray-200/80 bg-white p-5 shadow-xs"
+					>
+						<label for="news-search" class="font-display text-base font-bold text-text-primary">
+							Rechercher
+						</label>
+						{#if data.categorySlug}
+							<input type="hidden" name="categorie" value={data.categorySlug} />
+						{/if}
+						<div class="relative mt-3">
+							<Search
+								size={16}
+								class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-gray-400"
+							/>
+							<input
+								id="news-search"
+								type="search"
+								name="q"
+								value={data.query}
+								placeholder="Titre, auteur, sujet…"
+								class="w-full rounded-xl border border-gray-200 bg-[#f8fafc] py-2.5 pr-10 pl-10 font-body text-sm text-text-primary focus:border-brand-primary focus:bg-white focus:outline-hidden"
+							/>
+							{#if data.query}
+								<a
+									href={data.categorySlug
+										? `/actualites?categorie=${data.categorySlug}#articles`
+										: '/actualites#articles'}
+									class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+									aria-label="Effacer la recherche"
+								>
+									<X size={16} />
+								</a>
+							{/if}
+						</div>
+					</form>
+
+					{#if data.categories.length > 0}
+						<div class="hidden lg:block">
+							<NewsCategoriesCard
+								categories={data.categories}
+								activeSlug={data.categorySlug}
+								showAll
+								totalCount={data.publishedCount}
+							/>
+						</div>
+					{/if}
+
+					<SupportMissionCard />
+				</aside>
+			</div>
+		{/if}
+	</Container>
+</section>

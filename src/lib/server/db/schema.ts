@@ -1,4 +1,13 @@
-import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	date,
+	integer,
+	pgTable,
+	serial,
+	text,
+	timestamp,
+	varchar
+} from 'drizzle-orm/pg-core';
 
 // 1. Table des Administrateurs
 export const admins = pgTable('admins', {
@@ -11,14 +20,29 @@ export const admins = pgTable('admins', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// 2. Table des Témoignages (visiteurs -> validation par l'admin)
+// 2. Table des Témoignages (écrits envoyés par les visiteurs et validés par l'admin,
+//    ou créés par l'admin ; vidéos créées par l'admin, fichiers sur Cloudflare R2)
 export const testimonials = pgTable('testimonials', {
 	id: serial('id').primaryKey(),
+	// « text » (témoignage écrit) ou « video »
+	type: varchar('type', { length: 10 }).default('text').notNull(),
+	// « visitor » (formulaire public) ou « admin » (créé depuis l'espace admin)
+	source: varchar('source', { length: 10 }).default('visitor').notNull(),
 	authorName: varchar('author_name', { length: 150 }).notNull(),
 	authorRole: varchar('author_role', { length: 150 }),
 	authorCity: varchar('author_city', { length: 100 }),
 	avatarUrl: text('avatar_url'),
-	content: text('content').notNull(),
+	avatarKey: text('avatar_key'),
+	// Texte du témoignage écrit, ou résumé facultatif d'une vidéo
+	content: text('content'),
+	videoUrl: text('video_url'),
+	videoKey: text('video_key'),
+	posterUrl: text('poster_url'),
+	posterKey: text('poster_key'),
+	duration: varchar('duration', { length: 20 }),
+	// Email ou téléphone laissé par le visiteur : visible seulement dans l'admin, jamais publié
+	contactInfo: varchar('contact_info', { length: 150 }),
+	// Publié sur le site (validé par l'admin)
 	isApproved: boolean('is_approved').default(false).notNull(),
 	submittedAt: timestamp('submitted_at').defaultNow().notNull(),
 	approvedAt: timestamp('approved_at'),
@@ -54,16 +78,25 @@ export const events = pgTable('events', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// 4. Table des Articles & Actualités
+// 4. Table des Articles & Actualités (page /actualites/[slug], images sur Cloudflare R2)
 export const articles = pgTable('articles', {
 	id: serial('id').primaryKey(),
 	title: varchar('title', { length: 255 }).notNull(),
-	slug: varchar('slug', { length: 255 }).notNull(),
+	// Adresse publique, conservée si le titre change (liens partagés)
+	slug: varchar('slug', { length: 255 }).notNull().unique(),
 	category: varchar('category', { length: 100 }).notNull(),
 	excerpt: text('excerpt'),
+	// Texte au format simple (paragraphes, ## intertitres, listes, **gras**, liens, images)
 	content: text('content').notNull(),
 	imageUrl: text('image_url'),
+	// Clé R2 de l'image de couverture, pour la supprimer avec l'article
+	imageKey: text('image_key'),
+	authorName: varchar('author_name', { length: 150 }),
+	authorRole: varchar('author_role', { length: 150 }),
+	// Calculé à l'enregistrement à partir de la longueur du texte
 	readTime: varchar('read_time', { length: 50 }),
+	// Article mis en avant en tête de la page Actualités (un seul à la fois)
+	isFeatured: boolean('is_featured').default(false).notNull(),
 	isPublished: boolean('is_published').default(false).notNull(),
 	publishedAt: timestamp('published_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -148,6 +181,31 @@ export const galleryItems = pgTable('gallery_items', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// 9. Prédications vidéo au format court vertical (page /predications, fichiers sur Cloudflare R2)
+export const sermons = pgTable('sermons', {
+	id: serial('id').primaryKey(),
+	// Adresse publique, conservée si le titre change (liens partagés)
+	slug: varchar('slug', { length: 220 }).notNull().unique(),
+	title: varchar('title', { length: 200 }).notNull(),
+	preacher: varchar('preacher', { length: 150 }),
+	// Référence biblique (ex: « Marc 11:23 »)
+	scripture: varchar('scripture', { length: 120 }),
+	// Série ou thème, utilisé comme filtre (ex: « La foi »)
+	series: varchar('series', { length: 100 }),
+	description: text('description'),
+	// Date de la prédication (facultative)
+	preachedOn: date('preached_on'),
+	videoUrl: text('video_url').notNull(),
+	videoKey: text('video_key'),
+	posterUrl: text('poster_url'),
+	posterKey: text('poster_key'),
+	duration: varchar('duration', { length: 20 }),
+	isPublished: boolean('is_published').default(false).notNull(),
+	publishedAt: timestamp('published_at'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Export des types inférés Drizzle
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
@@ -172,3 +230,6 @@ export type NewGalleryAlbumRecord = typeof galleryAlbums.$inferInsert;
 
 export type GalleryItemRecord = typeof galleryItems.$inferSelect;
 export type NewGalleryItemRecord = typeof galleryItems.$inferInsert;
+
+export type SermonRecord = typeof sermons.$inferSelect;
+export type NewSermonRecord = typeof sermons.$inferInsert;

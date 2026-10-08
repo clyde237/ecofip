@@ -224,22 +224,6 @@ export interface StatsBarProps {
 	class?: string;
 }
 
-// --- ABOUT HERO ---
-export interface AboutHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	highlightedTitle?: string;
-	description?: string;
-	verseText?: string;
-	verseRef?: string;
-	backgroundImage?: string;
-	primaryCta?: { label: string; href: string };
-	secondaryCta?: { label: string; href: string };
-	curvedBottom?: boolean;
-	class?: string;
-}
-
 // --- ABOUT PRESENTATION (MOUVEMENT & PORTEUR DE VISION) ---
 export interface AboutPresentationProps {
 	eyebrow?: string;
@@ -344,17 +328,6 @@ export interface AboutCtaSectionProps {
 	class?: string;
 }
 
-// --- PROJECTS HERO (BANNIÈRE PROJETS & MISSIONS) ---
-export interface ProjectsHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	subtitle?: string;
-	tags?: string[];
-	backgroundImage?: string;
-	class?: string;
-}
-
 // --- PROJECTS LIST (CATALOGUE & FILTRES DE PROJETS) ---
 export interface ProjectItem {
 	id: string;
@@ -389,16 +362,6 @@ export interface ProjectsSpotlightProps {
 	metrics?: Array<{ label: string; value: string }>;
 	ctaLabel?: string;
 	ctaHref?: string;
-	class?: string;
-}
-
-// --- JOIN HERO (BANNIÈRE NOUS REJOINDRE) ---
-export interface JoinHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	subtitle?: string;
-	backgroundImage?: string;
 	class?: string;
 }
 
@@ -500,15 +463,6 @@ export interface DetailedEventItem {
 	program?: string | null;
 }
 
-export interface EventsHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	subtitle?: string;
-	backgroundImage?: string;
-	class?: string;
-}
-
 export interface EventsListProps {
 	eyebrow?: string;
 	title?: string;
@@ -531,7 +485,8 @@ export interface TestimonialItem {
 	name: string;
 	membership: string;
 	quote: string;
-	avatar: string;
+	/** null : initiale du nom affichée à la place de la photo */
+	avatar: string | null;
 	verified?: boolean;
 	rating?: number;
 }
@@ -544,7 +499,41 @@ export interface TestimonialsSectionProps {
 	testimonials?: TestimonialItem[];
 	ctaLabel?: string;
 	ctaHref?: string;
+	/** Lien vers la page qui liste tous les témoignages (masqué si absent) */
+	allHref?: string;
 	class?: string;
+}
+
+/** Prédication vidéo (format court vertical), telle qu'affichée sur le site */
+export interface PublicSermon {
+	id: string;
+	slug: string;
+	href: string;
+	title: string;
+	preacher: string;
+	scripture: string;
+	series: string;
+	seriesSlug: string;
+	description: string;
+	videoUrl: string;
+	posterUrl: string | null;
+	duration: string;
+	dateLabel: string;
+}
+
+/** Témoignage publié (écrit ou vidéo), tel qu'affiché sur le site */
+export interface PublishedTestimonial {
+	id: string;
+	type: 'text' | 'video';
+	name: string;
+	role: string;
+	city: string;
+	quote: string;
+	avatar: string | null;
+	videoUrl: string | null;
+	posterUrl: string | null;
+	duration: string;
+	publishedLabel: string;
 }
 
 // --- VIDEO HIGHLIGHTS SECTION ---
@@ -620,7 +609,9 @@ export interface DetailedArticleItem {
 	id: string;
 	title: string;
 	category: string;
-	categorySlug: 'all' | 'temoignage' | 'mission' | 'enseignement' | 'humanitaire';
+	categorySlug: string;
+	/** Page de l'article (/actualites/[slug]) */
+	href?: string;
 	date: string;
 	readTime: string;
 	image: string;
@@ -631,15 +622,6 @@ export interface DetailedArticleItem {
 	excerpt: string;
 	fullContent?: string[];
 	isFeatured?: boolean;
-}
-
-export interface NewsHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	subtitle?: string;
-	backgroundImage?: string;
-	class?: string;
 }
 
 export interface NewsListProps {
@@ -682,15 +664,6 @@ export interface GalleryAlbumCard {
 	videoCount: number;
 }
 
-export interface GalleryHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	subtitle?: string;
-	backgroundImage?: string;
-	class?: string;
-}
-
 export interface GalleryGridProps {
 	eyebrow?: string;
 	title?: string;
@@ -710,15 +683,6 @@ export interface ContactChannelItem {
 	whatsapp?: string;
 	hours: string;
 	badge: string;
-}
-
-export interface ContactHeroProps {
-	breadcrumbLabel?: string;
-	eyebrow?: string;
-	title?: string;
-	subtitle?: string;
-	backgroundImage?: string;
-	class?: string;
 }
 
 export interface ContactChannelsProps {

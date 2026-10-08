@@ -1,6 +1,6 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
-		AboutHero,
 		AboutPresentation,
 		AboutEngagements,
 		AboutValues,
@@ -30,7 +30,12 @@
 
 <div>
 	<!-- Bannière principale de la page À Propos -->
-	<AboutHero />
+	<PageBanner
+		title="Des Économes Fidèles et Prudents au Service du Royaume de Dieu"
+		subtitle="Né d’une vision d’obéissance à la Grande Commission et d’un amour profond pour notre prochain, ECOFIP est un mouvement chrétien évangélique et humanitaire engagé à proclamer l’Évangile, former des disciples affermis et apporter une aide concrète aux communautés à travers le Cameroun."
+		breadcrumbLabel="À propos de nous"
+		backgroundImage="/about-worship-hd.jpg"
+	/>
 
 	<!-- Section Présentation du Mouvement & Porteur de Vision (Pasteur Valery Tchamekwen) -->
 	<AboutPresentation

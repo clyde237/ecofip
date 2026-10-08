@@ -145,6 +145,16 @@ export async function uploadBufferToR2(options: {
 }
 
 /**
+ * Vérifie qu'une clé a le format généré par /api/upload et /api/upload-url pour un dossier :
+ * <dossier>/<uuid>-<nom assaini>. Sert à refuser toute clé envoyée par un formulaire modifié
+ * qui viserait un autre fichier du bucket.
+ */
+export function isR2KeyInFolder(key: string, folder: string): boolean {
+	const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+	return new RegExp(`^${folder}/${uuid}-[A-Za-z0-9._-]+$`).test(key);
+}
+
+/**
  * Supprime un objet du bucket Cloudflare R2
  */
 export async function deleteFromR2(key: string): Promise<boolean> {

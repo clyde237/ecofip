@@ -1,6 +1,6 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
-		EventsHero,
 		EventsSpotlight,
 		EventsListSection,
 		EventsHostCta,
@@ -97,7 +97,12 @@
 
 <div>
 	<!-- 1. Bannière d'introduction avec fil d'ariane et badges -->
-	<EventsHero />
+	<PageBanner
+		title="Rejoignez les grands rendez-vous de la mission"
+		subtitle="Croisades d’évangélisation, séminaires de formation de disciples, cliniques mobiles et camps bibliques de jeunesse. Venez vivre des temps puissants de visitation et d’impact au Cameroun."
+		breadcrumbLabel="Nos événements"
+		backgroundImage="/event-croisade.jpg"
+	/>
 
 	<!-- 2. Événement Phare à la Une (Section pleine largeur sous la Hero avec Grande Image & Compte à Rebours mécanique) -->
 	{#if data.featuredEvent}

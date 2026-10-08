@@ -1,6 +1,6 @@
 <script lang="ts">
+	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import {
-		GalleryHero,
 		GalleryGridSection,
 		GalleryShareCta,
 		DonationCtaSection,
@@ -47,10 +47,11 @@
 
 <div>
 	<!-- SECTION 02 — Introduction -->
-	<GalleryHero
-		eyebrow="Galerie"
+	<PageBanner
 		title="Photos & Vidéos"
 		subtitle="Revivez les moments forts de nos missions à travers le Cameroun."
+		breadcrumbLabel="Galerie"
+		backgroundImage="/video-highlights-cover.jpg"
 	/>
 
 	<!-- SECTIONS 03, 04, 05 — Albums gérés depuis l'admin ; contenu par défaut si la base est indisponible -->
