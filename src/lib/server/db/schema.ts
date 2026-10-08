@@ -200,6 +200,8 @@ export const sermons = pgTable('sermons', {
 	posterUrl: text('poster_url'),
 	posterKey: text('poster_key'),
 	duration: varchar('duration', { length: 20 }),
+	// Lien YouTube de la prédication complète (normalisé en https://www.youtube.com/watch?v=…)
+	fullVideoUrl: text('full_video_url'),
 	isPublished: boolean('is_published').default(false).notNull(),
 	publishedAt: timestamp('published_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),

@@ -14,7 +14,8 @@
 		BookOpen,
 		ChevronUp,
 		ChevronDown,
-		ExternalLink
+		ExternalLink,
+		MonitorPlay
 	} from '@lucide/svelte';
 	import type { PublicSermon } from '../types.js';
 	import { toast } from '../toast.svelte.js';
@@ -195,6 +196,17 @@
 								>
 									<BookOpen size={14} class="text-amber-300" />{sermon.scripture}
 								</p>
+							{/if}
+							{#if sermon.fullVideoUrl}
+								<a
+									href={sermon.fullVideoUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="pointer-events-auto mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#c4302b] px-3.5 py-2 font-body text-xs font-bold text-white hover:bg-[#a52520]"
+								>
+									<MonitorPlay size={14} /> Prédication complète
+									<span class="sr-only">sur YouTube (nouvel onglet)</span>
+								</a>
 							{/if}
 						</div>
 

@@ -11,7 +11,8 @@
 		Link as LinkIcon,
 		CheckCircle2,
 		Share2,
-		Play
+		Play,
+		MonitorPlay
 	} from '@lucide/svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
 	import SermonCard from '$lib/design-system/components/SermonCard.svelte';
@@ -140,6 +141,18 @@
 					>
 						{sermon.description}
 					</p>
+				{/if}
+
+				{#if sermon.fullVideoUrl}
+					<a
+						href={sermon.fullVideoUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#c4302b] px-5 py-3 font-body text-sm font-bold text-white hover:bg-[#a52520]"
+					>
+						<MonitorPlay size={17} /> Voir la prédication complète sur YouTube
+						<span class="sr-only">(nouvel onglet)</span>
+					</a>
 				{/if}
 
 				<div class="mt-7 flex flex-wrap gap-2 font-body text-sm font-bold">
