@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { afterNavigate, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { ArrowLeft, ExternalLink, Trash2 } from '@lucide/svelte';
 	import ArticleEditor from '../ArticleEditor.svelte';
@@ -12,10 +14,13 @@
 
 	let isDeleteOpen = $state(false);
 
-	$effect(() => {
-		if (page.url.searchParams.get('created') === '1') {
+	// Arrivée après création : message affiché une seule fois, puis paramètre retiré de l'adresse
+	// (au tick suivant : au premier chargement, le routeur n'est prêt qu'après ces rappels)
+	afterNavigate(({ to }) => {
+		if (to?.url.searchParams.get('created') === '1') {
 			toast.success('Article créé.');
-			history.replaceState(history.state, '', page.url.pathname);
+			const path = to.url.pathname;
+			void tick().then(() => replaceState(path, page.state));
 		}
 	});
 </script>
@@ -62,6 +67,7 @@
 			action="?/update"
 			submitLabel="Enregistrer"
 			categories={data.categories}
+			eventChoices={data.eventChoices}
 			isR2Configured={data.isR2Configured}
 			article={data.article}
 		/>

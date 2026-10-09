@@ -1,9 +1,14 @@
 <script lang="ts">
 	/**
-	 * Affichage du texte d'un article (format simple de src/lib/utils/articleContent.ts).
-	 * Rendu entièrement par Svelte : aucun HTML saisi n'est injecté dans la page.
+	 * Affichage du texte d'un article (document de l'éditeur ou ancien format texte,
+	 * voir src/lib/utils/articleContent.ts). Rendu entièrement par Svelte : aucun HTML saisi
+	 * n'est injecté dans la page.
 	 */
-	import { parseArticleContent, type InlineSegment } from '$lib/utils/articleContent.js';
+	import {
+		parseArticleContent,
+		type InlineSegment,
+		type ListBlock
+	} from '$lib/utils/articleContent.js';
 
 	interface Props {
 		content: string;
@@ -15,22 +20,62 @@
 	let blocks = $derived(parseArticleContent(content));
 </script>
 
+{#snippet styled(segment: InlineSegment)}
+	{#if segment.bold && segment.italic}
+		<strong class="font-bold text-text-primary"><em>{segment.text}</em></strong>
+	{:else if segment.bold}
+		<strong class="font-bold text-text-primary">{segment.text}</strong>
+	{:else if segment.italic}
+		<em>{segment.text}</em>
+	{:else}
+		{segment.text}
+	{/if}
+{/snippet}
+
 {#snippet inline(segments: InlineSegment[])}
 	{#each segments as segment, index (index)}
-		{#if segment.href}
+		{#if segment.lineBreak}
+			<br />
+		{:else if segment.href}
 			<a
 				href={segment.href}
 				class="font-semibold text-brand-primary underline underline-offset-2 hover:text-brand-primary-hover"
 				target={segment.href.startsWith('/') ? undefined : '_blank'}
 				rel={segment.href.startsWith('/') ? undefined : 'noopener noreferrer'}
-				>{#if segment.bold}<strong>{segment.text}</strong>{:else}{segment.text}{/if}</a
+				>{@render styled(segment)}</a
 			>
-		{:else if segment.bold}
-			<strong class="font-bold text-text-primary">{segment.text}</strong>
+		{:else if segment.underline}
+			<u class="underline-offset-2">{@render styled(segment)}</u>
 		{:else}
-			{segment.text}
+			{@render styled(segment)}
 		{/if}
 	{/each}
+{/snippet}
+
+{#snippet list(block: ListBlock)}
+	{#if block.ordered}
+		<ol class="list-decimal space-y-1.5 pl-6 marker:font-semibold marker:text-brand-primary">
+			{#each block.items as item, index (index)}
+				<li>
+					{@render inline(item.segments)}
+					{#each item.children as child, childIndex (childIndex)}
+						<div class="mt-1.5">{@render list(child)}</div>
+					{/each}
+				</li>
+			{/each}
+		</ol>
+	{:else}
+		<ul class="list-disc space-y-1.5 pl-6 marker:text-brand-primary">
+			{#each block.items as item, index (index)}
+				<li>
+					{@render inline(item.segments)}
+					{#each item.children as child, childIndex (childIndex)}
+						<div class="mt-1.5">{@render list(child)}</div>
+					{/each}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 {/snippet}
 
 <div
@@ -38,11 +83,17 @@
 >
 	{#each blocks as block, index (index)}
 		{#if block.type === 'heading'}
-			<h2
-				class="pt-4 font-display text-2xl font-bold tracking-tight text-text-primary sm:text-[26px]"
-			>
-				{block.text}
-			</h2>
+			{#if block.level === 3}
+				<h3 class="pt-2 font-display text-xl font-bold tracking-tight text-text-primary">
+					{block.text}
+				</h3>
+			{:else}
+				<h2
+					class="pt-4 font-display text-2xl font-bold tracking-tight text-text-primary sm:text-[26px]"
+				>
+					{block.text}
+				</h2>
+			{/if}
 		{:else if block.type === 'paragraph'}
 			<p>{@render inline(block.segments)}</p>
 		{:else if block.type === 'quote'}
@@ -52,11 +103,7 @@
 				{@render inline(block.segments)}
 			</blockquote>
 		{:else if block.type === 'list'}
-			<ul class="list-disc space-y-1.5 pl-6 marker:text-brand-primary">
-				{#each block.items as item, itemIndex (itemIndex)}
-					<li>{@render inline(item)}</li>
-				{/each}
-			</ul>
+			{@render list(block)}
 		{:else if block.type === 'image'}
 			<figure class="py-2">
 				<img
@@ -71,6 +118,8 @@
 					</figcaption>
 				{/if}
 			</figure>
+		{:else if block.type === 'divider'}
+			<hr class="my-8 border-gray-200" />
 		{/if}
 	{/each}
 </div>

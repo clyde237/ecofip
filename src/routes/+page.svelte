@@ -73,7 +73,7 @@
 
 <Seo
 	title="ECOFIP — Cameroun pour Jésus | Évangélisation au Cameroun"
-	description="ECOFIP, Les Économes Fidèles et Prudents, porte « Cameroun pour Jésus » : 20 campagnes d’évangélisation et de guérison dans 9 régions. Clôture à Bafoussam du 27 au 31 octobre 2026."
+	description="ECOFIP, Les Économes Fidèles et Prudents, porte « Cameroun pour Jésus » : 20 campagnes d’évangélisation et de guérison dans 9 régions. Clôture à Bafoussam du 27 au 30 octobre 2026."
 	imageAlt="ECOFIP — Cameroun pour Jésus"
 />
 

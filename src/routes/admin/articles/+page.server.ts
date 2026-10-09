@@ -1,5 +1,5 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
-import { articles } from '$lib/server/db/schema.js';
+import { articles, events } from '$lib/server/db/schema.js';
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
@@ -28,9 +28,11 @@ export const load: PageServerLoad = async () => {
 					isPublished: articles.isPublished,
 					isFeatured: articles.isFeatured,
 					publishedAt: articles.publishedAt,
-					updatedAt: articles.updatedAt
+					updatedAt: articles.updatedAt,
+					eventTitle: events.title
 				})
 				.from(articles)
+				.leftJoin(events, eq(articles.eventId, events.id))
 				.orderBy(desc(articles.updatedAt));
 			return {
 				articles: rows.map((row) => ({

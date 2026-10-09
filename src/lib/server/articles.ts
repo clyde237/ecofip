@@ -3,10 +3,16 @@
  * conversion pour l'affichage et lecture des articles publiés.
  */
 import { db } from '$lib/server/db/index.js';
-import { articles, type ArticleRecord } from '$lib/server/db/schema.js';
+import { articles, events, type ArticleRecord } from '$lib/server/db/schema.js';
 import { and, desc, eq, like, ne } from 'drizzle-orm';
 import { deleteFromR2, formatMediaUrl, isR2KeyInFolder } from '$lib/server/r2.js';
-import { readingTimeLabel, toPlainText } from '$lib/utils/articleContent.js';
+import {
+	hasArticleContent,
+	isRichContent,
+	normalizeRichContent,
+	readingTimeLabel,
+	toPlainText
+} from '$lib/utils/articleContent.js';
 import type { DetailedArticleItem } from '$lib/design-system/types.js';
 
 export const ARTICLES_R2_FOLDER = 'articles';
@@ -18,7 +24,8 @@ const MAX_TITLE_LENGTH = 255;
 const MAX_CATEGORY_LENGTH = 100;
 const MAX_AUTHOR_LENGTH = 150;
 const MAX_EXCERPT_LENGTH = 500;
-const MAX_CONTENT_LENGTH = 60_000;
+// Le document de l'éditeur (JSON) est plus long que le texte qu'il contient
+const MAX_CONTENT_LENGTH = 300_000;
 const AUTO_EXCERPT_LENGTH = 220;
 const MAX_SLUG_BASE_LENGTH = 200;
 
@@ -34,6 +41,7 @@ export type ArticleFields = {
 	readTime: string;
 	isPublished: boolean;
 	isFeatured: boolean;
+	eventId: number | null;
 };
 
 function text(formData: FormData, name: string): string {
@@ -48,27 +56,38 @@ function autoExcerpt(content: string): string {
 }
 
 export function parseArticleForm(formData: FormData): Parsed<ArticleFields> {
-	const title = text(formData, 'title');
+	// Un « # » tapé par habitude en début de titre n'a pas sa place dans le titre affiché
+	const title = text(formData, 'title').replace(/^#+\s*/, '');
 	const category = text(formData, 'category');
-	const content = text(formData, 'content');
+	const rawContent = text(formData, 'content');
+	const content = isRichContent(rawContent) ? normalizeRichContent(rawContent) : rawContent;
 	const excerpt = text(formData, 'excerpt');
 	const authorName = text(formData, 'authorName');
 	const authorRole = text(formData, 'authorRole');
 
 	if (!title) return { error: 'Le titre est obligatoire.' };
 	if (!category) return { error: 'La catégorie est obligatoire.' };
-	if (!content) return { error: 'Le texte de l’article est obligatoire.' };
+	if (content === null) {
+		return { error: 'Le texte de l’article est illisible. Rechargez la page et recommencez.' };
+	}
+	if (!hasArticleContent(content)) return { error: 'Le texte de l’article est obligatoire.' };
 
 	const limits: [string, number, string][] = [
 		[title, MAX_TITLE_LENGTH, 'Le titre'],
 		[category, MAX_CATEGORY_LENGTH, 'La catégorie'],
 		[excerpt, MAX_EXCERPT_LENGTH, 'Le résumé'],
-		[content, MAX_CONTENT_LENGTH, 'Le texte'],
+		[content, MAX_CONTENT_LENGTH, 'Le texte (mise en forme comprise)'],
 		[authorName, MAX_AUTHOR_LENGTH, 'Le nom de l’auteur'],
 		[authorRole, MAX_AUTHOR_LENGTH, 'La fonction de l’auteur']
 	];
 	for (const [value, max, label] of limits) {
 		if (value.length > max) return { error: `${label} ne doit pas dépasser ${max} caractères.` };
+	}
+
+	const rawEventId = text(formData, 'eventId');
+	const eventId = rawEventId ? Number(rawEventId) : null;
+	if (eventId !== null && (!Number.isInteger(eventId) || eventId <= 0)) {
+		return { error: 'L’événement lié est invalide.' };
 	}
 
 	const isPublished = formData.get('isPublished') === 'on';
@@ -83,7 +102,8 @@ export function parseArticleForm(formData: FormData): Parsed<ArticleFields> {
 			readTime: readingTimeLabel(content),
 			isPublished,
 			// Seul un article publié peut être mis en avant sur le site
-			isFeatured: isPublished && formData.get('isFeatured') === 'on'
+			isFeatured: isPublished && formData.get('isFeatured') === 'on',
+			eventId
 		}
 	};
 }
@@ -111,6 +131,72 @@ export function extractContentImageKeys(content: string): string[] {
 export async function deleteArticleFiles(coverKey: string | null, content: string): Promise<void> {
 	await deleteArticleImage(coverKey);
 	for (const key of extractContentImageKeys(content)) await deleteFromR2(key);
+}
+
+/**
+ * Images retirées du texte lors d'une modification, effacées de R2 après la mise à jour.
+ * Une image recopiée dans un autre article est conservée.
+ */
+export async function deleteRemovedContentImages(
+	articleId: number,
+	previousContent: string,
+	newContent: string
+): Promise<void> {
+	if (!db) return;
+	const kept = new Set(extractContentImageKeys(newContent));
+	for (const key of extractContentImageKeys(previousContent)) {
+		if (kept.has(key)) continue;
+		const [usedElsewhere] = await db
+			.select({ id: articles.id })
+			.from(articles)
+			.where(and(ne(articles.id, articleId), like(articles.content, `%${key}%`)))
+			.limit(1);
+		if (!usedElsewhere) await deleteFromR2(key);
+	}
+}
+
+/** Événements proposés dans le formulaire d'article (les plus récents d'abord) */
+export async function loadEventChoices(): Promise<
+	{ id: number; title: string; dateLabel: string; isPublished: boolean }[]
+> {
+	if (!db) return [];
+	const rows = await db
+		.select({
+			id: events.id,
+			title: events.title,
+			dateDay: events.dateDay,
+			dateMonthYear: events.dateMonthYear,
+			isPublished: events.isPublished
+		})
+		.from(events)
+		.orderBy(desc(events.startDate), desc(events.id));
+	return rows.map((row) => ({
+		id: row.id,
+		title: row.title,
+		dateLabel: [row.dateDay, row.dateMonthYear].filter(Boolean).join(' '),
+		isPublished: row.isPublished
+	}));
+}
+
+/** L'événement choisi existe-t-il encore ? */
+export async function eventExists(eventId: number): Promise<boolean> {
+	if (!db) return false;
+	const [row] = await db
+		.select({ id: events.id })
+		.from(events)
+		.where(eq(events.id, eventId))
+		.limit(1);
+	return Boolean(row);
+}
+
+/** Articles publiés liés à un événement, du plus récent au plus ancien */
+export async function loadPublishedArticlesForEvent(eventId: number): Promise<ArticleRecord[]> {
+	if (!db) return [];
+	return db
+		.select()
+		.from(articles)
+		.where(and(eq(articles.isPublished, true), eq(articles.eventId, eventId)))
+		.orderBy(desc(articles.publishedAt), desc(articles.id));
 }
 
 export function slugify(value: string): string {
