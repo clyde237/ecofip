@@ -6,22 +6,29 @@ import type { Actions, PageServerLoad } from './$types.js';
 import { getR2PublicUrl, isR2Configured } from '$lib/server/r2.js';
 import {
 	createUniqueArticleSlug,
+	eventExists,
+	loadEventChoices,
 	parseArticleForm,
 	parseArticleImageKey
 } from '$lib/server/articles.js';
 
 export const load: PageServerLoad = async () => {
 	let categories: string[] = [];
+	let eventChoices: Awaited<ReturnType<typeof loadEventChoices>> = [];
 	if (isDbConfigured && db) {
 		try {
-			categories = (await db.selectDistinct({ category: articles.category }).from(articles)).map(
-				(row) => row.category
-			);
+			[categories, eventChoices] = await Promise.all([
+				db
+					.selectDistinct({ category: articles.category })
+					.from(articles)
+					.then((rows) => rows.map((row) => row.category)),
+				loadEventChoices()
+			]);
 		} catch (err) {
 			console.error('Erreur lecture catégories articles:', err);
 		}
 	}
-	return { categories, isR2Configured, usingNeonDb: Boolean(isDbConfigured && db) };
+	return { categories, eventChoices, isR2Configured, usingNeonDb: Boolean(isDbConfigured && db) };
 };
 
 export const actions: Actions = {
@@ -30,6 +37,9 @@ export const actions: Actions = {
 		const parsed = parseArticleForm(formData);
 		if ('error' in parsed) return fail(400, { error: parsed.error });
 		if (!db) return fail(503, { error: 'La base de données Neon n’est pas configurée.' });
+		if (parsed.value.eventId !== null && !(await eventExists(parsed.value.eventId))) {
+			return fail(400, { error: 'L’événement lié n’existe plus. Choisissez-en un autre.' });
+		}
 
 		const imageKey = parseArticleImageKey(formData.get('imageKey'));
 		let id: number;

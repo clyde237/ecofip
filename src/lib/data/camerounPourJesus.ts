@@ -260,9 +260,9 @@ export const FINAL_CRUSADE = {
 	tagline: 'La vision d’une ville qui se lève',
 	city: 'Bafoussam',
 	region: 'Ouest',
-	dates: 'Du 27 au 31 octobre 2026',
+	dates: 'Du 27 au 30 octobre 2026',
 	startDate: '2026-10-27',
-	endDate: '2026-10-31',
+	endDate: '2026-10-30',
 	venue: 'Stade Omnisport Toket',
 	partners: 'Les églises de la ville de Bafoussam',
 	description:

@@ -1,33 +1,24 @@
 <script lang="ts">
 	/**
-	 * Éditeur d'article (création et modification) : couverture sur Cloudflare R2, texte au format
-	 * simple avec barre de mise en forme, images insérées dans le texte, et aperçu fidèle au site.
+	 * Éditeur d'article (création et modification) : couverture sur Cloudflare R2, texte saisi dans
+	 * un éditeur visuel (gras, italique, intertitres, listes, liens, images…), événement lié
+	 * facultatif, et aperçu fidèle au site.
 	 */
 	import { enhance } from '$app/forms';
-	import {
-		Heading2,
-		Bold,
-		List,
-		Quote,
-		Link as LinkIcon,
-		ImagePlus,
-		Eye,
-		PenLine,
-		UploadCloud,
-		Trash2,
-		Star
-	} from '@lucide/svelte';
+	import { Eye, PenLine, UploadCloud, Trash2, Star, CalendarDays } from '@lucide/svelte';
 	import Button from '$lib/design-system/components/Button.svelte';
 	import ArticleContent from '$lib/design-system/components/ArticleContent.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 	import { compressImage, toUploadFilename, uploadToR2 } from '$lib/utils/r2Upload.js';
-	import { readingTimeLabel, toPlainText } from '$lib/utils/articleContent.js';
+	import { readingTimeLabel, toEditorDoc, toPlainText } from '$lib/utils/articleContent.js';
+	import RichTextEditor from './RichTextEditor.svelte';
 
 	interface Props {
 		/** Action du formulaire : « ?/update » en modification, vide en création */
 		action: string;
 		submitLabel: string;
 		categories: string[];
+		eventChoices: { id: number; title: string; dateLabel: string; isPublished: boolean }[];
 		isR2Configured: boolean;
 		article?: {
 			title: string;
@@ -39,10 +30,11 @@
 			imageUrl: string | null;
 			isPublished: boolean;
 			isFeatured: boolean;
+			eventId: number | null;
 		};
 	}
 
-	let { action, submitLabel, categories, isR2Configured, article }: Props = $props();
+	let { action, submitLabel, categories, eventChoices, isR2Configured, article }: Props = $props();
 
 	const PRESET_CATEGORIES = [
 		'Rapport de mission',
@@ -63,7 +55,8 @@
 	// Valeurs initiales uniquement : l'éditeur est recréé ({#key}) quand on change d'article,
 	// et la saisie en cours ne doit pas être écrasée par le rechargement après enregistrement.
 	// svelte-ignore state_referenced_locally
-	let content = $state(article?.content ?? '');
+	const initialDoc = toEditorDoc(article?.content ?? '');
+	let content = $state(JSON.stringify(initialDoc));
 	// svelte-ignore state_referenced_locally
 	let isPublished = $state(article?.isPublished ?? false);
 	// svelte-ignore state_referenced_locally
@@ -94,56 +87,23 @@
 		removeCover = false;
 	}
 
-	// ==========================================
-	// BARRE DE MISE EN FORME
-	// ==========================================
-	let textarea: HTMLTextAreaElement | null = $state(null);
-	let isInsertingImage = $state(false);
-
-	/** Remplace la sélection du texte et replace le curseur juste après l'insertion */
-	function replaceSelection(build: (selected: string) => string) {
-		if (!textarea) return;
-		const { selectionStart: start, selectionEnd: end } = textarea;
-		const inserted = build(content.slice(start, end));
-		content = content.slice(0, start) + inserted + content.slice(end);
-		const cursor = start + inserted.length;
-		requestAnimationFrame(() => {
-			textarea?.focus();
-			textarea?.setSelectionRange(cursor, cursor);
-		});
-	}
-
-	/** Ajoute un préfixe au début de chaque ligne sélectionnée (intertitre, liste, citation) */
-	function prefixLines(prefix: string, placeholder: string) {
-		replaceSelection((selected) => {
-			const lines = (selected || placeholder).split('\n');
-			return lines.map((line) => `${prefix}${line.replace(/^(##\s|[-*]\s|>\s?)/, '')}`).join('\n');
-		});
-	}
-
-	function insertBlock(text: string) {
-		replaceSelection(() => `\n\n${text}\n\n`);
-	}
-
-	async function insertImage(file: File | undefined) {
-		if (!file) return;
+	/** Image insérée dans le texte : réduite puis envoyée sur R2 */
+	async function uploadContentImage(file: File): Promise<string> {
 		if (!file.type.startsWith('image/')) {
 			toast.error('Sélectionnez une image.', 'Format invalide');
-			return;
+			throw new Error('Format invalide');
 		}
-		isInsertingImage = true;
 		try {
 			const blob = await compressImage(file, 1600);
 			const result = await uploadToR2(blob, {
 				filename: toUploadFilename(file.name, blob),
 				folder: FOLDER
 			});
-			insertBlock(`![Légende de l’image](${result.url})`);
-			toast.success('Image insérée : modifiez sa légende entre les crochets.');
+			toast.success('Image insérée : cliquez dessus pour ajouter une légende.');
+			return result.url;
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
-		} finally {
-			isInsertingImage = false;
+			throw err;
 		}
 	}
 </script>
@@ -234,78 +194,18 @@
 						<Eye size={14} /> Aperçu
 					</button>
 				</div>
-				{#if mode === 'write'}
-					<div class="flex flex-wrap items-center gap-1" role="toolbar" aria-label="Mise en forme">
-						<button
-							type="button"
-							title="Intertitre"
-							onclick={() => prefixLines('## ', 'Intertitre')}
-							class="cursor-pointer rounded-lg p-2 text-text-secondary hover:bg-white hover:text-brand-primary"
-							><Heading2 size={16} /><span class="sr-only">Intertitre</span></button
-						>
-						<button
-							type="button"
-							title="Gras"
-							onclick={() => replaceSelection((s) => `**${s || 'texte en gras'}**`)}
-							class="cursor-pointer rounded-lg p-2 text-text-secondary hover:bg-white hover:text-brand-primary"
-							><Bold size={16} /><span class="sr-only">Gras</span></button
-						>
-						<button
-							type="button"
-							title="Liste à puces"
-							onclick={() => prefixLines('- ', 'Élément de liste')}
-							class="cursor-pointer rounded-lg p-2 text-text-secondary hover:bg-white hover:text-brand-primary"
-							><List size={16} /><span class="sr-only">Liste</span></button
-						>
-						<button
-							type="button"
-							title="Citation"
-							onclick={() => prefixLines('> ', 'Citation')}
-							class="cursor-pointer rounded-lg p-2 text-text-secondary hover:bg-white hover:text-brand-primary"
-							><Quote size={16} /><span class="sr-only">Citation</span></button
-						>
-						<button
-							type="button"
-							title="Lien"
-							onclick={() => replaceSelection((s) => `[${s || 'texte du lien'}](https://)`)}
-							class="cursor-pointer rounded-lg p-2 text-text-secondary hover:bg-white hover:text-brand-primary"
-							><LinkIcon size={16} /><span class="sr-only">Lien</span></button
-						>
-						<label
-							title="Insérer une image"
-							class="cursor-pointer rounded-lg p-2 text-text-secondary hover:bg-white hover:text-brand-primary {isInsertingImage ||
-							!isR2Configured
-								? 'pointer-events-none opacity-50'
-								: ''}"
-						>
-							<ImagePlus size={16} />
-							<span class="sr-only">Insérer une image</span>
-							<input
-								type="file"
-								accept="image/jpeg,image/png,image/webp"
-								class="sr-only"
-								onchange={(e) => {
-									insertImage(e.currentTarget.files?.[0]);
-									e.currentTarget.value = '';
-								}}
-							/>
-						</label>
-					</div>
-				{/if}
 			</div>
 
-			{#if mode === 'write'}
-				<label for="article-content" class="sr-only">Texte de l’article</label>
-				<textarea
-					id="article-content"
-					bind:this={textarea}
-					bind:value={content}
-					required
-					rows="22"
-					placeholder="Écrivez votre article ici.&#10;&#10;Laissez une ligne vide entre deux paragraphes.&#10;## pour un intertitre, - pour une liste, > pour une citation, **gras**."
-					class="block w-full resize-y border-0 px-5 py-4 font-body text-[15px] leading-relaxed text-text-primary focus:outline-hidden"
-				></textarea>
-			{:else}
+			<!-- L'éditeur reste monté pendant l'aperçu pour conserver l'historique d'annulation -->
+			<div class:hidden={mode !== 'write'}>
+				<RichTextEditor
+					initial={initialDoc}
+					onchange={(json) => (content = json)}
+					uploadImage={uploadContentImage}
+					canUploadImages={isR2Configured}
+				/>
+			</div>
+			{#if mode === 'preview'}
 				<div class="min-h-[420px] px-6 py-5">
 					{#if content.trim()}
 						<ArticleContent {content} />
@@ -318,7 +218,7 @@
 				class="flex justify-between border-t border-gray-100 bg-[#f8fafc] px-4 py-2 text-[11px] text-text-secondary"
 			>
 				<span>{wordCount} mot{wordCount > 1 ? 's' : ''} · {readTime}</span>
-				<span>Ligne vide = nouveau paragraphe</span>
+				<span>Ctrl+B gras · Ctrl+I italique · Ctrl+K lien</span>
 			</div>
 		</div>
 
@@ -402,6 +302,28 @@
 					<Trash2 size={12} /> Retirer la couverture
 				</label>
 			{/if}
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white p-4">
+			<label
+				for="article-event"
+				class="flex items-center gap-1.5 text-xs font-bold tracking-wider text-text-secondary uppercase"
+			>
+				<CalendarDays size={14} class="text-brand-primary" /> Événement lié
+			</label>
+			<select id="article-event" name="eventId" class={inputClass}>
+				<option value="" selected={!article?.eventId}>Aucun événement</option>
+				{#each eventChoices as choice (choice.id)}
+					<option value={choice.id} selected={article?.eventId === choice.id}>
+						{choice.title}{choice.dateLabel ? ` — ${choice.dateLabel}` : ''}{choice.isPublished
+							? ''
+							: ' (brouillon)'}
+					</option>
+				{/each}
+			</select>
+			<p class="mt-1.5 text-[11px] text-text-secondary">
+				L’article sera aussi présenté sur la page de cet événement, avec un lien vers lui.
+			</p>
 		</div>
 
 		<div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-4">

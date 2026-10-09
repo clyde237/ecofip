@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { afterNavigate, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
 		Plus,
@@ -11,7 +13,8 @@
 		ExternalLink,
 		Trash2,
 		Newspaper,
-		CloudOff
+		CloudOff,
+		CalendarDays
 	} from '@lucide/svelte';
 	import type { PageData } from './$types.js';
 	import Modal from '$lib/design-system/components/Modal.svelte';
@@ -43,10 +46,13 @@
 		})
 	);
 
-	$effect(() => {
-		if (page.url.searchParams.get('deleted') === '1') {
+	// Retour après suppression : message affiché une seule fois, puis paramètre retiré de l'adresse
+	// (au tick suivant : au premier chargement, le routeur n'est prêt qu'après ces rappels)
+	afterNavigate(({ to }) => {
+		if (to?.url.searchParams.get('deleted') === '1') {
 			toast.success('Article supprimé.');
-			history.replaceState(history.state, '', page.url.pathname);
+			const path = to.url.pathname;
+			void tick().then(() => replaceState(path, page.state));
 		}
 	});
 
@@ -206,6 +212,14 @@
 							<span class="rounded-full bg-brand-subtle px-2.5 py-0.5 text-brand-primary"
 								>{article.category}</span
 							>
+							{#if article.eventTitle}
+								<span
+									class="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-text-secondary"
+									title="Événement lié"
+								>
+									<CalendarDays size={10} />{article.eventTitle}
+								</span>
+							{/if}
 						</div>
 						<a
 							href="/admin/articles/{article.id}"

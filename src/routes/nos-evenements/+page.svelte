@@ -84,7 +84,7 @@
 
 <Seo
 	title="Événements ECOFIP — Croisades et campagnes au Cameroun"
-	description="Agenda des croisades et campagnes d’évangélisation d’ECOFIP au Cameroun, dont « Bafoussam pour Jésus » du 27 au 31 octobre 2026 au Stade Omnisport Toket."
+	description="Agenda des croisades et campagnes d’évangélisation d’ECOFIP au Cameroun, dont « Bafoussam pour Jésus » du 27 au 30 octobre 2026 au Stade Omnisport Toket."
 	breadcrumbs={[{ name: 'Événements', path: '/nos-evenements' }]}
 />
 

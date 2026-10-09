@@ -5,6 +5,8 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 import type { DetailedEventItem, PublicMerchandiseItem } from '$lib/design-system/types.js';
 import { toPublicMerchandise } from '$lib/server/eventMerchandise.js';
+import { loadPublishedArticlesForEvent, toPublicArticle } from '$lib/server/articles.js';
+import type { DetailedArticleItem } from '$lib/design-system/types.js';
 import { formatMediaUrl } from '$lib/server/r2.js';
 import { cameroonDate, getEventTargetDate, toCameroonParts } from '$lib/utils/eventDate.js';
 import { toCameroonIso } from '$lib/config/site.js';
@@ -109,6 +111,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	// Seuls les événements publiés en base sont proposés à Google (pas les exemples ni les brouillons)
 	let isIndexable = false;
 	let merchandise: PublicMerchandiseItem[] = [];
+	let relatedArticles: DetailedArticleItem[] = [];
 
 	if (isDbConfigured && db) {
 		try {
@@ -173,6 +176,9 @@ export const load: PageServerLoad = async ({ params }) => {
 				endIso = getEventEndIso(ev);
 				isIndexable = ev.isPublished;
 				merchandise = toPublicMerchandise(ev.merchandise, ev.merchandiseWhatsapp, ev.title);
+				relatedArticles = (await loadPublishedArticlesForEvent(ev.id).catch(() => [])).map(
+					toPublicArticle
+				);
 			}
 		} catch (err) {
 			console.error('Erreur recherche événement par slug:', err);
@@ -202,6 +208,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			end: endIso
 		},
 		isIndexable,
-		merchandise
+		merchandise,
+		relatedArticles
 	};
 };

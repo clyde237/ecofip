@@ -24,6 +24,7 @@
 	import LinkifiedText from '$lib/design-system/components/LinkifiedText.svelte';
 	import Modal from '$lib/design-system/components/Modal.svelte';
 	import EventMerchandiseSection from '$lib/design-system/patterns/EventMerchandiseSection.svelte';
+	import ArticleCard from '$lib/design-system/components/ArticleCard.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 	import type { PageData } from './$types.js';
 
@@ -628,6 +629,32 @@
 			</div>
 		</Container>
 	</section>
+
+	{#if data.relatedArticles.length > 0}
+		<!-- 4. ACTUALITÉS LIÉES À L'ÉVÉNEMENT -->
+		<section class="border-t border-gray-200/70 bg-white py-12 sm:py-16">
+			<Container>
+				<div class="flex flex-wrap items-end justify-between gap-3">
+					<div>
+						<p class="font-body text-xs font-bold tracking-wider text-brand-primary uppercase">
+							Actualités
+						</p>
+						<h2 class="mt-2 font-display text-2xl font-bold text-text-primary sm:text-3xl">
+							Les nouvelles de « {event.title} »
+						</h2>
+					</div>
+					<a href="/actualites" class="text-sm font-bold text-brand-primary hover:underline">
+						Toutes les actualités
+					</a>
+				</div>
+				<div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{#each data.relatedArticles.slice(0, 6) as article (article.id)}
+						<ArticleCard {article} />
+					{/each}
+				</div>
+			</Container>
+		</section>
+	{/if}
 </div>
 
 <!-- MODALE D'INSCRIPTION RAPIDE -->

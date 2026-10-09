@@ -3,7 +3,15 @@
 	import { SITE_URL, absoluteUrl, shareableImageUrl } from '$lib/config/site.js';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
 	import { onMount } from 'svelte';
-	import { ArrowLeft, Link as LinkIcon, CheckCircle2, MessageCircle, Share2 } from '@lucide/svelte';
+	import {
+		ArrowLeft,
+		ArrowRight,
+		CalendarDays,
+		Link as LinkIcon,
+		CheckCircle2,
+		MessageCircle,
+		Share2
+	} from '@lucide/svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
 	import ArticleContent from '$lib/design-system/components/ArticleContent.svelte';
 	import ArticleCard from '$lib/design-system/components/ArticleCard.svelte';
@@ -69,7 +77,16 @@
 		inLanguage: 'fr',
 		mainEntityOfPage: absoluteUrl(articlePath),
 		author: { '@type': 'Person', name: article.authorName },
-		publisher: { '@id': `${SITE_URL}/#organization` }
+		publisher: { '@id': `${SITE_URL}/#organization` },
+		about: data.linkedEvent
+			? {
+					'@type': 'Event',
+					name: data.linkedEvent.title,
+					url: absoluteUrl(data.linkedEvent.href),
+					startDate: data.linkedEvent.startDate,
+					location: { '@type': 'Place', name: data.linkedEvent.location }
+				}
+			: undefined
 	}}
 />
 
@@ -93,6 +110,36 @@
 					alt={article.imageAlt}
 					class="aspect-[16/9] w-full rounded-3xl border border-gray-200 object-cover shadow-sm"
 				/>
+				{#if data.linkedEvent}
+					<a
+						href={data.linkedEvent.href}
+						class="group mt-6 flex items-center gap-4 rounded-3xl border border-brand-primary/20 bg-brand-subtle/60 p-4 transition-colors hover:border-brand-primary/50 sm:p-5"
+					>
+						<span
+							class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary text-white"
+						>
+							<CalendarDays size={22} />
+						</span>
+						<span class="min-w-0 flex-1">
+							<span class="block text-[11px] font-bold tracking-wider text-brand-primary uppercase">
+								Événement lié
+							</span>
+							<span class="block font-display text-lg leading-snug font-bold text-text-primary">
+								{data.linkedEvent.title}
+							</span>
+							<span class="mt-0.5 block text-sm text-text-secondary">
+								{[data.linkedEvent.dateLabel, data.linkedEvent.time, data.linkedEvent.location]
+									.filter(Boolean)
+									.join(' · ')}
+							</span>
+						</span>
+						<span
+							class="hidden shrink-0 items-center gap-1 text-sm font-bold text-brand-primary group-hover:underline sm:flex"
+						>
+							Voir l’événement <ArrowRight size={16} />
+						</span>
+					</a>
+				{/if}
 				<div class="mt-8 rounded-3xl border border-gray-200/80 bg-white p-6 shadow-xs sm:p-10">
 					<p class="font-display text-lg leading-relaxed text-text-primary sm:text-xl">
 						{article.excerpt}

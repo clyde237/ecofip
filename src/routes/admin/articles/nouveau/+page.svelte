@@ -34,6 +34,7 @@
 		action=""
 		submitLabel="Créer l’article"
 		categories={data.categories}
+		eventChoices={data.eventChoices}
 		isR2Configured={data.isR2Configured}
 	/>
 </div>

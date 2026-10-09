@@ -7,6 +7,9 @@ import { formatMediaUrl, getR2PublicUrl, isR2Configured } from '$lib/server/r2.j
 import {
 	deleteArticleFiles,
 	deleteArticleImage,
+	deleteRemovedContentImages,
+	eventExists,
+	loadEventChoices,
 	parseArticleForm,
 	parseArticleImageKey
 } from '$lib/server/articles.js';
@@ -26,13 +29,18 @@ export const load: PageServerLoad = async ({ params }) => {
 	const [article] = await db.select().from(articles).where(eq(articles.id, id)).limit(1);
 	if (!article) throw error(404, 'Article introuvable');
 
-	const categories = (await db.selectDistinct({ category: articles.category }).from(articles)).map(
-		(row) => row.category
-	);
+	const [categories, eventChoices] = await Promise.all([
+		db
+			.selectDistinct({ category: articles.category })
+			.from(articles)
+			.then((rows) => rows.map((row) => row.category)),
+		loadEventChoices()
+	]);
 
 	return {
 		article: { ...article, imageUrl: formatMediaUrl(article.imageUrl) || null },
 		categories,
+		eventChoices,
 		isR2Configured
 	};
 };
@@ -44,18 +52,27 @@ export const actions: Actions = {
 		const parsed = parseArticleForm(formData);
 		if ('error' in parsed) return fail(400, { error: parsed.error });
 		if (!db) return fail(503, { error: DB_UNAVAILABLE });
+		if (parsed.value.eventId !== null && !(await eventExists(parsed.value.eventId))) {
+			return fail(400, { error: 'L’événement lié n’existe plus. Choisissez-en un autre.' });
+		}
 
 		const newImageKey = parseArticleImageKey(formData.get('imageKey'));
 		const removeImage = formData.get('removeImage') === 'on';
 		let replacedImageKey: string | null = null;
+		let previousContent: string;
 
 		try {
 			const [existing] = await db
-				.select({ imageKey: articles.imageKey, publishedAt: articles.publishedAt })
+				.select({
+					imageKey: articles.imageKey,
+					publishedAt: articles.publishedAt,
+					content: articles.content
+				})
 				.from(articles)
 				.where(eq(articles.id, id))
 				.limit(1);
 			if (!existing) return fail(404, { error: 'Article introuvable.' });
+			previousContent = existing.content;
 
 			const imageChanged = (newImageKey && newImageKey !== existing.imageKey) || removeImage;
 			if (parsed.value.isFeatured) {
@@ -90,8 +107,10 @@ export const actions: Actions = {
 			return fail(500, { error: 'Erreur lors de la mise à jour de l’article.' });
 		}
 
-		// L'ancienne couverture n'est supprimée de R2 qu'une fois la base à jour
+		// L'ancienne couverture et les images retirées du texte ne sont supprimées de R2
+		// qu'une fois la base à jour
 		await deleteArticleImage(replacedImageKey);
+		await deleteRemovedContentImages(id, previousContent, parsed.value.content);
 		return { success: true, message: 'Article enregistré.' };
 	},
 

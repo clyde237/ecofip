@@ -9,7 +9,7 @@
 	}
 
 	let {
-		eyebrow = 'Mission nationale 2023–2025',
+		eyebrow = 'Mission nationale 2024–2026',
 		title,
 		subtitle = 'Une nation en feu pour Christ.',
 		description = "ECOFIP — Les Économes Fidèles et Prudents parcourt les 10 régions du Cameroun pour annoncer l'Évangile, transformer des vies et apporter l'espoir à travers des croisades d'évangélisation et des actions humanitaires.",

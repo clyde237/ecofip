@@ -102,7 +102,8 @@ export const articles = pgTable('articles', {
 	slug: varchar('slug', { length: 255 }).notNull().unique(),
 	category: varchar('category', { length: 100 }).notNull(),
 	excerpt: text('excerpt'),
-	// Texte au format simple (paragraphes, ## intertitres, listes, **gras**, liens, images)
+	// Document de l'éditeur visuel (JSON nettoyé) ou, pour les premiers articles, texte au format
+	// simple (## intertitres, listes, **gras**…) : voir src/lib/utils/articleContent.ts
 	content: text('content').notNull(),
 	imageUrl: text('image_url'),
 	// Clé R2 de l'image de couverture, pour la supprimer avec l'article
@@ -114,6 +115,8 @@ export const articles = pgTable('articles', {
 	// Article mis en avant en tête de la page Actualités (un seul à la fois)
 	isFeatured: boolean('is_featured').default(false).notNull(),
 	isPublished: boolean('is_published').default(false).notNull(),
+	// Événement dont parle l'article (facultatif) : l'article apparaît aussi sur sa page
+	eventId: integer('event_id').references(() => events.id, { onDelete: 'set null' }),
 	publishedAt: timestamp('published_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
