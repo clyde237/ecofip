@@ -16,18 +16,47 @@
 		MessageCircle,
 		Copy,
 		Check,
-		ListChecks
+		ListChecks,
+		ShoppingBag
 	} from '@lucide/svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
 	import FlipCountdown from '$lib/design-system/components/FlipCountdown.svelte';
 	import LinkifiedText from '$lib/design-system/components/LinkifiedText.svelte';
 	import Modal from '$lib/design-system/components/Modal.svelte';
+	import EventMerchandiseSection from '$lib/design-system/patterns/EventMerchandiseSection.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
 
 	let event = $derived(data.event);
+	let lowestMerchandisePrice = $derived.by(() => {
+		const available = data.merchandise.filter((item) => item.available);
+		if (available.length === 0) return null;
+		return available.reduce((lowest, item) => (item.price < lowest.price ? item : lowest))
+			.priceLabel;
+	});
+	// Gadgets déclarés à Google comme produits, avec leur prix en FCFA
+	let merchandiseJsonLd = $derived(
+		data.merchandise
+			.filter((item) => item.images.length > 0)
+			.map((item) => ({
+				'@type': 'Product',
+				name: `${item.name} — ${event.title}`,
+				description: item.description || undefined,
+				image: item.images.map((image) => shareableImageUrl(image)),
+				brand: { '@type': 'Brand', name: 'ECOFIP' },
+				offers: {
+					'@type': 'Offer',
+					price: item.price,
+					priceCurrency: 'XAF',
+					availability: item.available
+						? 'https://schema.org/InStock'
+						: 'https://schema.org/OutOfStock',
+					url: absoluteUrl(`/nos-evenements/${event.slug ?? event.id}#boutique`)
+				}
+			}))
+	);
 	// Ville reconnue dans le lieu ou le titre (ex. « Bafoussam pour Jésus »), pour l'adresse Google
 	let eventCity = $derived(
 		Object.keys(CITY_COORDINATES).find((city) =>
@@ -182,36 +211,39 @@
 		{ name: 'Événements', path: '/nos-evenements' },
 		{ name: event.title, path: `/nos-evenements/${event.slug ?? event.id}` }
 	]}
-	jsonLd={{
-		'@type': 'Event',
-		name: event.title,
-		description: event.description || undefined,
-		startDate: data.schedule.start,
-		endDate: data.schedule.end ?? undefined,
-		eventStatus: 'https://schema.org/EventScheduled',
-		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-		image: [shareableImageUrl(event.image)],
-		location: {
-			'@type': 'Place',
-			name: event.location,
-			address: {
-				'@type': 'PostalAddress',
-				streetAddress: event.location,
-				addressLocality: eventCity,
-				addressCountry: 'CM'
+	jsonLd={[
+		{
+			'@type': 'Event',
+			name: event.title,
+			description: event.description || undefined,
+			startDate: data.schedule.start,
+			endDate: data.schedule.end ?? undefined,
+			eventStatus: 'https://schema.org/EventScheduled',
+			eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+			image: [shareableImageUrl(event.image)],
+			location: {
+				'@type': 'Place',
+				name: event.location,
+				address: {
+					'@type': 'PostalAddress',
+					streetAddress: event.location,
+					addressLocality: eventCity,
+					addressCountry: 'CM'
+				}
+			},
+			organizer: { '@id': `${SITE_URL}/#organization` },
+			performer: event.speakers?.map((name) => ({ '@type': 'Person', name })),
+			isAccessibleForFree: true,
+			offers: {
+				'@type': 'Offer',
+				price: 0,
+				priceCurrency: 'XAF',
+				availability: 'https://schema.org/InStock',
+				url: absoluteUrl(`/nos-evenements/${event.slug ?? event.id}`)
 			}
 		},
-		organizer: { '@id': `${SITE_URL}/#organization` },
-		performer: event.speakers?.map((name) => ({ '@type': 'Person', name })),
-		isAccessibleForFree: true,
-		offers: {
-			'@type': 'Offer',
-			price: 0,
-			priceCurrency: 'XAF',
-			availability: 'https://schema.org/InStock',
-			url: absoluteUrl(`/nos-evenements/${event.slug ?? event.id}`)
-		}
-	}}
+		...merchandiseJsonLd
+	]}
 />
 
 <div class="min-h-screen bg-[#f8fafc] pb-24">
@@ -426,11 +458,24 @@
 								<span>Entrée libre · Sans inscription, venez directement</span>
 							</span>
 						{/if}
+						{#if data.merchandise.length > 0}
+							<a
+								href="#boutique"
+								class="inline-flex items-center gap-2.5 rounded-xl border border-white/30 px-6 py-3 font-body text-sm font-bold text-white transition-colors hover:bg-white/10 sm:text-base"
+							>
+								<ShoppingBag size={18} />
+								<span>Gadgets officiels</span>
+							</a>
+						{/if}
 					</div>
 				</div>
 			</div>
 		</Container>
 	</section>
+
+	{#if data.merchandise.length > 0}
+		<EventMerchandiseSection items={data.merchandise} eventTitle={event.title} />
+	{/if}
 
 	<!-- 3. CONTENU DÉTAILLÉ DE L'ÉVÉNEMENT -->
 	<section class="py-12 sm:py-16">
@@ -545,6 +590,18 @@
 									<span class="font-semibold text-emerald-700">Entrée 100% Libre et Gratuite</span>
 								</div>
 							</div>
+
+							{#if lowestMerchandisePrice !== null}
+								<div class="flex items-start gap-3">
+									<ShoppingBag size={18} class="mt-0.5 shrink-0 text-brand-primary" />
+									<div>
+										<span class="block font-bold text-text-primary">Gadgets officiels :</span>
+										<a href="#boutique" class="font-semibold text-brand-primary hover:underline">
+											À partir de {lowestMerchandisePrice}
+										</a>
+									</div>
+								</div>
+							{/if}
 						</div>
 
 						<div class="mt-8 border-t border-gray-100 pt-6">

@@ -21,6 +21,15 @@
 	} from '@lucide/svelte';
 	import { ImagePicker } from '$lib';
 	import { toast } from '$lib/design-system/toast.svelte.js';
+	import { isAbortError } from '$lib/utils/r2Upload.js';
+	import {
+		draftsFromStored,
+		releaseDraftPreviews,
+		serializeMerchandise,
+		uploadMerchandiseImages,
+		type MerchandiseDraft
+	} from '$lib/utils/eventMerchandise.js';
+	import EventMerchandiseEditor from './EventMerchandiseEditor.svelte';
 	import { formatEventSchedule, toCameroonDateString } from '$lib/utils/eventDate.js';
 	import type { PageData, ActionData } from './$types.js';
 
@@ -169,6 +178,10 @@
 	let isPublished = $state(true);
 	let isFeatured = $state(false);
 	let registrationEnabled = $state(true);
+	let merchItems = $state<MerchandiseDraft[]>([]);
+	let merchWhatsapp = $state('');
+	// Envoi des images de gadgets en cours, interrompu si le formulaire est fermé
+	let createUpload: AbortController | null = null;
 
 	let schedulePreview = $derived(
 		startDate
@@ -206,6 +219,16 @@
 		isPublished = true;
 		isFeatured = false;
 		registrationEnabled = true;
+		releaseDraftPreviews(merchItems);
+		merchItems = [];
+		merchWhatsapp = '';
+	}
+
+	function closeCreateModal() {
+		createUpload?.abort();
+		createUpload = null;
+		isSubmitting = false;
+		isCreateModalOpen = false;
 	}
 
 	// ==========================================
@@ -228,6 +251,17 @@
 	let editIsPublished = $state(true);
 	let editIsFeatured = $state(false);
 	let editRegistrationEnabled = $state(true);
+	let editMerchItems = $state<MerchandiseDraft[]>([]);
+	let editMerchWhatsapp = $state('');
+	let editUpload: AbortController | null = null;
+
+	function closeEditModal() {
+		editUpload?.abort();
+		editUpload = null;
+		isEditSubmitting = false;
+		isEditModalOpen = false;
+		releaseDraftPreviews(editMerchItems);
+	}
 
 	let editSchedulePreview = $derived(
 		editStartDate
@@ -267,6 +301,8 @@
 		editIsPublished = Boolean(ev.isPublished);
 		editIsFeatured = Boolean(ev.isFeatured);
 		editRegistrationEnabled = ev.registrationEnabled ?? true;
+		editMerchItems = draftsFromStored(ev.merchandise);
+		editMerchWhatsapp = ev.merchandiseWhatsapp ? `+${ev.merchandiseWhatsapp}` : '';
 		openMenuId = null;
 		isEditModalOpen = true;
 	}
@@ -290,8 +326,8 @@
 	onkeydown={(e) => {
 		if (e.key === 'Escape') {
 			openMenuId = null;
-			if (isCreateModalOpen) isCreateModalOpen = false;
-			if (isEditModalOpen) isEditModalOpen = false;
+			if (isCreateModalOpen) closeCreateModal();
+			if (isEditModalOpen) closeEditModal();
 			if (isDeleteModalOpen) isDeleteModalOpen = false;
 		}
 	}}
@@ -834,7 +870,7 @@
 				</div>
 				<button
 					type="button"
-					onclick={() => (isCreateModalOpen = false)}
+					onclick={closeCreateModal}
 					class="rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
 				>
 					<X size={18} />
@@ -844,8 +880,28 @@
 			<form
 				method="POST"
 				action="?/create"
-				use:enhance={() => {
+				use:enhance={async ({ formData, cancel }) => {
 					isSubmitting = true;
+					// Images de gadgets envoyées sur R2 avant l'enregistrement de l'événement
+					const upload = new AbortController();
+					createUpload = upload;
+					try {
+						await uploadMerchandiseImages(merchItems, upload.signal);
+					} catch (err) {
+						if (!isAbortError(err)) {
+							toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
+							isSubmitting = false;
+						}
+						cancel();
+						return;
+					}
+					// Formulaire fermé pendant l'envoi : closeCreateModal a déjà tout remis à zéro
+					if (upload.signal.aborted) {
+						cancel();
+						return;
+					}
+					createUpload = null;
+					formData.set('merchandise', serializeMerchandise(merchItems));
 					return async ({ update, result }) => {
 						isSubmitting = false;
 						if (result.type === 'success') {
@@ -1159,6 +1215,12 @@
 					</p>
 				</div>
 
+				<EventMerchandiseEditor
+					idPrefix="create"
+					bind:items={merchItems}
+					bind:whatsapp={merchWhatsapp}
+				/>
+
 				<!-- WIDGET SWITCH : INSCRIPTIONS (PLACES LIMITÉES) OU ACCÈS LIBRE -->
 				<div
 					class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 transition-colors"
@@ -1244,7 +1306,7 @@
 				<div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
 					<button
 						type="button"
-						onclick={() => (isCreateModalOpen = false)}
+						onclick={closeCreateModal}
 						class="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
 					>
 						Annuler
@@ -1283,7 +1345,7 @@
 				</div>
 				<button
 					type="button"
-					onclick={() => (isEditModalOpen = false)}
+					onclick={closeEditModal}
 					class="cursor-pointer rounded-lg p-1.5 text-text-secondary hover:bg-gray-100"
 				>
 					<X size={18} />
@@ -1293,12 +1355,30 @@
 			<form
 				method="POST"
 				action="?/update"
-				use:enhance={() => {
+				use:enhance={async ({ formData, cancel }) => {
 					isEditSubmitting = true;
+					const upload = new AbortController();
+					editUpload = upload;
+					try {
+						await uploadMerchandiseImages(editMerchItems, upload.signal);
+					} catch (err) {
+						if (!isAbortError(err)) {
+							toast.error(err instanceof Error ? err.message : String(err), 'Envoi interrompu');
+							isEditSubmitting = false;
+						}
+						cancel();
+						return;
+					}
+					if (upload.signal.aborted) {
+						cancel();
+						return;
+					}
+					editUpload = null;
+					formData.set('merchandise', serializeMerchandise(editMerchItems));
 					return async ({ update, result }) => {
 						isEditSubmitting = false;
 						if (result.type === 'success') {
-							isEditModalOpen = false;
+							closeEditModal();
 							const msg =
 								(result.data as { message?: string })?.message || 'Événement modifié avec succès !';
 							toast.success(msg);
@@ -1603,6 +1683,12 @@
 					</p>
 				</div>
 
+				<EventMerchandiseEditor
+					idPrefix="edit"
+					bind:items={editMerchItems}
+					bind:whatsapp={editMerchWhatsapp}
+				/>
+
 				<!-- WIDGET SWITCH : INSCRIPTIONS (PLACES LIMITÉES) OU ACCÈS LIBRE -->
 				<div
 					class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 transition-colors"
@@ -1688,7 +1774,7 @@
 				<div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
 					<button
 						type="button"
-						onclick={() => (isEditModalOpen = false)}
+						onclick={closeEditModal}
 						class="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-text-secondary hover:bg-gray-50"
 					>
 						Annuler

@@ -3,7 +3,8 @@ import { events } from '$lib/server/db/schema.js';
 import { eq, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import type { DetailedEventItem } from '$lib/design-system/types.js';
+import type { DetailedEventItem, PublicMerchandiseItem } from '$lib/design-system/types.js';
+import { toPublicMerchandise } from '$lib/server/eventMerchandise.js';
 import { formatMediaUrl } from '$lib/server/r2.js';
 import { cameroonDate, getEventTargetDate, toCameroonParts } from '$lib/utils/eventDate.js';
 import { toCameroonIso } from '$lib/config/site.js';
@@ -107,6 +108,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	let endIso: string | null = null;
 	// Seuls les événements publiés en base sont proposés à Google (pas les exemples ni les brouillons)
 	let isIndexable = false;
+	let merchandise: PublicMerchandiseItem[] = [];
 
 	if (isDbConfigured && db) {
 		try {
@@ -170,6 +172,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				};
 				endIso = getEventEndIso(ev);
 				isIndexable = ev.isPublished;
+				merchandise = toPublicMerchandise(ev.merchandise, ev.merchandiseWhatsapp, ev.title);
 			}
 		} catch (err) {
 			console.error('Erreur recherche événement par slug:', err);
@@ -198,6 +201,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			start: toCameroonIso(new Date(foundEvent.targetDate ?? getEventTargetDate(foundEvent))),
 			end: endIso
 		},
-		isIndexable
+		isIndexable,
+		merchandise
 	};
 };
