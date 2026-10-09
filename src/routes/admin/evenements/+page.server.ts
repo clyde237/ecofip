@@ -1,9 +1,15 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
-import { events, type EventRecord } from '$lib/server/db/schema.js';
+import { events, type EventRecord, type StoredMerchandiseItem } from '$lib/server/db/schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
 import { formatEventSchedule } from '$lib/utils/eventDate.js';
+import { getR2PublicUrl } from '$lib/server/r2.js';
+import {
+	deleteMerchandiseImages,
+	merchandiseImageKeys,
+	parseMerchandiseForm
+} from '$lib/server/eventMerchandise.js';
 
 const fallbackEvents: EventRecord[] = [
 	{
@@ -24,6 +30,8 @@ const fallbackEvents: EventRecord[] = [
 		isPublished: true,
 		isFeatured: true,
 		registrationEnabled: true,
+		merchandise: null,
+		merchandiseWhatsapp: null,
 		isSingleDay: true,
 		isAllDay: false,
 		startDate: new Date('2026-10-15T18:00:00'),
@@ -51,6 +59,8 @@ const fallbackEvents: EventRecord[] = [
 		isPublished: true,
 		isFeatured: false,
 		registrationEnabled: true,
+		merchandise: null,
+		merchandiseWhatsapp: null,
 		isSingleDay: true,
 		isAllDay: false,
 		startDate: new Date('2026-10-22T09:00:00'),
@@ -78,6 +88,8 @@ const fallbackEvents: EventRecord[] = [
 		isPublished: false,
 		isFeatured: false,
 		registrationEnabled: true,
+		merchandise: null,
+		merchandiseWhatsapp: null,
 		isSingleDay: false,
 		isAllDay: false,
 		startDate: new Date('2026-11-05T08:00:00'),
@@ -89,12 +101,23 @@ const fallbackEvents: EventRecord[] = [
 	}
 ];
 
+/** Adresse de chaque image de gadget, pour l'aperçu dans le formulaire */
+function withMerchandiseUrls(record: EventRecord) {
+	return {
+		...record,
+		merchandise: (record.merchandise ?? []).map((item) => ({
+			...item,
+			imageUrls: item.imageKeys.map(getR2PublicUrl)
+		}))
+	};
+}
+
 export const load: PageServerLoad = async () => {
 	if (isDbConfigured && db) {
 		try {
 			const items = await db.select().from(events).orderBy(desc(events.createdAt));
 			if (items.length > 0) {
-				return { events: items, usingNeonDb: true };
+				return { events: items.map(withMerchandiseUrls), usingNeonDb: true };
 			}
 		} catch {
 			// En attente de migration
@@ -102,7 +125,7 @@ export const load: PageServerLoad = async () => {
 	}
 
 	return {
-		events: fallbackEvents,
+		events: fallbackEvents.map(withMerchandiseUrls),
 		usingNeonDb: false
 	};
 };
@@ -127,6 +150,8 @@ type ParsedEventForm =
 				isPublished: boolean;
 				isFeatured: boolean;
 				registrationEnabled: boolean;
+				merchandise: StoredMerchandiseItem[];
+				merchandiseWhatsapp: string | null;
 				isSingleDay: boolean;
 				isAllDay: boolean;
 				startTime: string | null;
@@ -179,6 +204,8 @@ function parseEventForm(formData: FormData): ParsedEventForm {
 	if (isSingleDay && startTime && endTime && endTime < startTime) {
 		return { error: 'L’heure de fin ne peut pas être antérieure à l’heure de début.' };
 	}
+	const merchandise = parseMerchandiseForm(formData);
+	if ('error' in merchandise) return { error: merchandise.error };
 
 	const schedule = formatEventSchedule({
 		isSingleDay,
@@ -201,6 +228,8 @@ function parseEventForm(formData: FormData): ParsedEventForm {
 			isPublished,
 			isFeatured,
 			registrationEnabled,
+			merchandise: merchandise.value.items,
+			merchandiseWhatsapp: merchandise.value.whatsapp,
 			isSingleDay,
 			isAllDay,
 			startTime: startTime || null,
@@ -276,11 +305,12 @@ export const actions: Actions = {
 			return fail(400, { error: parsed.error });
 		}
 		const { values } = parsed;
+		let removedImageKeys: string[] = [];
 
 		if (isDbConfigured && db) {
 			try {
 				const [existing] = await db
-					.select({ id: events.id })
+					.select({ id: events.id, merchandise: events.merchandise })
 					.from(events)
 					.where(eq(events.id, id))
 					.limit(1);
@@ -297,6 +327,11 @@ export const actions: Actions = {
 					.update(events)
 					.set({ ...values, updatedAt: new Date() })
 					.where(eq(events.id, id));
+
+				const keptKeys = new Set(merchandiseImageKeys(values.merchandise));
+				removedImageKeys = merchandiseImageKeys(existing.merchandise).filter(
+					(key) => !keptKeys.has(key)
+				);
 			} catch (err: unknown) {
 				console.error(`Erreur modification événement #${id}:`, err);
 				return fail(500, { error: 'Erreur lors de la modification de l’événement.' });
@@ -318,6 +353,8 @@ export const actions: Actions = {
 			};
 		}
 
+		// Les images de gadgets retirées ne sont effacées de R2 qu'une fois la base à jour
+		await deleteMerchandiseImages(removedImageKeys);
 		return { success: true, message: 'Événement modifié avec succès !' };
 	},
 
@@ -454,11 +491,16 @@ export const actions: Actions = {
 		if (!id) return fail(400, { error: 'Identifiant invalide' });
 
 		if (isDbConfigured && db) {
+			let deleted: { merchandise: StoredMerchandiseItem[] | null } | undefined;
 			try {
-				await db.delete(events).where(eq(events.id, id));
+				[deleted] = await db
+					.delete(events)
+					.where(eq(events.id, id))
+					.returning({ merchandise: events.merchandise });
 			} catch {
 				return fail(500, { error: 'Erreur lors de la suppression' });
 			}
+			await deleteMerchandiseImages(merchandiseImageKeys(deleted?.merchandise));
 		} else {
 			const idx = fallbackEvents.findIndex((e) => e.id === id);
 			if (idx !== -1) {

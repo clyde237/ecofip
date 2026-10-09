@@ -505,6 +505,18 @@ export interface TestimonialsSectionProps {
 }
 
 /** Prédication vidéo (format court vertical), telle qu'affichée sur le site */
+/** Gadget d'un événement tel qu'affiché sur le site, avec son lien de commande WhatsApp */
+export interface PublicMerchandiseItem {
+	id: string;
+	name: string;
+	price: number;
+	priceLabel: string;
+	description: string;
+	images: string[];
+	available: boolean;
+	orderUrl: string | null;
+}
+
 export interface PublicSermon {
 	id: string;
 	slug: string;

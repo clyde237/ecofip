@@ -2,12 +2,24 @@ import {
 	boolean,
 	date,
 	integer,
+	jsonb,
 	pgTable,
 	serial,
 	text,
 	timestamp,
 	varchar
 } from 'drizzle-orm/pg-core';
+
+/** Gadget d'un événement tel qu'enregistré en base (images = clés R2) */
+export type StoredMerchandiseItem = {
+	id: string;
+	name: string;
+	/** Prix en FCFA */
+	price: number;
+	description: string | null;
+	imageKeys: string[];
+	available: boolean;
+};
 
 // 1. Table des Administrateurs
 export const admins = pgTable('admins', {
@@ -74,6 +86,10 @@ export const events = pgTable('events', {
 	isFeatured: boolean('is_featured').default(false).notNull(),
 	// false = événement en accès libre : le bouton « Participer / S'inscrire » est masqué
 	registrationEnabled: boolean('registration_enabled').default(true).notNull(),
+	// Gadgets vendus pour soutenir l'œuvre (t-shirts, polos…), images sur R2 dans events/
+	merchandise: jsonb('merchandise').$type<StoredMerchandiseItem[]>(),
+	// Numéro WhatsApp (chiffres seuls, indicatif compris) qui reçoit les commandes de gadgets
+	merchandiseWhatsapp: varchar('merchandise_whatsapp', { length: 20 }),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
