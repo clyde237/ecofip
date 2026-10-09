@@ -21,7 +21,7 @@
 		badgeLabel = 'Action Humanitaire & Santé',
 		metrics = defaultMetrics,
 		ctaLabel = 'Soutenir cette mission',
-		ctaHref = '#faire-un-don',
+		ctaHref = '/faire-un-don#don',
 		class: customClass = ''
 	}: ProjectsSpotlightProps = $props();
 

@@ -2,14 +2,11 @@
 	import { page } from '$app/state';
 	import { Heart, Menu, X, ChevronDown } from '@lucide/svelte';
 	import Container from '../components/Container.svelte';
-	import Modal from '../components/Modal.svelte';
-	import Input from '../components/Input.svelte';
-	import Button from '../components/Button.svelte';
-	import { toast } from '../toast.svelte.js';
+	import DonationModal from '../components/DonationModal.svelte';
+	import { donationDialog } from '../donation.svelte.js';
 
 	let isScrolled = $state(false);
 	let isMobileMenuOpen = $state(false);
-	let isDonationModalOpen = $state(false);
 
 	let isAboutDropdownOpen = $state(false);
 	let isMobileAboutOpen = $state(true); // ouvert par défaut sur mobile pour la clarté
@@ -293,7 +290,7 @@
 			<!-- CTA Button Faire un don -->
 			<button
 				type="button"
-				onclick={() => (isDonationModalOpen = true)}
+				onclick={() => donationDialog.show()}
 				class="hidden cursor-pointer items-center gap-1.5 rounded-lg bg-brand-primary px-4 py-2 text-sm font-bold text-white shadow-xs transition-all duration-200 hover:bg-brand-primary-hover hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-secondary active:bg-[#a6000a] sm:inline-flex"
 			>
 				<Heart size={15} class="fill-white text-white" />
@@ -442,7 +439,7 @@
 						type="button"
 						onclick={() => {
 							isMobileMenuOpen = false;
-							isDonationModalOpen = true;
+							donationDialog.show();
 						}}
 						class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3.5 text-base font-bold text-white shadow-md active:bg-[#a6000a]"
 					>
@@ -455,57 +452,5 @@
 	{/if}
 </header>
 
-<!-- Modal de donation rapide -->
-<Modal
-	bind:open={isDonationModalOpen}
-	title="Soutenez la mission ECOFIP"
-	description="« Semez dans l'œuvre de Dieu pour annoncer l'Évangile à travers le Cameroun. »"
->
-	<div class="space-y-5 py-2">
-		<p class="text-base leading-relaxed text-text-secondary">
-			Chaque contribution participe directement au déploiement des équipes sur le terrain et aux
-			actions sociales d'aide humanitaire.
-		</p>
-		<div class="grid grid-cols-3 gap-3">
-			<button
-				type="button"
-				class="cursor-pointer rounded-xl border-2 border-brand-primary bg-brand-subtle py-3 text-center text-base font-bold text-brand-primary transition-colors sm:text-lg"
-			>
-				10 000 FCFA
-			</button>
-			<button
-				type="button"
-				class="cursor-pointer rounded-xl border border-border bg-white py-3 text-center text-base font-semibold text-text-primary transition-colors hover:border-brand-primary/50 hover:bg-brand-subtle/30 sm:text-lg"
-			>
-				25 000 FCFA
-			</button>
-			<button
-				type="button"
-				class="cursor-pointer rounded-xl border border-border bg-white py-3 text-center text-base font-semibold text-text-primary transition-colors hover:border-brand-primary/50 hover:bg-brand-subtle/30 sm:text-lg"
-			>
-				50 000 FCFA
-			</button>
-		</div>
-		<Input label="Autre montant libre (FCFA)" type="number" placeholder="Ex: 15 000" />
-	</div>
-
-	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isDonationModalOpen = false)}>
-			Annuler
-		</Button>
-		<Button
-			variant="primary"
-			size="md"
-			onclick={() => {
-				isDonationModalOpen = false;
-				toast.success(
-					'Merci infiniment ! Votre intention de don a été transmise avec succès.',
-					'Don initié'
-				);
-			}}
-		>
-			<Heart size={18} class="mr-1.5 fill-white text-white" />
-			Valider le don
-		</Button>
-	{/snippet}
-</Modal>
+<!-- Fenêtre de don partagée par tout le site -->
+<DonationModal />
