@@ -12,7 +12,7 @@
 		Vos dons permettent de porter l’Évangile et l’aide humanitaire dans les 10 régions du Cameroun.
 	</p>
 	<a
-		href="/faire-un-don"
+		href="/faire-un-don#don"
 		class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-brand-primary hover:bg-white/95"
 	>
 		Faire un don <ArrowRight size={15} />

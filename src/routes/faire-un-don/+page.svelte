@@ -1,20 +1,14 @@
 <script lang="ts">
 	import Seo from '$lib/design-system/components/Seo.svelte';
 	import PageBanner from '$lib/design-system/patterns/PageBanner.svelte';
-	import { onMount } from 'svelte';
 	import Container from '$lib/design-system/components/Container.svelte';
-	import Button from '$lib/design-system/components/Button.svelte';
-	import Modal from '$lib/design-system/components/Modal.svelte';
-	import Input from '$lib/design-system/components/Input.svelte';
-	import { toast } from '$lib/design-system/toast.svelte.js';
+	import MobileMoneyDonation from '$lib/design-system/components/MobileMoneyDonation.svelte';
+	import { donationDialog } from '$lib/design-system/donation.svelte.js';
+	import { DONATION_RECIPIENT, MOBILE_MONEY_OPERATORS, ussdCode } from '$lib/config/donation.js';
 	import {
 		Heart,
 		ShieldCheck,
-		FileText,
-		CheckCircle2,
 		Smartphone,
-		CreditCard,
-		Building2,
 		Truck,
 		Volume2,
 		Tv,
@@ -24,14 +18,8 @@
 		Sparkles,
 		Quote,
 		PhoneCall,
-		Copy
+		UserCheck
 	} from '@lucide/svelte';
-
-	let isDonationModalOpen = $state(false);
-	let selectedNeed = $state<string>('all');
-	let selectedMethod = $state<'momo' | 'card' | 'bank'>('momo');
-	let donationAmount = $state<number>(25000);
-	let customAmount = $state<string>('');
 
 	const whyGiveCards = [
 		{
@@ -113,13 +101,6 @@
 			percent: 80
 		}
 	];
-
-	function copyToClipboard(text: string, label: string) {
-		if (typeof window !== 'undefined') {
-			navigator.clipboard?.writeText(text);
-			toast.success(`${label} copié dans le presse-papiers`, 'Copié');
-		}
-	}
 </script>
 
 <Seo
@@ -181,7 +162,7 @@
 			</div>
 
 			<div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{#each whyGiveCards as card}
+				{#each whyGiveCards as card (card.id)}
 					{@const IconComponent = card.icon}
 					<div
 						class="flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-[#f8fafc] p-8 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/30 hover:shadow-lg"
@@ -235,7 +216,7 @@
 			</div>
 
 			<div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{#each currentNeeds as need}
+				{#each currentNeeds as need (need.id)}
 					{@const IconComponent = need.icon}
 					<div
 						class="flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white p-7 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/30 hover:shadow-md"
@@ -276,10 +257,7 @@
 						<div class="mt-6 border-t border-gray-100 pt-4">
 							<button
 								type="button"
-								onclick={() => {
-									selectedNeed = need.id;
-									isDonationModalOpen = true;
-								}}
+								onclick={() => donationDialog.show(need.title)}
 								class="w-full cursor-pointer rounded-xl bg-brand-subtle py-2.5 text-center font-body text-xs font-bold text-brand-primary transition-colors hover:bg-brand-primary hover:text-white"
 							>
 								Financer ce besoin
@@ -291,219 +269,81 @@
 		</Container>
 	</section>
 
-	<!-- SECTION 06 — MOYENS DE DON -->
+	<!-- SECTION 06 — DON PAR MOBILE MONEY -->
 	<section
-		id="moyens-de-don"
-		class="border-t border-gray-100 bg-white py-16 sm:py-20 lg:py-24"
-		aria-labelledby="payment-methods-heading"
+		id="don"
+		class="scroll-mt-24 border-t border-gray-100 bg-white py-16 sm:py-20 lg:py-24"
+		aria-labelledby="donation-heading"
 	>
 		<Container>
-			<div class="mx-auto max-w-3xl text-center">
-				<div class="mb-3 inline-flex items-center gap-2">
-					<span class="h-0.5 w-6 rounded-full bg-brand-primary" aria-hidden="true"></span>
-					<span
-						class="font-body text-xs font-bold tracking-wider text-brand-primary uppercase sm:text-sm"
+			<div class="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+				<div>
+					<div class="mb-3 inline-flex items-center gap-2">
+						<span class="h-0.5 w-6 rounded-full bg-brand-primary" aria-hidden="true"></span>
+						<span
+							class="font-body text-xs font-bold tracking-wider text-brand-primary uppercase sm:text-sm"
+						>
+							SOUTENEZ L’ŒUVRE
+						</span>
+					</div>
+					<h2
+						id="donation-heading"
+						class="font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl"
 					>
-						FACILITÉ & SÉCURITÉ
-					</span>
-					<span class="h-0.5 w-6 rounded-full bg-brand-primary" aria-hidden="true"></span>
-				</div>
+						Donnez par Orange Money ou MTN MoMo
+					</h2>
+					<p class="mt-4 font-body text-base leading-relaxed text-text-secondary sm:text-lg">
+						Choisissez votre montant : sur votre téléphone, le code s’ouvre directement dans
+						l’application Téléphone. Il ne reste qu’à appeler puis à valider avec votre code secret.
+					</p>
 
-				<h2
-					id="payment-methods-heading"
-					class="font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl"
-				>
-					Moyens de don
-				</h2>
+					<ul class="mt-8 space-y-4 font-body text-sm text-text-secondary sm:text-base">
+						<li class="flex gap-3">
+							<Smartphone size={20} class="mt-0.5 shrink-0 text-brand-primary" />
+							<span>
+								<strong class="text-text-primary">Sans application ni inscription</strong> : le don passe
+								par le menu Mobile Money de votre opérateur.
+							</span>
+						</li>
+						<li class="flex gap-3">
+							<UserCheck size={20} class="mt-0.5 shrink-0 text-brand-primary" />
+							<span>
+								<strong class="text-text-primary">Bénéficiaire : {DONATION_RECIPIENT}</strong>,
+								l’association dont ECOFIP est le département d’évangélisation.
+							</span>
+						</li>
+						<li class="flex gap-3">
+							<ShieldCheck size={20} class="mt-0.5 shrink-0 text-brand-primary" />
+							<span>
+								<strong class="text-text-primary">Vous gardez la main</strong> : rien n’est prélevé tant
+								que vous n’avez pas validé avec votre code secret.
+							</span>
+						</li>
+					</ul>
 
-				<p class="mt-4 font-body text-base text-text-secondary sm:text-lg">
-					Choisissez la méthode qui vous convient le mieux.
-				</p>
-			</div>
-
-			<div class="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-				<!-- Moyen 01 — Mobile Money -->
-				<div
-					class="flex flex-col justify-between rounded-3xl border border-gray-200/90 bg-[#f8fafc] p-8 shadow-xs"
-				>
-					<div>
-						<div
-							class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800"
-						>
-							<Smartphone size={24} />
-						</div>
-
-						<h3 class="mt-6 font-display text-2xl font-bold text-text-primary">Mobile Money</h3>
-
-						<p class="mt-2 font-body text-xs text-text-secondary">
-							Paiement direct depuis votre téléphone au Cameroun
+					<div class="mt-8 rounded-2xl border border-gray-200 bg-[#f8fafc] p-5 font-body text-sm">
+						<p class="font-bold text-text-primary">Vous préférez composer vous-même ?</p>
+						<ul class="mt-2 space-y-1 text-text-secondary">
+							{#each MOBILE_MONEY_OPERATORS as operator (operator.id)}
+								<li>
+									{operator.name} :
+									<span class="font-mono font-bold text-text-primary"
+										>{ussdCode(operator, null)}</span
+									>
+								</li>
+							{/each}
+						</ul>
+						<p class="mt-3 text-text-secondary">
+							Pour un virement, un don en nature ou un partenariat,
+							<a href="/contact" class="font-semibold text-brand-primary hover:underline"
+								>contactez-nous</a
+							>.
 						</p>
-
-						<div class="mt-6 space-y-4">
-							<div class="rounded-2xl border border-gray-200 bg-white p-4">
-								<span class="block font-body text-xs font-bold text-amber-600">Orange Money</span>
-								<div class="mt-1 flex items-center justify-between">
-									<span class="font-body text-sm font-bold text-text-primary">+237 6XX XXX XXX</span
-									>
-									<button
-										type="button"
-										onclick={() => copyToClipboard('+237 6XX XXX XXX', 'Numéro Orange Money')}
-										class="cursor-pointer text-gray-400 hover:text-brand-primary"
-										title="Copier"
-									>
-										<Copy size={16} />
-									</button>
-								</div>
-							</div>
-
-							<div class="rounded-2xl border border-gray-200 bg-white p-4">
-								<span class="block font-body text-xs font-bold text-yellow-600"
-									>MTN Mobile Money</span
-								>
-								<div class="mt-1 flex items-center justify-between">
-									<span class="font-body text-sm font-bold text-text-primary">+237 6XX XXX XXX</span
-									>
-									<button
-										type="button"
-										onclick={() => copyToClipboard('+237 6XX XXX XXX', 'Numéro MTN Mobile Money')}
-										class="cursor-pointer text-gray-400 hover:text-brand-primary"
-										title="Copier"
-									>
-										<Copy size={16} />
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="mt-8 border-t border-gray-200 pt-4">
-						<button
-							type="button"
-							onclick={() => {
-								selectedMethod = 'momo';
-								isDonationModalOpen = true;
-							}}
-							class="w-full cursor-pointer rounded-xl bg-brand-primary py-3 font-body text-sm font-bold text-white shadow-xs transition-colors hover:bg-brand-primary-hover"
-						>
-							Faire un don par Mobile Money
-						</button>
 					</div>
 				</div>
 
-				<!-- Moyen 02 — Carte bancaire -->
-				<div
-					class="flex flex-col justify-between rounded-3xl border border-gray-200/90 bg-[#f8fafc] p-8 shadow-xs"
-				>
-					<div>
-						<div
-							class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-subtle text-brand-primary"
-						>
-							<CreditCard size={24} />
-						</div>
-
-						<h3 class="mt-6 font-display text-2xl font-bold text-text-primary">Carte bancaire</h3>
-
-						<p class="mt-2 font-body text-xs text-text-secondary">
-							Visa / Mastercard • Paiement sécurisé en ligne
-						</p>
-
-						<div class="mt-6 space-y-4">
-							<div class="rounded-2xl border border-gray-200 bg-white p-5 text-center">
-								<div class="flex items-center justify-center gap-3">
-									<span class="font-display text-lg font-black text-blue-700">VISA</span>
-									<span class="font-display text-lg font-black text-rose-600">Mastercard</span>
-								</div>
-								<p class="mt-3 font-body text-xs leading-relaxed text-text-secondary">
-									Transaction chiffrée SSL 256 bits, acceptée au Cameroun et à l'international.
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div class="mt-8 border-t border-gray-200 pt-4">
-						<button
-							type="button"
-							onclick={() => {
-								selectedMethod = 'card';
-								isDonationModalOpen = true;
-							}}
-							class="w-full cursor-pointer rounded-xl bg-brand-primary py-3 font-body text-sm font-bold text-white shadow-xs transition-colors hover:bg-brand-primary-hover"
-						>
-							Payer par carte bancaire
-						</button>
-					</div>
-				</div>
-
-				<!-- Moyen 03 — Virement -->
-				<div
-					class="flex flex-col justify-between rounded-3xl border border-gray-200/90 bg-[#f8fafc] p-8 shadow-xs"
-				>
-					<div>
-						<div
-							class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700"
-						>
-							<Building2 size={24} />
-						</div>
-
-						<h3 class="mt-6 font-display text-2xl font-bold text-text-primary">
-							Virement bancaire
-						</h3>
-
-						<p class="mt-2 font-body text-xs text-text-secondary">
-							Comptes officiels BICEC et Afriland First Bank
-						</p>
-
-						<div class="mt-6 space-y-4">
-							<div class="rounded-2xl border border-gray-200 bg-white p-4">
-								<span class="block font-body text-xs font-bold text-text-primary">BICEC</span>
-								<div class="mt-1 flex items-center justify-between">
-									<span class="font-mono text-xs text-text-secondary"
-										>IBAN : CM21 XXXX XXXX XXXX</span
-									>
-									<button
-										type="button"
-										onclick={() => copyToClipboard('CM21 XXXX XXXX XXXX', 'IBAN BICEC')}
-										class="cursor-pointer text-gray-400 hover:text-brand-primary"
-										title="Copier"
-									>
-										<Copy size={16} />
-									</button>
-								</div>
-							</div>
-
-							<div class="rounded-2xl border border-gray-200 bg-white p-4">
-								<span class="block font-body text-xs font-bold text-text-primary"
-									>Afriland First Bank</span
-								>
-								<div class="mt-1 flex items-center justify-between">
-									<span class="font-mono text-xs text-text-secondary"
-										>IBAN : CM21 XXXX XXXX XXXX</span
-									>
-									<button
-										type="button"
-										onclick={() => copyToClipboard('CM21 XXXX XXXX XXXX', 'IBAN Afriland')}
-										class="cursor-pointer text-gray-400 hover:text-brand-primary"
-										title="Copier"
-									>
-										<Copy size={16} />
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="mt-8 border-t border-gray-200 pt-4">
-						<button
-							type="button"
-							onclick={() => {
-								selectedMethod = 'bank';
-								isDonationModalOpen = true;
-							}}
-							class="w-full cursor-pointer rounded-xl bg-brand-primary py-3 font-body text-sm font-bold text-white shadow-xs transition-colors hover:bg-brand-primary-hover"
-						>
-							Obtenir les coordonnées bancaires
-						</button>
-					</div>
+				<div class="rounded-3xl border border-gray-200/90 bg-white p-5 shadow-md sm:p-7">
+					<MobileMoneyDonation idPrefix="don-page" />
 				</div>
 			</div>
 		</Container>
@@ -533,14 +373,13 @@
 
 					<!-- Actions -->
 					<div class="mt-8 flex flex-wrap items-center justify-center gap-4 sm:mt-10">
-						<button
-							type="button"
-							onclick={() => (isDonationModalOpen = true)}
+						<a
+							href="#don"
 							class="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-7 py-3.5 font-body text-base font-bold text-white shadow-md transition-all hover:bg-brand-primary-hover hover:shadow-lg"
 						>
 							<Heart size={18} class="fill-white" />
-							<span>Donner en ligne</span>
-						</button>
+							<span>Donner par Mobile Money</span>
+						</a>
 
 						<a
 							href="/contact"
@@ -551,27 +390,27 @@
 						</a>
 					</div>
 
-					<!-- 3 Garanties officielles -->
+					<!-- Ce que le donateur doit savoir -->
 					<div class="mt-12 grid grid-cols-1 gap-4 border-t border-gray-100 pt-8 sm:grid-cols-3">
 						<div
 							class="flex items-center justify-center gap-2 font-body text-xs text-text-secondary sm:text-sm"
 						>
-							<ShieldCheck size={18} class="shrink-0 text-emerald-600" />
-							<span>Paiements 100% sécurisés</span>
+							<Smartphone size={18} class="shrink-0 text-brand-primary" />
+							<span>Orange Money et MTN MoMo</span>
 						</div>
 
 						<div
 							class="flex items-center justify-center gap-2 font-body text-xs text-text-secondary sm:text-sm"
 						>
-							<CheckCircle2 size={18} class="shrink-0 text-brand-primary" />
-							<span>Transparence totale</span>
+							<UserCheck size={18} class="shrink-0 text-emerald-600" />
+							<span>Bénéficiaire : {DONATION_RECIPIENT}</span>
 						</div>
 
 						<div
 							class="flex items-center justify-center gap-2 font-body text-xs text-text-secondary sm:text-sm"
 						>
-							<FileText size={18} class="shrink-0 text-blue-600" />
-							<span>Reçu fiscal disponible</span>
+							<ShieldCheck size={18} class="shrink-0 text-blue-600" />
+							<span>Validation par votre code secret</span>
 						</div>
 					</div>
 
@@ -585,102 +424,3 @@
 		</Container>
 	</section>
 </div>
-
-<!-- Modal interactive de don -->
-<Modal
-	bind:open={isDonationModalOpen}
-	title="Soutenir la mission « Cameroun pour Jésus »"
-	description="« Donnez, et il vous sera donné » — Luc 6:38"
->
-	<div class="space-y-5 py-2">
-		<!-- Montants suggérés -->
-		<div class="space-y-2">
-			<span class="block font-body text-xs font-semibold text-text-secondary">
-				Choisissez un montant (FCFA) :
-			</span>
-			<div class="grid grid-cols-3 gap-2.5">
-				{#each [10000, 25000, 50000, 100000, 250000, 500000] as amount}
-					<button
-						type="button"
-						onclick={() => {
-							donationAmount = amount;
-							customAmount = '';
-						}}
-						class="cursor-pointer rounded-xl border py-2.5 text-center font-body text-xs font-bold transition-all {donationAmount ===
-							amount && !customAmount
-							? 'border-brand-primary bg-brand-subtle text-brand-primary shadow-xs'
-							: 'border-border bg-white text-text-primary hover:border-brand-primary/50'}"
-					>
-						{amount.toLocaleString('fr-FR')} F
-					</button>
-				{/each}
-			</div>
-		</div>
-
-		<Input
-			label="Ou saisissez un montant libre (FCFA)"
-			type="number"
-			placeholder="Ex: 75 000"
-			bind:value={customAmount}
-		/>
-
-		<!-- Mode de versement -->
-		<div class="space-y-2">
-			<span class="block font-body text-xs font-semibold text-text-secondary">
-				Canal de paiement :
-			</span>
-			<div class="grid grid-cols-3 gap-2">
-				<button
-					type="button"
-					onclick={() => (selectedMethod = 'momo')}
-					class="cursor-pointer rounded-xl border p-2 text-center text-xs font-bold transition-all {selectedMethod ===
-					'momo'
-						? 'border-brand-primary bg-brand-subtle text-brand-primary'
-						: 'border-border bg-white'}"
-				>
-					Mobile Money
-				</button>
-				<button
-					type="button"
-					onclick={() => (selectedMethod = 'card')}
-					class="cursor-pointer rounded-xl border p-2 text-center text-xs font-bold transition-all {selectedMethod ===
-					'card'
-						? 'border-brand-primary bg-brand-subtle text-brand-primary'
-						: 'border-border bg-white'}"
-				>
-					Carte bancaire
-				</button>
-				<button
-					type="button"
-					onclick={() => (selectedMethod = 'bank')}
-					class="cursor-pointer rounded-xl border p-2 text-center text-xs font-bold transition-all {selectedMethod ===
-					'bank'
-						? 'border-brand-primary bg-brand-subtle text-brand-primary'
-						: 'border-border bg-white'}"
-				>
-					Virement
-				</button>
-			</div>
-		</div>
-	</div>
-
-	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isDonationModalOpen = false)}>
-			Fermer
-		</Button>
-		<Button
-			variant="primary"
-			size="md"
-			onclick={() => {
-				isDonationModalOpen = false;
-				toast.success(
-					'Merci infiniment pour votre générosité ! Que Dieu bénisse votre semence.',
-					'Don confirmé'
-				);
-			}}
-		>
-			<Heart size={16} class="mr-1.5 fill-white text-white" />
-			Valider mon don
-		</Button>
-	{/snippet}
-</Modal>

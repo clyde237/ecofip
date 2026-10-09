@@ -9,7 +9,7 @@
 		title = 'Faites un don, semez dans l’œuvre de Dieu',
 		description = 'Votre générosité nous permet d’organiser des croisades, soutenir les communautés, former des disciples et poursuivre la mission.',
 		ctaLabel = 'Faire un don maintenant',
-		ctaHref = '#faire-un-don',
+		ctaHref = '/faire-un-don#don',
 		secondaryCtaLabel,
 		secondaryCtaHref,
 		onSecondaryCtaClick,

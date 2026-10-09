@@ -25,7 +25,7 @@
 			description:
 				'Soutenez financièrement les croisades, les actions humanitaires d’aide médicale et la logistique missionnaire.',
 			ctaLabel: 'Envoyer un don',
-			ctaHref: '/faire-un-don'
+			ctaHref: '/faire-un-don#don'
 		},
 		{
 			icon: HeartHandshake,

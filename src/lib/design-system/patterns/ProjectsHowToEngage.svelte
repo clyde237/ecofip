@@ -42,7 +42,7 @@
 			description:
 				'Chaque don permet d’acheter des médicaments, financer la logistique d’une croisade, distribuer des vivres et imprimer des Bibles pour les convertis.',
 			ctaLabel: 'Faire un don maintenant',
-			ctaHref: '#faire-un-don'
+			ctaHref: '/faire-un-don#don'
 		}
 	];
 

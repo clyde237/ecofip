@@ -12,8 +12,6 @@
 		NewsSection,
 		DonationCtaSection,
 		Modal,
-		Button,
-		Input,
 		toast
 	} from '$lib';
 	import TenRegionsSection from '$lib/design-system/patterns/TenRegionsSection.svelte';
@@ -21,13 +19,9 @@
 	import type { DetailedEventItem } from '$lib/design-system/types.js';
 	import type { PageData } from './$types.js';
 	import { CheckCircle2 } from '@lucide/svelte';
+	import { donationDialog } from '$lib/design-system/donation.svelte.js';
 
 	let { data }: { data: PageData } = $props();
-
-	// État de la modale de don
-	let isModalOpen = $state(false);
-	let donationAmount = $state('50');
-	let selectedCause = $state<'medical' | 'education'>('medical');
 
 	// État de l'inscription à l'événement en avant
 	let isRegisterModalOpen = $state(false);
@@ -61,14 +55,6 @@
 		attendeePhone = '';
 		attendeeEmail = '';
 	}
-
-	function handleConfirmDonation() {
-		isModalOpen = false;
-		toast.success(
-			'Votre promesse de don a été validée avec succès ! Que Dieu vous bénisse.',
-			'Merci pour votre soutien'
-		);
-	}
 </script>
 
 <Seo
@@ -79,7 +65,7 @@
 
 <div>
 	<!-- SECTION 02 — HERO / MISSION NATIONALE : Cameroun pour Jésus -->
-	<Hero />
+	<Hero secondaryCta={{ label: 'Faire un don', href: '/faire-un-don#don' }} />
 
 	<!-- SECTION 04 — CHIFFRES CLÉS / NOTRE IMPACT (10 Régions, 50K+ Vies touchées, 3 ans Projet national) -->
 	<StatsBar />
@@ -136,59 +122,10 @@
 		ctaLabel="Participer à la mission"
 		ctaHref="/nous-rejoindre"
 		secondaryCtaLabel="Faire un don"
-		secondaryCtaHref="/faire-un-don"
-		onCtaClick={() => (isModalOpen = true)}
+		secondaryCtaHref="/faire-un-don#don"
+		onSecondaryCtaClick={() => donationDialog.show()}
 	/>
 </div>
-
-<!-- Modale de don interactive -->
-<Modal
-	bind:open={isModalOpen}
-	title="Faire un don à la mission ECOFIP"
-	description="Votre générosité permet de financer les croisades d'évangélisation, les soins médicaux et l'aide aux orphelins."
->
-	<div class="space-y-5 py-2">
-		<p class="font-body text-sm font-semibold text-text-primary">
-			Sélectionnez l'action que vous souhaitez soutenir en priorité :
-		</p>
-		<div class="grid grid-cols-2 gap-3">
-			<button
-				type="button"
-				onclick={() => (selectedCause = 'medical')}
-				class="cursor-pointer rounded-xl border-2 p-3.5 text-center transition-all {selectedCause ===
-				'medical'
-					? 'border-brand-primary bg-brand-subtle'
-					: 'border-border bg-white hover:border-brand-primary/50'}"
-			>
-				<div class="text-sm font-bold text-brand-primary">Missions Médicales</div>
-				<div class="mt-1 text-xs text-text-secondary">Équipements et soins</div>
-			</button>
-			<button
-				type="button"
-				onclick={() => (selectedCause = 'education')}
-				class="cursor-pointer rounded-xl border-2 p-3.5 text-center transition-all {selectedCause ===
-				'education'
-					? 'border-brand-primary bg-brand-subtle'
-					: 'border-border bg-white hover:border-brand-primary/50'}"
-			>
-				<div class="text-sm font-bold text-text-primary">Éducation & Écoles</div>
-				<div class="mt-1 text-xs text-text-secondary">Fournitures scolaires</div>
-			</button>
-		</div>
-		<Input
-			label="Montant du don (€)"
-			type="number"
-			bind:value={donationAmount}
-			placeholder="50"
-			required
-		/>
-	</div>
-
-	{#snippet actions()}
-		<Button variant="outline" size="md" onclick={() => (isModalOpen = false)}>Annuler</Button>
-		<Button variant="primary" size="md" onclick={handleConfirmDonation}>Confirmer le don</Button>
-	{/snippet}
-</Modal>
 
 <!-- Modale d'inscription gratuite à l'événement en avant -->
 {#if selectedEvent}
