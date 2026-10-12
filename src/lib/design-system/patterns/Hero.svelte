@@ -16,7 +16,7 @@
 		primaryCta = { label: 'Rejoindre la mission', href: '/nous-rejoindre' },
 		secondaryCta = { label: 'Faire un don', href: '/faire-un-don' },
 		tertiaryCta = { label: "Plus d'informations", href: '/a-propos' },
-		backgroundImage = '/hero-bg.jpg',
+		backgroundImage = '/hero.png',
 		curvedBottom = true,
 		class: customClass = ''
 	}: {
