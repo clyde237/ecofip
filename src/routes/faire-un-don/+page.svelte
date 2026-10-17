@@ -4,7 +4,12 @@
 	import Container from '$lib/design-system/components/Container.svelte';
 	import MobileMoneyDonation from '$lib/design-system/components/MobileMoneyDonation.svelte';
 	import { donationDialog } from '$lib/design-system/donation.svelte.js';
-	import { DONATION_RECIPIENT, MOBILE_MONEY_OPERATORS, ussdCode } from '$lib/config/donation.js';
+	import {
+		DONATION_RECIPIENT,
+		MOBILE_MONEY_OPERATORS,
+		USE_MERCHANT_CODES,
+		ussdCode
+	} from '$lib/config/donation.js';
 	import {
 		Heart,
 		ShieldCheck,
@@ -308,8 +313,10 @@
 						<li class="flex gap-3">
 							<UserCheck size={20} class="mt-0.5 shrink-0 text-brand-primary" />
 							<span>
-								<strong class="text-text-primary">Bénéficiaire : {DONATION_RECIPIENT}</strong>,
-								l’association dont ECOFIP est le département d’évangélisation.
+								<strong class="text-text-primary">Bénéficiaire : {DONATION_RECIPIENT}</strong
+								>{USE_MERCHANT_CODES
+									? ', l’association dont ECOFIP est le département d’évangélisation.'
+									: ' : ce nom s’affiche avant la validation, vérifiez-le.'}
 							</span>
 						</li>
 						<li class="flex gap-3">
@@ -326,7 +333,7 @@
 						<ul class="mt-2 space-y-1 text-text-secondary">
 							{#each MOBILE_MONEY_OPERATORS as operator (operator.id)}
 								<li>
-									{operator.name} :
+									{operator.name}{operator.phone ? ` (${operator.phone})` : ''} :
 									<span class="font-mono font-bold text-text-primary"
 										>{ussdCode(operator, null)}</span
 									>

@@ -69,6 +69,16 @@
 		}
 	}
 
+	async function copyPhone(operator: MobileMoneyOperator) {
+		if (!operator.phone) return;
+		try {
+			await navigator.clipboard.writeText(operator.phone.replace(/\s/g, ''));
+			toast.success(`Numéro ${operator.name} copié.`);
+		} catch {
+			toast.error('Copie impossible : recopiez le numéro affiché.');
+		}
+	}
+
 	const operatorStyles: Record<
 		MobileMoneyOperator['id'],
 		{ card: string; badge: string; button: string }
@@ -162,6 +172,20 @@
 					>
 						{operator.name}
 					</span>
+					{#if operator.phone}
+						<p class="mt-2 flex items-center gap-2 text-sm text-text-secondary">
+							Numéro :
+							<span class="font-bold text-text-primary">{operator.phone}</span>
+							<button
+								type="button"
+								onclick={() => copyPhone(operator)}
+								class="cursor-pointer rounded-md p-1 text-gray-400 hover:text-brand-primary"
+								aria-label="Copier le numéro {operator.name}"
+							>
+								<Copy size={14} />
+							</button>
+						</p>
+					{/if}
 					<p
 						class="mt-2.5 font-mono text-lg font-bold tracking-wide break-all text-text-primary"
 						aria-label="Code {operator.name}"
