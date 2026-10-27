@@ -10,24 +10,27 @@
 		Database,
 		Film,
 		Users,
-		ShieldCheck
+		ShieldCheck,
+		Clapperboard,
+		Images,
+		UsersRound
 	} from '@lucide/svelte';
+	import { getUserPermissions } from '$lib/design-system/permissions.js';
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
 
 	let userRole = $derived(data.admin?.role || 'admin');
-	let canManageUsers = $derived(userRole === 'superadmin' || userRole === 'admin');
-	let canManageEvents = $derived(
-		userRole === 'superadmin' || userRole === 'admin' || userRole === 'events_manager'
-	);
-	let canManageArticles = $derived(
-		userRole === 'superadmin' || userRole === 'admin' || userRole === 'articles_manager'
-	);
-	let canManageTestimonials = $derived(
-		userRole === 'superadmin' || userRole === 'admin' || userRole === 'testimonials_manager'
-	);
-	let canManageVideos = $derived(userRole === 'superadmin' || userRole === 'admin');
+	let perms = $derived(getUserPermissions(data.admin));
+
+	let canManageUsers = $derived(perms.includes('utilisateurs'));
+	let canManageEvents = $derived(perms.includes('evenements'));
+	let canManageArticles = $derived(perms.includes('articles'));
+	let canManageTestimonials = $derived(perms.includes('temoignages'));
+	let canManageVideos = $derived(perms.includes('videos'));
+	let canManagePredications = $derived(perms.includes('predications'));
+	let canManageGalerie = $derived(perms.includes('galerie'));
+	let canManageEquipe = $derived(perms.includes('equipe'));
 	let isSuperAdmin = $derived(userRole === 'superadmin');
 </script>
 
@@ -62,6 +65,8 @@
 				{:else if userRole === 'testimonials_manager'}
 					Espace Gestionnaire Témoignages : Modérez et validez les récits de foi et vies
 					transformées envoyés par les fidèles.
+				{:else}
+					Espace Gestionnaire : Gérez et publiez le contenu sur les rubriques autorisées pour le site ECOFIP.
 				{/if}
 			</p>
 		</div>
@@ -107,7 +112,83 @@
 			</a>
 		{/if}
 
-		<!-- 2. Événements -->
+		<!-- 2. Vidéos Homepage -->
+		{#if canManageVideos}
+			<a
+				href="/admin/videos"
+				class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-purple-300 hover:shadow-md"
+			>
+				<div>
+					<div class="flex items-center justify-between">
+						<span class="text-xs font-bold tracking-wider text-text-secondary uppercase">
+							Vidéos & R2
+						</span>
+						<div
+							class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600"
+						>
+							<Film size={20} />
+						</div>
+					</div>
+					<div class="mt-4 flex items-baseline gap-2">
+						<span class="font-display text-3xl font-bold text-text-primary">
+							{data.stats.totalVideos}
+						</span>
+						<span
+							class="rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-600"
+						>
+							Vidéos
+						</span>
+					</div>
+					<p class="mt-2 text-xs text-text-secondary">
+						Publiez vos temps forts en vidéo hébergés sur Cloudflare R2 pour la page d’accueil.
+					</p>
+				</div>
+				<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-purple-600">
+					<span>Gérer les vidéos</span>
+					<ArrowRight size={14} class="transition-transform group-hover:translate-x-1" />
+				</div>
+			</a>
+		{/if}
+
+		<!-- 3. Prédications vidéo -->
+		{#if canManagePredications}
+			<a
+				href="/admin/predications"
+				class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-md"
+			>
+				<div>
+					<div class="flex items-center justify-between">
+						<span class="text-xs font-bold tracking-wider text-text-secondary uppercase">
+							Prédications
+						</span>
+						<div
+							class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600"
+						>
+							<Clapperboard size={20} />
+						</div>
+					</div>
+					<div class="mt-4 flex items-baseline gap-2">
+						<span class="font-display text-3xl font-bold text-text-primary">
+							{data.stats.totalSermons}
+						</span>
+						<span
+							class="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700"
+						>
+							Prédications
+						</span>
+					</div>
+					<p class="mt-2 text-xs text-text-secondary">
+						Publiez les prédications vidéo verticales, enseignements et extraits bibliques.
+					</p>
+				</div>
+				<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-amber-700">
+					<span>Gérer les prédications</span>
+					<ArrowRight size={14} class="transition-transform group-hover:translate-x-1" />
+				</div>
+			</a>
+		{/if}
+
+		<!-- 4. Événements & Projets -->
 		{#if canManageEvents}
 			<a
 				href="/admin/evenements"
@@ -141,7 +222,7 @@
 			</a>
 		{/if}
 
-		<!-- 3. Articles & Actualités -->
+		<!-- 5. Articles & Actualités -->
 		{#if canManageArticles}
 			<a
 				href="/admin/articles"
@@ -179,7 +260,7 @@
 			</a>
 		{/if}
 
-		<!-- 4. Témoignages -->
+		<!-- 6. Témoignages -->
 		{#if canManageTestimonials}
 			<a
 				href="/admin/temoignages"
@@ -215,39 +296,77 @@
 			</a>
 		{/if}
 
-		<!-- 5. Vidéos & Cloudflare R2 -->
-		{#if canManageVideos}
+		<!-- 7. Galerie photos & vidéos -->
+		{#if canManageGalerie}
 			<a
-				href="/admin/videos"
-				class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-purple-300 hover:shadow-md"
+				href="/admin/galerie"
+				class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-md"
 			>
 				<div>
 					<div class="flex items-center justify-between">
 						<span class="text-xs font-bold tracking-wider text-text-secondary uppercase">
-							Vidéos & R2
+							Galerie Photos & Vidéos
 						</span>
 						<div
-							class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600"
+							class="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700"
 						>
-							<Film size={20} />
+							<Images size={20} />
 						</div>
 					</div>
 					<div class="mt-4 flex items-baseline gap-2">
 						<span class="font-display text-3xl font-bold text-text-primary">
-							{data.stats.totalVideos}
+							{data.stats.totalAlbums}
 						</span>
 						<span
-							class="rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-600"
+							class="rounded-full bg-cyan-50 px-2 py-0.5 text-xs font-semibold text-cyan-700"
 						>
-							Vidéos
+							Albums
 						</span>
 					</div>
 					<p class="mt-2 text-xs text-text-secondary">
-						Publiez vos temps forts en vidéo hébergés sur Cloudflare R2 pour la page d’accueil.
+						Organisez les albums photos et vidéos des rassemblements missionnaires.
 					</p>
 				</div>
-				<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-purple-600">
-					<span>Gérer les vidéos</span>
+				<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-cyan-700">
+					<span>Gérer la galerie</span>
+					<ArrowRight size={14} class="transition-transform group-hover:translate-x-1" />
+				</div>
+			</a>
+		{/if}
+
+		<!-- 8. Équipe dirigeante -->
+		{#if canManageEquipe}
+			<a
+				href="/admin/equipe"
+				class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+			>
+				<div>
+					<div class="flex items-center justify-between">
+						<span class="text-xs font-bold tracking-wider text-text-secondary uppercase">
+							Équipe Dirigeante
+						</span>
+						<div
+							class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+						>
+							<UsersRound size={20} />
+						</div>
+					</div>
+					<div class="mt-4 flex items-baseline gap-2">
+						<span class="font-display text-3xl font-bold text-text-primary">
+							{data.stats.totalTeam}
+						</span>
+						<span
+							class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700"
+						>
+							Membres
+						</span>
+					</div>
+					<p class="mt-2 text-xs text-text-secondary">
+						Mettez à jour les serviteurs, pasteurs et membres du directoire national.
+					</p>
+				</div>
+				<div class="mt-5 flex items-center gap-1.5 text-xs font-bold text-slate-700">
+					<span>Gérer l'équipe</span>
 					<ArrowRight size={14} class="transition-transform group-hover:translate-x-1" />
 				</div>
 			</a>

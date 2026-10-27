@@ -28,6 +28,7 @@ export const admins = pgTable('admins', {
 	passwordHash: varchar('password_hash', { length: 255 }).notNull(),
 	name: varchar('name', { length: 150 }).default('Administrateur ECOFIP'),
 	role: varchar('role', { length: 50 }).default('admin').notNull(),
+	permissions: jsonb('permissions').$type<string[]>().default([]).notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });

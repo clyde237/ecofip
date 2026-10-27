@@ -47,9 +47,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		throw redirect(303, '/admin');
 	}
 
-	// Contrôle d'accès basé sur les rôles (RBAC) pour les routes protégées
+	// Contrôle d'accès basé sur les rôles et permissions pour les routes protégées
 	if (isProtectedAdminRoute && admin) {
-		const isAuthorized = canAccessRoute(admin.role, event.url.pathname);
+		const isAuthorized = canAccessRoute(admin, event.url.pathname);
 		if (!isAuthorized) {
 			// Redirection vers le tableau de bord avec statut 303 si accès non autorisé
 			throw redirect(303, '/admin');

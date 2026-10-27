@@ -1,6 +1,7 @@
 // ECOFIP Design System - Public Exports v1.0
 export * from './design-system/tokens.js';
 export * from './design-system/types.js';
+export * from './design-system/permissions.js';
 export * from './design-system/toast.svelte.js';
 
 // Core Components
