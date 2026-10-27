@@ -26,6 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 					username: admins.username,
 					name: admins.name,
 					role: admins.role,
+					permissions: admins.permissions,
 					createdAt: admins.createdAt,
 					updatedAt: admins.updatedAt
 				})
@@ -37,6 +38,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				username: r.username,
 				name: r.name || 'Utilisateur ECOFIP',
 				role: (r.role as AdminRole) || 'admin',
+				permissions: Array.isArray(r.permissions) ? r.permissions : [],
 				createdAt: r.createdAt,
 				updatedAt: r.updatedAt
 			}));
@@ -64,6 +66,47 @@ export const load: PageServerLoad = async ({ locals }) => {
 		assignableRoles
 	};
 };
+
+const VALID_CONTENT_PERMS = [
+	'videos',
+	'predications',
+	'evenements',
+	'articles',
+	'temoignages',
+	'galerie',
+	'equipe'
+];
+
+function resolvePermissions(
+	role: AdminRole,
+	rawPerms: string[]
+): { permissions: string[]; error?: string } {
+	if (role === 'superadmin') {
+		return { permissions: [...VALID_CONTENT_PERMS, 'utilisateurs', 'database'] };
+	}
+	if (role === 'admin') {
+		return { permissions: [...VALID_CONTENT_PERMS, 'utilisateurs'] };
+	}
+	if (role === 'events_manager') {
+		return { permissions: ['evenements'] };
+	}
+	if (role === 'articles_manager') {
+		return { permissions: ['articles'] };
+	}
+	if (role === 'testimonials_manager') {
+		return { permissions: ['temoignages'] };
+	}
+
+	// role === 'manager'
+	const selected = rawPerms.map((p) => p.trim()).filter((p) => VALID_CONTENT_PERMS.includes(p));
+	if (selected.length === 0) {
+		return {
+			permissions: [],
+			error: 'Veuillez sélectionner au moins un onglet auquel cet utilisateur aura accès.'
+		};
+	}
+	return { permissions: selected };
+}
 
 export const actions: Actions = {
 	create: async ({ request, locals }) => {
@@ -107,6 +150,13 @@ export const actions: Actions = {
 			});
 		}
 
+		// Résolution et validation des permissions d'onglets
+		const rawPerms = formData.getAll('permissions').map(String);
+		const { permissions, error: permError } = resolvePermissions(role, rawPerms);
+		if (permError) {
+			return fail(400, { error: permError });
+		}
+
 		if (isDbConfigured && db) {
 			try {
 				// Vérifier l'unicité de l'identifiant
@@ -128,7 +178,8 @@ export const actions: Actions = {
 					username,
 					passwordHash,
 					name,
-					role
+					role,
+					permissions
 				});
 			} catch (err: unknown) {
 				console.error('Erreur création utilisateur:', err);
@@ -180,15 +231,24 @@ export const actions: Actions = {
 					});
 				}
 
+				// Résolution et validation des permissions d'onglets
+				const rawPerms = formData.getAll('permissions').map(String);
+				const { permissions, error: permError } = resolvePermissions(role, rawPerms);
+				if (permError) {
+					return fail(400, { error: permError });
+				}
+
 				// Préparer les données à mettre à jour
 				const updateData: {
 					name: string;
 					role: string;
+					permissions: string[];
 					updatedAt: Date;
 					passwordHash?: string;
 				} = {
 					name,
 					role,
+					permissions,
 					updatedAt: new Date()
 				};
 

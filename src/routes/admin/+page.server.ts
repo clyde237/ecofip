@@ -1,5 +1,14 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
-import { testimonials, events, articles, videos, admins } from '$lib/server/db/schema.js';
+import {
+	testimonials,
+	events,
+	articles,
+	videos,
+	admins,
+	sermons,
+	galleryAlbums,
+	teamMembers
+} from '$lib/server/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import type { PageServerLoad } from './$types.js';
 
@@ -9,6 +18,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	let totalArticlesCount = 3;
 	let totalVideosCount = 3;
 	let totalUsersCount = 1;
+	let totalSermonsCount = 0;
+	let totalAlbumsCount = 0;
+	let totalTeamCount = 0;
 
 	if (isDbConfigured && db) {
 		try {
@@ -29,6 +41,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 			const [usersRes] = await db.select({ count: sql<number>`count(*)` }).from(admins);
 			totalUsersCount = Number(usersRes?.count ?? 0);
+
+			const [sermonsRes] = await db.select({ count: sql<number>`count(*)` }).from(sermons);
+			totalSermonsCount = Number(sermonsRes?.count ?? 0);
+
+			const [albumsRes] = await db.select({ count: sql<number>`count(*)` }).from(galleryAlbums);
+			totalAlbumsCount = Number(albumsRes?.count ?? 0);
+
+			const [teamRes] = await db.select({ count: sql<number>`count(*)` }).from(teamMembers);
+			totalTeamCount = Number(teamRes?.count ?? 0);
 		} catch {
 			// Si les tables n'ont pas encore été migrées avec drizzle-kit migrate
 		}
@@ -42,7 +63,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			totalEvents: totalEventsCount,
 			totalArticles: totalArticlesCount,
 			totalVideos: totalVideosCount,
-			totalUsers: totalUsersCount
+			totalUsers: totalUsersCount,
+			totalSermons: totalSermonsCount,
+			totalAlbums: totalAlbumsCount,
+			totalTeam: totalTeamCount
 		}
 	};
 };

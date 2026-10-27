@@ -15,10 +15,16 @@
 		CheckCircle2,
 		AlertTriangle,
 		Lock,
-		Sparkles
+		Sparkles,
+		Film,
+		Clapperboard,
+		Images,
+		UsersRound,
+		SlidersHorizontal
 	} from '@lucide/svelte';
 	import Modal from '$lib/design-system/components/Modal.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
+	import { ADMIN_CONTENT_TABS, getUserPermissions } from '$lib/design-system/permissions.js';
 	import type { PageData, ActionData } from './$types.js';
 	import type { AdminRole, AdminUserItem } from '$lib/design-system/types.js';
 
@@ -37,12 +43,25 @@
 	let newName = $state('');
 	let newUsername = $state('');
 	let newPassword = $state('');
-	let newRole = $state<AdminRole>('admin');
+	let newRole = $state<AdminRole>('manager');
+	let newPermissions = $state<string[]>(['videos', 'predications']);
 
 	// Champs du formulaire de modification
 	let editName = $state('');
-	let editRole = $state<AdminRole>('admin');
+	let editRole = $state<AdminRole>('manager');
 	let editPassword = $state('');
+	let editPermissions = $state<string[]>([]);
+
+	// Correspondance des icônes d'onglets
+	const tabIcons: Record<string, typeof Film> = {
+		videos: Film,
+		predications: Clapperboard,
+		evenements: CalendarDays,
+		articles: Newspaper,
+		temoignages: MessageSquareHeart,
+		galerie: Images,
+		equipe: UsersRound
+	};
 
 	// Métadonnées et descriptifs des rôles
 	const roleMeta: Record<
@@ -58,8 +77,14 @@
 		admin: {
 			label: 'Administrateur',
 			badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
-			desc: 'Accès à tous les onglets sauf la Base de données Neon',
+			desc: 'Accès à tous les onglets du site et gestion des utilisateurs (hors base de données)',
 			icon: Shield
+		},
+		manager: {
+			label: 'Gestionnaire de contenu',
+			badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+			desc: 'Accès ciblé sur un ou plusieurs onglets sélectionnés (ex: Vidéos, Prédications...)',
+			icon: SlidersHorizontal
 		},
 		events_manager: {
 			label: 'Gestionnaire Événements',
@@ -100,7 +125,7 @@
 	let adminCount = $derived(data.users.filter((u) => u.role === 'admin').length);
 	let managersCount = $derived(
 		data.users.filter((u) =>
-			['events_manager', 'articles_manager', 'testimonials_manager'].includes(u.role)
+			['manager', 'events_manager', 'articles_manager', 'testimonials_manager'].includes(u.role)
 		).length
 	);
 
@@ -110,8 +135,8 @@
 		newName = '';
 		newUsername = '';
 		newPassword = '';
-		// Rôle par défaut selon les rôles assignables
-		newRole = (data.assignableRoles[0] as AdminRole) || 'admin';
+		newRole = (data.assignableRoles.includes('manager') ? 'manager' : data.assignableRoles[0]) as AdminRole;
+		newPermissions = ['videos', 'predications'];
 		isCreateModalOpen = true;
 	}
 
@@ -120,6 +145,13 @@
 		editName = user.name;
 		editRole = user.role;
 		editPassword = '';
+		const currentPerms = getUserPermissions(user);
+		editPermissions = currentPerms.filter((p) =>
+			['videos', 'predications', 'evenements', 'articles', 'temoignages', 'galerie', 'equipe'].includes(p)
+		);
+		if (editPermissions.length === 0 && user.role === 'manager') {
+			editPermissions = ['videos', 'predications'];
+		}
 		isEditModalOpen = true;
 	}
 
@@ -136,6 +168,48 @@
 			.slice(0, 2)
 			.join('')
 			.toUpperCase();
+	}
+
+	// Helpers de sélection des permissions (Création)
+	function toggleCreatePermission(id: string) {
+		if (newPermissions.includes(id)) {
+			newPermissions = newPermissions.filter((p) => p !== id);
+		} else {
+			newPermissions = [...newPermissions, id];
+		}
+	}
+
+	function selectAllCreatePermissions() {
+		newPermissions = ADMIN_CONTENT_TABS.map((t) => t.id);
+	}
+
+	function deselectAllCreatePermissions() {
+		newPermissions = [];
+	}
+
+	function selectMediaPresetCreate() {
+		newPermissions = ['videos', 'predications'];
+	}
+
+	// Helpers de sélection des permissions (Modification)
+	function toggleEditPermission(id: string) {
+		if (editPermissions.includes(id)) {
+			editPermissions = editPermissions.filter((p) => p !== id);
+		} else {
+			editPermissions = [...editPermissions, id];
+		}
+	}
+
+	function selectAllEditPermissions() {
+		editPermissions = ADMIN_CONTENT_TABS.map((t) => t.id);
+	}
+
+	function deselectAllEditPermissions() {
+		editPermissions = [];
+	}
+
+	function selectMediaPresetEdit() {
+		editPermissions = ['videos', 'predications'];
 	}
 </script>
 
@@ -306,16 +380,53 @@
 
 								<!-- Rôle & Badge -->
 								<td class="px-6 py-4">
-									<div class="space-y-1">
-										<span
-											class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-bold {meta.badgeClass}"
-										>
-											<meta.icon size={13} />
-											<span>{meta.label}</span>
-										</span>
-										<p class="hidden text-[11px] text-text-secondary lg:block">
-											{meta.desc}
-										</p>
+									<div class="space-y-1.5">
+										<div class="flex flex-wrap items-center gap-1.5">
+											<span
+												class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-bold {meta.badgeClass}"
+											>
+												<meta.icon size={13} />
+												<span>{meta.label}</span>
+											</span>
+											{#if user.role === 'manager'}
+												{@const userPerms = getUserPermissions(user)}
+												<span
+													class="rounded-full bg-amber-100/80 px-2 py-0.5 text-[10px] font-bold text-amber-900"
+												>
+													{userPerms.length} {userPerms.length > 1 ? 'onglets' : 'onglet'}
+												</span>
+											{/if}
+										</div>
+
+										<!-- Badges détaillés des onglets attribués -->
+										{#if user.role === 'manager'}
+											{@const activePerms = getUserPermissions(user)}
+											<div class="flex flex-wrap gap-1 pt-0.5">
+												{#each ADMIN_CONTENT_TABS as tab}
+													{#if activePerms.includes(tab.id)}
+														{@const Icon = tabIcons[tab.id]}
+														<span
+															class="inline-flex items-center gap-1 rounded-md border border-amber-300/60 bg-amber-50/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900"
+														>
+															<Icon size={10} class="text-amber-700" />
+															<span>{tab.label}</span>
+														</span>
+													{/if}
+												{/each}
+											</div>
+										{:else if user.role === 'admin'}
+											<p class="text-[11px] font-medium text-blue-700">
+												Tous les onglets de gestion de contenu + utilisateurs
+											</p>
+										{:else if user.role === 'superadmin'}
+											<p class="text-[11px] font-medium text-purple-700">
+												Accès universel (Contenus, Utilisateurs, Base Neon)
+											</p>
+										{:else}
+											<p class="text-[11px] text-text-secondary">
+												{meta.desc}
+											</p>
+										{/if}
 									</div>
 								</td>
 
@@ -513,6 +624,100 @@
 			</div>
 		</div>
 
+		<!-- Onglets autorisés (Affiché pour le Gestionnaire de contenu) -->
+		{#if newRole === 'manager'}
+			<div class="space-y-3 rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4">
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<div class="flex items-center gap-1.5 text-xs font-bold text-amber-950 uppercase">
+							<SlidersHorizontal size={14} class="text-amber-700" />
+							<span>Onglets autorisés ({newPermissions.length} / {ADMIN_CONTENT_TABS.length}) *</span>
+						</div>
+						<p class="text-[11px] text-amber-800">
+							Cochez les onglets auxquels ce collaborateur aura accès pour mettre le contenu en ligne.
+						</p>
+					</div>
+
+					<!-- Raccourcis / Presets rapides -->
+					<div class="flex flex-wrap items-center gap-1.5">
+						<button
+							type="button"
+							onclick={selectMediaPresetCreate}
+							class="cursor-pointer rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-900 shadow-2xs hover:bg-amber-100/70"
+							title="Sélectionner Vidéos + Prédications"
+						>
+							🎬 Vidéos + Prédications
+						</button>
+						<button
+							type="button"
+							onclick={selectAllCreatePermissions}
+							class="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-text-secondary hover:bg-gray-100"
+						>
+							Tout cocher
+						</button>
+						<button
+							type="button"
+							onclick={deselectAllCreatePermissions}
+							class="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-text-secondary hover:bg-gray-100"
+						>
+							Tout décocher
+						</button>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+					{#each ADMIN_CONTENT_TABS as tab}
+						{@const isChecked = newPermissions.includes(tab.id)}
+						{@const Icon = tabIcons[tab.id]}
+						<label
+							class="flex cursor-pointer items-start gap-3 rounded-xl border p-2.5 transition-all {isChecked
+								? 'border-brand-primary bg-white shadow-2xs ring-1 ring-brand-primary'
+								: 'border-gray-200 bg-white/70 hover:border-gray-300 hover:bg-white'}"
+						>
+							<input
+								type="checkbox"
+								name="permissions"
+								value={tab.id}
+								checked={isChecked}
+								onchange={() => toggleCreatePermission(tab.id)}
+								class="mt-0.5 rounded text-brand-primary focus:ring-brand-primary"
+							/>
+							<div class="min-w-0 flex-1">
+								<div class="flex items-center gap-1.5">
+									<Icon size={14} class={isChecked ? 'text-brand-primary' : 'text-gray-500'} />
+									<span class="text-xs font-bold text-text-primary">
+										{tab.label}
+									</span>
+									{#if tab.badge}
+										<span class="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-bold text-amber-800">
+											{tab.badge}
+										</span>
+									{/if}
+								</div>
+								<p class="mt-0.5 text-[11px] leading-tight text-text-secondary">
+									{tab.description}
+								</p>
+							</div>
+						</label>
+					{/each}
+				</div>
+
+				{#if newPermissions.length === 0}
+					<p class="text-xs font-semibold text-red-600">
+						⚠️ Veuillez cocher au moins un onglet d’accès pour ce gestionnaire.
+					</p>
+				{/if}
+			</div>
+		{:else if newRole === 'admin'}
+			<div class="rounded-xl border border-blue-200 bg-blue-50/60 p-3 text-xs text-blue-800">
+				ℹ️ L’administrateur aura accès à <strong>tous les onglets</strong> du site et à la gestion des utilisateurs (sauf la base de données).
+			</div>
+		{:else if newRole === 'superadmin'}
+			<div class="rounded-xl border border-purple-200 bg-purple-50/60 p-3 text-xs text-purple-800">
+				⭐ Le Super Administrateur bénéficie d'un accès intégral à tous les modules et à la console de base de données.
+			</div>
+		{/if}
+
 		<!-- Boutons -->
 		<div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
 			<button
@@ -524,7 +729,7 @@
 			</button>
 			<button
 				type="submit"
-				disabled={isSubmitting}
+				disabled={isSubmitting || (newRole === 'manager' && newPermissions.length === 0)}
 				class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<UserPlus size={15} />
@@ -615,6 +820,100 @@
 				</div>
 			</div>
 
+			<!-- Onglets autorisés (Affiché pour le Gestionnaire de contenu) -->
+			{#if editRole === 'manager'}
+				<div class="space-y-3 rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4">
+					<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+						<div>
+							<div class="flex items-center gap-1.5 text-xs font-bold text-amber-950 uppercase">
+								<SlidersHorizontal size={14} class="text-amber-700" />
+								<span>Onglets autorisés ({editPermissions.length} / {ADMIN_CONTENT_TABS.length}) *</span>
+							</div>
+							<p class="text-[11px] text-amber-800">
+								Cochez les onglets autorisés pour ce gestionnaire.
+							</p>
+						</div>
+
+						<!-- Raccourcis / Presets rapides -->
+						<div class="flex flex-wrap items-center gap-1.5">
+							<button
+								type="button"
+								onclick={selectMediaPresetEdit}
+								class="cursor-pointer rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-900 shadow-2xs hover:bg-amber-100/70"
+								title="Sélectionner Vidéos + Prédications"
+							>
+								🎬 Vidéos + Prédications
+							</button>
+							<button
+								type="button"
+								onclick={selectAllEditPermissions}
+								class="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-text-secondary hover:bg-gray-100"
+							>
+								Tout cocher
+							</button>
+							<button
+								type="button"
+								onclick={deselectAllEditPermissions}
+								class="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-text-secondary hover:bg-gray-100"
+							>
+								Tout décocher
+							</button>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						{#each ADMIN_CONTENT_TABS as tab}
+							{@const isChecked = editPermissions.includes(tab.id)}
+							{@const Icon = tabIcons[tab.id]}
+							<label
+								class="flex cursor-pointer items-start gap-3 rounded-xl border p-2.5 transition-all {isChecked
+									? 'border-brand-primary bg-white shadow-2xs ring-1 ring-brand-primary'
+									: 'border-gray-200 bg-white/70 hover:border-gray-300 hover:bg-white'}"
+							>
+								<input
+									type="checkbox"
+									name="permissions"
+									value={tab.id}
+									checked={isChecked}
+									onchange={() => toggleEditPermission(tab.id)}
+									class="mt-0.5 rounded text-brand-primary focus:ring-brand-primary"
+								/>
+								<div class="min-w-0 flex-1">
+									<div class="flex items-center gap-1.5">
+										<Icon size={14} class={isChecked ? 'text-brand-primary' : 'text-gray-500'} />
+										<span class="text-xs font-bold text-text-primary">
+											{tab.label}
+										</span>
+										{#if tab.badge}
+											<span class="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-bold text-amber-800">
+												{tab.badge}
+											</span>
+										{/if}
+									</div>
+									<p class="mt-0.5 text-[11px] leading-tight text-text-secondary">
+										{tab.description}
+									</p>
+								</div>
+							</label>
+						{/each}
+					</div>
+
+					{#if editPermissions.length === 0}
+						<p class="text-xs font-semibold text-red-600">
+							⚠️ Veuillez cocher au moins un onglet d’accès pour ce gestionnaire.
+						</p>
+					{/if}
+				</div>
+			{:else if editRole === 'admin'}
+				<div class="rounded-xl border border-blue-200 bg-blue-50/60 p-3 text-xs text-blue-800">
+					ℹ️ L’administrateur a accès à <strong>tous les onglets</strong> du site et à la gestion des utilisateurs (sauf la base de données).
+				</div>
+			{:else if editRole === 'superadmin'}
+				<div class="rounded-xl border border-purple-200 bg-purple-50/60 p-3 text-xs text-purple-800">
+					⭐ Le Super Administrateur bénéficie d'un accès intégral à tous les modules et à la console de base de données.
+				</div>
+			{/if}
+
 			<!-- Nouveau mot de passe (optionnel) -->
 			<div class="border-t border-gray-100 pt-2">
 				<div class="flex items-center justify-between">
@@ -648,7 +947,7 @@
 				</button>
 				<button
 					type="submit"
-					disabled={isSubmitting}
+					disabled={isSubmitting || (editRole === 'manager' && editPermissions.length === 0)}
 					class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<CheckCircle2 size={15} />

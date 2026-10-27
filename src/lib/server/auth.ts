@@ -3,9 +3,12 @@ import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { createHmac, timingSafeEqual, scryptSync, randomBytes } from 'node:crypto';
 import type { AdminRole } from '$lib/design-system/types.js';
+import { getUserPermissions, hasPermission } from '$lib/design-system/permissions.js';
 import { db, isDbConfigured } from '$lib/server/db/index.js';
 import { admins } from '$lib/server/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
+
+export { getUserPermissions, hasPermission };
 
 const COOKIE_NAME = 'ecofip_admin_session';
 
@@ -23,6 +26,7 @@ export interface AdminUser {
 	username: string;
 	name: string;
 	role: AdminRole;
+	permissions?: string[];
 }
 
 export function isAdminAuthConfigured(): boolean {
@@ -97,11 +101,13 @@ export async function authenticateUser(
 			if (rows.length > 0) {
 				const u = rows[0];
 				if (verifyPassword(password, u.passwordHash)) {
+					const permissions = Array.isArray(u.permissions) ? u.permissions : [];
 					return {
 						id: u.id,
 						username: u.username,
 						name: u.name || 'Administrateur ECOFIP',
-						role: (u.role as AdminRole) || 'admin'
+						role: (u.role as AdminRole) || 'admin',
+						permissions
 					};
 				}
 			}
@@ -118,7 +124,18 @@ export async function authenticateUser(
 				id: 0,
 				username: cleanUsername,
 				name: 'Super Administrateur ECOFIP',
-				role: 'superadmin'
+				role: 'superadmin',
+				permissions: [
+					'videos',
+					'predications',
+					'evenements',
+					'articles',
+					'temoignages',
+					'galerie',
+					'equipe',
+					'utilisateurs',
+					'database'
+				]
 			};
 		}
 	}
@@ -166,6 +183,7 @@ function writeSessionCookie(cookies: Cookies, session: ActiveAdminSession): void
 		username: session.user.username,
 		name: session.user.name,
 		role: session.user.role,
+		permissions: session.user.permissions ?? [],
 		createdAt: session.createdAt,
 		lastActivityAt: session.lastActivityAt
 	});
@@ -277,7 +295,8 @@ export function readAdminSession(cookies: Cookies): AdminSessionState {
 				id: typeof data.id === 'number' ? data.id : undefined,
 				username: data.username,
 				name: data.name || 'Administrateur ECOFIP',
-				role: (data.role as AdminRole) || 'admin'
+				role: (data.role as AdminRole) || 'admin',
+				permissions: Array.isArray(data.permissions) ? data.permissions : []
 			},
 			createdAt: data.createdAt,
 			lastActivityAt
@@ -300,56 +319,36 @@ export function getAdminSession(cookies: Cookies): AdminUser | null {
 }
 
 /**
- * Vérifie si un rôle donné a l'autorisation d'accéder à un chemin d'administration.
+ * Vérifie si un utilisateur (ou un rôle) a l'autorisation d'accéder à un chemin d'administration.
  */
-export function canAccessRoute(role: string | null | undefined, pathname: string): boolean {
-	if (!role) return false;
+export function canAccessRoute(
+	userOrRole: { role?: string | null; permissions?: string[] | null } | string | null | undefined,
+	pathname: string
+): boolean {
+	if (!userOrRole) return false;
+
+	const role = typeof userOrRole === 'string' ? userOrRole : userOrRole.role;
 	if (role === 'superadmin') return true;
 
-	// Gestion de sa propre session (état, maintien, déconnexion) : ouvert à tous les rôles
+	// Gestion de sa propre session (état, maintien, déconnexion) : ouvert à tous
 	if (pathname === '/admin/session' || pathname.startsWith('/admin/logout')) return true;
 
-	// Admin classique : tous les onglets SAUF base de données
-	if (role === 'admin') {
-		if (pathname.startsWith('/admin/database')) return false;
-		return true;
-	}
+	// Tableau de bord : accessible à tous les utilisateurs connectés
+	if (pathname === '/admin') return true;
 
-	// Gestionnaire des événements
-	if (role === 'events_manager') {
-		if (
-			pathname === '/admin' ||
-			pathname.startsWith('/admin/evenements') ||
-			pathname.startsWith('/admin/logout')
-		) {
-			return true;
-		}
-		return false;
-	}
+	// Console de base de données : STRICTEMENT réservée au Superadmin
+	if (pathname.startsWith('/admin/database')) return false;
 
-	// Gestionnaire des articles
-	if (role === 'articles_manager') {
-		if (
-			pathname === '/admin' ||
-			pathname.startsWith('/admin/articles') ||
-			pathname.startsWith('/admin/logout')
-		) {
-			return true;
-		}
-		return false;
-	}
+	const perms = getUserPermissions(userOrRole);
 
-	// Gestionnaire des témoignages
-	if (role === 'testimonials_manager') {
-		if (
-			pathname === '/admin' ||
-			pathname.startsWith('/admin/temoignages') ||
-			pathname.startsWith('/admin/logout')
-		) {
-			return true;
-		}
-		return false;
-	}
+	if (pathname.startsWith('/admin/videos')) return perms.includes('videos');
+	if (pathname.startsWith('/admin/predications')) return perms.includes('predications');
+	if (pathname.startsWith('/admin/evenements')) return perms.includes('evenements');
+	if (pathname.startsWith('/admin/articles')) return perms.includes('articles');
+	if (pathname.startsWith('/admin/temoignages')) return perms.includes('temoignages');
+	if (pathname.startsWith('/admin/galerie')) return perms.includes('galerie');
+	if (pathname.startsWith('/admin/equipe')) return perms.includes('equipe');
+	if (pathname.startsWith('/admin/utilisateurs')) return perms.includes('utilisateurs');
 
 	return false;
 }
@@ -359,11 +358,17 @@ export function canAccessRoute(role: string | null | undefined, pathname: string
  */
 export function getAssignableRoles(creatorRole: string | null | undefined): AdminRole[] {
 	if (creatorRole === 'superadmin') {
-		return ['superadmin', 'admin', 'events_manager', 'articles_manager', 'testimonials_manager'];
+		return [
+			'superadmin',
+			'admin',
+			'manager',
+			'events_manager',
+			'articles_manager',
+			'testimonials_manager'
+		];
 	}
 	if (creatorRole === 'admin') {
-		// "l'admin peut aussi creer des utilisateur inferieur ou egal à son role" -> admin, events, articles, testimonials
-		return ['admin', 'events_manager', 'articles_manager', 'testimonials_manager'];
+		return ['admin', 'manager', 'events_manager', 'articles_manager', 'testimonials_manager'];
 	}
 	return [];
 }

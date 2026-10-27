@@ -14,9 +14,15 @@
 		LogOut,
 		X
 	} from '@lucide/svelte';
+	import { getUserPermissions } from '$lib/design-system/permissions.js';
 
 	interface Props {
-		admin?: { name?: string | null; role?: string | null; username?: string | null } | null;
+		admin?: {
+			name?: string | null;
+			role?: string | null;
+			username?: string | null;
+			permissions?: string[] | null;
+		} | null;
 		isDbConfigured?: boolean;
 		mobileOpen?: boolean;
 	}
@@ -26,6 +32,7 @@
 	const roleLabelMap: Record<string, string> = {
 		superadmin: 'Super Admin',
 		admin: 'Administrateur',
+		manager: 'Gestionnaire',
 		events_manager: 'Gest. Événements',
 		articles_manager: 'Gest. Articles',
 		testimonials_manager: 'Gest. Témoignages'
@@ -47,119 +54,96 @@
 			: 'AD'
 	);
 
-	// Navigation adaptée dynamiquement selon le rôle de l'utilisateur
+	// Navigation adaptée dynamiquement selon les permissions effectives de l'utilisateur
 	let navItems = $derived.by(() => {
-		const role = admin?.role || 'admin';
+		const perms = getUserPermissions(admin);
+		const isSuperAdmin = admin?.role === 'superadmin';
 
-		// 1. Rôle spécialisé : Gestionnaire des événements uniquement
-		if (role === 'events_manager') {
-			return [
-				{
-					href: '/admin',
-					label: 'Tableau de bord',
-					icon: LayoutDashboard,
-					exact: true
-				},
-				{
-					href: '/admin/evenements',
-					label: 'Événements & Projets',
-					icon: CalendarDays
-				}
-			];
-		}
-
-		// 2. Rôle spécialisé : Gestionnaire des articles uniquement
-		if (role === 'articles_manager') {
-			return [
-				{
-					href: '/admin',
-					label: 'Tableau de bord',
-					icon: LayoutDashboard,
-					exact: true
-				},
-				{
-					href: '/admin/articles',
-					label: 'Articles & Actualités',
-					icon: Newspaper
-				}
-			];
-		}
-
-		// 3. Rôle spécialisé : Gestionnaire des témoignages uniquement
-		if (role === 'testimonials_manager') {
-			return [
-				{
-					href: '/admin',
-					label: 'Tableau de bord',
-					icon: LayoutDashboard,
-					exact: true
-				},
-				{
-					href: '/admin/temoignages',
-					label: 'Témoignages',
-					icon: MessageSquareHeart,
-					badge: 'Validation'
-				}
-			];
-		}
-
-		// 4. Admin et Superadmin : accès étendu
-		const items = [
+		const items: Array<{
+			href: string;
+			label: string;
+			icon: typeof LayoutDashboard;
+			badge?: string;
+			exact?: boolean;
+		}> = [
 			{
 				href: '/admin',
 				label: 'Tableau de bord',
 				icon: LayoutDashboard,
 				exact: true
-			},
-			{
+			}
+		];
+
+		if (perms.includes('utilisateurs')) {
+			items.push({
 				href: '/admin/utilisateurs',
 				label: 'Gestion Utilisateurs',
 				icon: Users,
 				badge: 'Équipe'
-			},
-			{
+			});
+		}
+
+		if (perms.includes('videos')) {
+			items.push({
 				href: '/admin/videos',
 				label: 'Vidéos & Temps forts',
 				icon: Film,
 				badge: 'Homepage'
-			},
-			{
+			});
+		}
+
+		if (perms.includes('predications')) {
+			items.push({
+				href: '/admin/predications',
+				label: 'Prédications vidéo',
+				icon: Clapperboard
+			});
+		}
+
+		if (perms.includes('temoignages')) {
+			items.push({
 				href: '/admin/temoignages',
 				label: 'Témoignages',
 				icon: MessageSquareHeart,
 				badge: 'Validation'
-			},
-			{
+			});
+		}
+
+		if (perms.includes('evenements')) {
+			items.push({
 				href: '/admin/evenements',
 				label: 'Événements & Projets',
 				icon: CalendarDays
-			},
-			{
+			});
+		}
+
+		if (perms.includes('articles')) {
+			items.push({
 				href: '/admin/articles',
 				label: 'Articles & Actualités',
 				icon: Newspaper
-			},
-			{
+			});
+		}
+
+		if (perms.includes('equipe')) {
+			items.push({
 				href: '/admin/equipe',
 				label: 'Équipe dirigeante',
 				icon: UsersRound,
 				badge: 'À propos'
-			},
-			{
+			});
+		}
+
+		if (perms.includes('galerie')) {
+			items.push({
 				href: '/admin/galerie',
 				label: 'Galerie photos & vidéos',
 				icon: Images
-			},
-			{
-				href: '/admin/predications',
-				label: 'Prédications vidéo',
-				icon: Clapperboard
-			}
-		];
+			});
+		}
 
 		// Base de données Neon : STRICTEMENT réservée au Superadmin !
-		// "l'admin aura acces à tous les onglet sauf base de données qui n'apparaitra pas dans sa sidebar"
-		if (role === 'superadmin') {
+		if (isSuperAdmin && perms.includes('database')) {
 			items.push({
 				href: '/admin/database',
 				label: 'Base de données Neon',

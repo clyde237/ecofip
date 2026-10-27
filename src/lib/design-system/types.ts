@@ -724,13 +724,38 @@ export interface DonationCtaProps {
 
 // --- ADMIN ROLES & USER MANAGEMENT ---
 export type AdminRole =
-	'superadmin' | 'admin' | 'events_manager' | 'articles_manager' | 'testimonials_manager';
+	| 'superadmin'
+	| 'admin'
+	| 'manager'
+	| 'events_manager'
+	| 'articles_manager'
+	| 'testimonials_manager';
+
+export type AdminTabPermission =
+	| 'videos'
+	| 'predications'
+	| 'evenements'
+	| 'articles'
+	| 'temoignages'
+	| 'galerie'
+	| 'equipe';
+
+export type AdminPermission = AdminTabPermission | 'utilisateurs' | 'database';
+
+export interface TabPermissionDefinition {
+	id: AdminTabPermission;
+	label: string;
+	href: string;
+	description: string;
+	badge?: string;
+}
 
 export interface AdminUserItem {
 	id: number;
 	username: string;
 	name: string;
 	role: AdminRole;
+	permissions?: string[];
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
 }
