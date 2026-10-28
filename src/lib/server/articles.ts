@@ -209,16 +209,19 @@ export function slugify(value: string): string {
 		.slice(0, MAX_SLUG_BASE_LENGTH);
 }
 
-/** Adresse d'article unique : « titre », puis « titre-2 », etc. */
-export async function createUniqueArticleSlug(title: string): Promise<string> {
-	const base = slugify(title) || 'article';
+/** Adresse d'article unique : « titre », puis « titre-2 », etc. Exclut l'article courant si excludeId est fourni */
+export async function createUniqueArticleSlug(titleOrSlug: string, excludeId?: number): Promise<string> {
+	const base = slugify(titleOrSlug) || 'article';
 	if (!db) return base;
+	const condition = excludeId
+		? and(like(articles.slug, `${base}%`), ne(articles.id, excludeId))
+		: like(articles.slug, `${base}%`);
 	const taken = new Set(
 		(
 			await db
 				.select({ slug: articles.slug })
 				.from(articles)
-				.where(like(articles.slug, `${base}%`))
+				.where(condition)
 		).map((row) => row.slug)
 	);
 	if (!taken.has(base)) return base;

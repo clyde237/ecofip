@@ -22,6 +22,7 @@
 		isR2Configured: boolean;
 		article?: {
 			title: string;
+			slug?: string;
 			category: string;
 			excerpt: string | null;
 			content: string;
@@ -50,6 +51,21 @@
 	const labelClass = 'block text-xs font-bold text-text-primary';
 
 	let suggestions = $derived(Array.from(new Set([...PRESET_CATEGORIES, ...categories])));
+
+	// svelte-ignore state_referenced_locally
+	let titleValue = $state(article?.title ?? '');
+	// svelte-ignore state_referenced_locally
+	let slugValue = $state(article?.slug ?? '');
+
+	function slugifyClient(val: string): string {
+		return val
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/(^-|-$)+/g, '')
+			.slice(0, 200);
+	}
 
 	// Champs suivis pour l'aperçu, le temps de lecture et l'état « à la une ».
 	// Valeurs initiales uniquement : l'éditeur est recréé ({#key}) quand on change d'article,
@@ -157,10 +173,36 @@
 				name="title"
 				required
 				maxlength="255"
-				value={article?.title ?? ''}
+				bind:value={titleValue}
 				placeholder="Titre de l’article"
 				class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 font-display text-2xl font-bold text-text-primary placeholder:text-gray-300 focus:border-brand-primary focus:outline-hidden"
 			/>
+			{#if article}
+				<div
+					class="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-[#f8fafc] px-3.5 py-2 text-xs text-text-secondary"
+				>
+					<span class="font-medium text-text-primary">Lien public (slug) :</span>
+					<span class="font-mono text-gray-400">/actualites/</span>
+					<input
+						type="text"
+						name="slug"
+						bind:value={slugValue}
+						placeholder="adresse-de-l-article"
+						class="min-w-[200px] flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1 font-mono text-xs text-text-primary focus:border-brand-primary focus:outline-hidden"
+					/>
+					<button
+						type="button"
+						class="cursor-pointer text-xs font-semibold text-brand-primary hover:text-brand-primary/80 hover:underline"
+						onclick={() => {
+							if (titleValue.trim()) {
+								slugValue = slugifyClient(titleValue);
+							}
+						}}
+					>
+						Synchroniser avec le titre
+					</button>
+				</div>
+			{/if}
 		</div>
 
 		<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white">

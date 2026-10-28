@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { isDbConfigured, db } from '$lib/server/db/index.js';
 import { events } from '$lib/server/db/schema.js';
 import { and, eq } from 'drizzle-orm';
@@ -15,6 +15,12 @@ import type { PageServerLoad } from './$types.js';
 
 const RECENT_COUNT = 5;
 const RELATED_COUNT = 3;
+
+/** Redirections permanentes (301) pour préserver les anciens liens partagés */
+const ARTICLE_SLUG_REDIRECTS: Record<string, string> = {
+	'une-vie-qui-compte-pst-valery-tchamekwen-un-temoignage-vivant':
+		'pasteur-julio-gael-kepndo-l-homme-porte-par-la-flamme-du-reveil'
+};
 
 /** Événement publié dont parle l'article (encadré « Événement lié ») */
 async function loadLinkedEvent(eventId: number) {
@@ -36,6 +42,11 @@ async function loadLinkedEvent(eventId: number) {
 }
 
 export const load: PageServerLoad = async ({ params, url }) => {
+	const destinationSlug = ARTICLE_SLUG_REDIRECTS[params.slug];
+	if (destinationSlug) {
+		throw redirect(301, `/actualites/${destinationSlug}`);
+	}
+
 	if (!isDbConfigured || !db) throw error(503, 'Actualités momentanément indisponibles');
 
 	const row = await loadPublishedArticleBySlug(params.slug);
