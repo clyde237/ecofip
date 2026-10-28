@@ -172,7 +172,7 @@ export async function loadAlbumSummaries(publicOnly: boolean): Promise<AlbumSumm
 	const albums = await db
 		.select()
 		.from(galleryAlbums)
-		.orderBy(asc(galleryAlbums.displayOrder), desc(galleryAlbums.year), desc(galleryAlbums.id));
+		.orderBy(desc(galleryAlbums.createdAt), desc(galleryAlbums.id));
 	const items = await db
 		.select({
 			id: galleryItems.id,
