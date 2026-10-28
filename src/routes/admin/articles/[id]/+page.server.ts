@@ -5,6 +5,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
 import { formatMediaUrl, getR2PublicUrl, isR2Configured } from '$lib/server/r2.js';
 import {
+	createUniqueArticleSlug,
 	deleteArticleFiles,
 	deleteArticleImage,
 	deleteRemovedContentImages,
@@ -66,7 +67,8 @@ export const actions: Actions = {
 				.select({
 					imageKey: articles.imageKey,
 					publishedAt: articles.publishedAt,
-					content: articles.content
+					content: articles.content,
+					slug: articles.slug
 				})
 				.from(articles)
 				.where(eq(articles.id, id))
@@ -82,11 +84,18 @@ export const actions: Actions = {
 					.where(and(eq(articles.isFeatured, true), ne(articles.id, id)));
 			}
 
-			// L'adresse publique (slug) est conservée pour ne pas casser les liens partagés
+			// L'adresse publique (slug) peut être mise à jour si modifiée, ou conservée par défaut
+			const rawSlug = String(formData.get('slug') ?? '').trim();
+			let targetSlug = existing.slug;
+			if (rawSlug && rawSlug !== existing.slug) {
+				targetSlug = await createUniqueArticleSlug(rawSlug, id);
+			}
+
 			await db
 				.update(articles)
 				.set({
 					...parsed.value,
+					slug: targetSlug,
 					// Date de première publication conservée lors des modifications
 					publishedAt: parsed.value.isPublished
 						? (existing.publishedAt ?? new Date())
