@@ -67,7 +67,7 @@
 		<span
 			class="font-display leading-none font-extrabold text-brand-primary {large
 				? 'text-4xl sm:text-5xl'
-				: 'text-3xl'}"
+				: 'text-2xl'}"
 		>
 			{formatNumber(stat.value)}
 		</span>
@@ -78,7 +78,7 @@
 		{/if}
 	{:else}
 		<span
-			class="font-display text-xl leading-tight font-bold text-text-primary first-letter:uppercase"
+			class="font-display text-base leading-tight font-bold text-text-primary first-letter:uppercase"
 			>{stat.text}</span
 		>
 	{/if}
@@ -184,7 +184,7 @@
 			{:else if selectedDay}
 				<div
 					class="grid grid-cols-1 gap-6 {selectedDay.imageUrl
-						? 'md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start'
+						? 'md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-start'
 						: ''}"
 				>
 					{#if selectedDay.imageUrl}
@@ -195,20 +195,18 @@
 							class="aspect-[4/3] w-full rounded-3xl border border-gray-200 object-cover shadow-sm md:sticky md:top-28"
 						/>
 					{/if}
-					<div class="space-y-4">
+					<div class="space-y-3">
 						<p class="font-body text-sm font-semibold text-text-secondary first-letter:uppercase">
 							{selectedDay.dateLabel}
 						</p>
 						{#each selectedDay.sessions as session (session.name)}
-							<div class="rounded-3xl border border-gray-200/80 bg-white p-5 shadow-xs sm:p-6">
-								<h3 class="font-display text-lg font-bold text-text-primary">{session.name}</h3>
-								<ul class="mt-4 grid grid-cols-2 gap-x-4 gap-y-5">
+							<div class="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-xs">
+								<h3 class="font-display text-base font-bold text-text-primary">{session.name}</h3>
+								<ul class="mt-3 grid grid-cols-2 gap-x-3 gap-y-3">
 									{#each session.stats as stat, index (index)}
 										<li>
 											{@render statValue(stat, false)}
-											<p
-												class="mt-1.5 font-body text-xs font-semibold text-text-secondary sm:text-sm"
-											>
+											<p class="mt-1 font-body text-xs font-semibold text-text-secondary">
 												{stat.label}
 											</p>
 										</li>
