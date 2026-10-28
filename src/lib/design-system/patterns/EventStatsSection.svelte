@@ -184,7 +184,7 @@
 			{:else if selectedDay}
 				<div
 					class="grid grid-cols-1 gap-6 {selectedDay.imageUrl
-						? 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]'
+						? 'md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start'
 						: ''}"
 				>
 					{#if selectedDay.imageUrl}
@@ -192,7 +192,7 @@
 							src={selectedDay.imageUrl}
 							alt="{tabLabel(selectedDay.date)} de « {eventTitle} »"
 							loading="lazy"
-							class="aspect-[4/3] w-full rounded-3xl border border-gray-200 object-cover shadow-sm"
+							class="aspect-[4/3] w-full rounded-3xl border border-gray-200 object-cover shadow-sm md:sticky md:top-28"
 						/>
 					{/if}
 					<div class="space-y-4">
