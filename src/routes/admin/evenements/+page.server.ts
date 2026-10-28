@@ -1,5 +1,11 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
-import { events, type EventRecord, type StoredMerchandiseItem } from '$lib/server/db/schema.js';
+import {
+	eventStatDays,
+	events,
+	type EventRecord,
+	type StoredMerchandiseItem
+} from '$lib/server/db/schema.js';
+import { deleteStatImage } from '$lib/server/eventStats.js';
 import { eq, desc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
@@ -492,7 +498,15 @@ export const actions: Actions = {
 
 		if (isDbConfigured && db) {
 			let deleted: { merchandise: StoredMerchandiseItem[] | null } | undefined;
+			let statImageKeys: (string | null)[];
 			try {
+				// Les statistiques sont supprimées avec l'événement : leurs images sont relevées avant
+				statImageKeys = (
+					await db
+						.select({ imageKey: eventStatDays.imageKey })
+						.from(eventStatDays)
+						.where(eq(eventStatDays.eventId, id))
+				).map((row) => row.imageKey);
 				[deleted] = await db
 					.delete(events)
 					.where(eq(events.id, id))
@@ -501,6 +515,7 @@ export const actions: Actions = {
 				return fail(500, { error: 'Erreur lors de la suppression' });
 			}
 			await deleteMerchandiseImages(merchandiseImageKeys(deleted?.merchandise));
+			if (deleted) for (const key of statImageKeys) await deleteStatImage(key);
 		} else {
 			const idx = fallbackEvents.findIndex((e) => e.id === id);
 			if (idx !== -1) {

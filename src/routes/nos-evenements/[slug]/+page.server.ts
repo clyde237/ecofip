@@ -1,9 +1,14 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
-import { events } from '$lib/server/db/schema.js';
+import { eventStatDays, events } from '$lib/server/db/schema.js';
+import { toPublicEventStats } from '$lib/server/eventStats.js';
 import { eq, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import type { DetailedEventItem, PublicMerchandiseItem } from '$lib/design-system/types.js';
+import type {
+	DetailedEventItem,
+	PublicEventStats,
+	PublicMerchandiseItem
+} from '$lib/design-system/types.js';
 import { toPublicMerchandise } from '$lib/server/eventMerchandise.js';
 import { loadPublishedArticlesForEvent, toPublicArticle } from '$lib/server/articles.js';
 import type { DetailedArticleItem } from '$lib/design-system/types.js';
@@ -112,6 +117,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	let isIndexable = false;
 	let merchandise: PublicMerchandiseItem[] = [];
 	let relatedArticles: DetailedArticleItem[] = [];
+	let stats: PublicEventStats | null = null;
 
 	if (isDbConfigured && db) {
 		try {
@@ -176,6 +182,14 @@ export const load: PageServerLoad = async ({ params }) => {
 				endIso = getEventEndIso(ev);
 				isIndexable = ev.isPublished;
 				merchandise = toPublicMerchandise(ev.merchandise, ev.merchandiseWhatsapp, ev.title);
+				stats = toPublicEventStats(
+					ev,
+					await db
+						.select()
+						.from(eventStatDays)
+						.where(eq(eventStatDays.eventId, ev.id))
+						.catch(() => [])
+				);
 				relatedArticles = (await loadPublishedArticlesForEvent(ev.id).catch(() => [])).map(
 					toPublicArticle
 				);
@@ -209,6 +223,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		},
 		isIndexable,
 		merchandise,
-		relatedArticles
+		relatedArticles,
+		stats
 	};
 };
