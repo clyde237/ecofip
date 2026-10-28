@@ -22,7 +22,9 @@ export const r2Client = new S3Client({
 	credentials: {
 		accessKeyId: env.R2_ACCESS_KEY_ID || '',
 		secretAccessKey: env.R2_SECRET_ACCESS_KEY || ''
-	}
+	},
+	// Sans délai maximum, une connexion coupée bloque la requête (et l'action admin) indéfiniment
+	requestHandler: { connectionTimeout: 5_000, requestTimeout: 20_000 }
 });
 
 export const isR2PublicDomainConfigured = Boolean(

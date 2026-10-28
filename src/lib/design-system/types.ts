@@ -504,7 +504,32 @@ export interface TestimonialsSectionProps {
 	class?: string;
 }
 
-/** Prédication vidéo (format court vertical), telle qu'affichée sur le site */
+/** Une statistique affichée : chiffre, ou texte quand on ne pouvait pas compter */
+export interface PublicStatLine {
+	label: string;
+	value: number | null;
+	text: string | null;
+	/** Dans un total : au moins une session n'a pas donné de chiffre */
+	uncounted: boolean;
+}
+
+/** Statistiques publiées d'un événement (jours, sessions, totaux) */
+export interface PublicEventStats {
+	days: {
+		date: string;
+		/** Rang du jour dans l'événement (Jour 1, Jour 2…) */
+		dayNumber: number | null;
+		dateLabel: string;
+		imageUrl: string | null;
+		sessions: { name: string; stats: PublicStatLine[] }[];
+	}[];
+	totals: PublicStatLine[];
+	firstDateLabel: string;
+	totalDays: number;
+	/** L'événement est terminé : le bilan est proposé en premier */
+	isFinished: boolean;
+}
+
 /** Gadget d'un événement tel qu'affiché sur le site, avec son lien de commande WhatsApp */
 export interface PublicMerchandiseItem {
 	id: string;
@@ -517,6 +542,7 @@ export interface PublicMerchandiseItem {
 	orderUrl: string | null;
 }
 
+/** Prédication vidéo (format court vertical), telle qu'affichée sur le site */
 export interface PublicSermon {
 	id: string;
 	slug: string;

@@ -24,6 +24,7 @@
 	import LinkifiedText from '$lib/design-system/components/LinkifiedText.svelte';
 	import Modal from '$lib/design-system/components/Modal.svelte';
 	import EventMerchandiseSection from '$lib/design-system/patterns/EventMerchandiseSection.svelte';
+	import EventStatsSection from '$lib/design-system/patterns/EventStatsSection.svelte';
 	import ArticleCard from '$lib/design-system/components/ArticleCard.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 	import type { PageData } from './$types.js';
@@ -473,6 +474,10 @@
 			</div>
 		</Container>
 	</section>
+
+	{#if data.stats}
+		<EventStatsSection stats={data.stats} eventTitle={event.title} />
+	{/if}
 
 	{#if data.merchandise.length > 0}
 		<EventMerchandiseSection items={data.merchandise} eventTitle={event.title} />

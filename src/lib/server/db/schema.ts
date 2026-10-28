@@ -7,6 +7,7 @@ import {
 	serial,
 	text,
 	timestamp,
+	unique,
 	varchar
 } from 'drizzle-orm/pg-core';
 
@@ -94,6 +95,33 @@ export const events = pgTable('events', {
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
+
+/** Une session d'une journée d'événement (ex. « Soirée ») et ses chiffres */
+export type EventStatSession = {
+	id: string;
+	name: string;
+	/** Valeur en chiffres (« 1276 ») ou en texte quand on ne peut pas compter (« plusieurs ») */
+	stats: { label: string; value: string }[];
+};
+
+// Statistiques d'un événement, une ligne par jour (image sur R2 dans events/)
+export const eventStatDays = pgTable(
+	'event_stat_days',
+	{
+		id: serial('id').primaryKey(),
+		eventId: integer('event_id')
+			.notNull()
+			.references(() => events.id, { onDelete: 'cascade' }),
+		dayDate: date('day_date').notNull(),
+		imageUrl: text('image_url'),
+		imageKey: text('image_key'),
+		sessions: jsonb('sessions').$type<EventStatSession[]>().notNull().default([]),
+		isPublished: boolean('is_published').default(false).notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => [unique('event_stat_days_event_day_unique').on(table.eventId, table.dayDate)]
+);
 
 // 4. Table des Articles & Actualités (page /actualites/[slug], images sur Cloudflare R2)
 export const articles = pgTable('articles', {
@@ -236,6 +264,7 @@ export type Testimonial = typeof testimonials.$inferSelect;
 export type NewTestimonial = typeof testimonials.$inferInsert;
 
 export type EventRecord = typeof events.$inferSelect;
+export type EventStatDayRecord = typeof eventStatDays.$inferSelect;
 export type NewEventRecord = typeof events.$inferInsert;
 
 export type ArticleRecord = typeof articles.$inferSelect;

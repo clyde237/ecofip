@@ -17,7 +17,8 @@
 		RotateCcw,
 		ChevronLeft,
 		ChevronRight,
-		Ticket
+		Ticket,
+		BarChart3
 	} from '@lucide/svelte';
 	import { ImagePicker } from '$lib';
 	import { toast } from '$lib/design-system/toast.svelte.js';
@@ -718,6 +719,17 @@
 													<Pencil size={14} class="text-brand-primary" />
 													<span>Modifier l’événement</span>
 												</button>
+
+												<!-- Option 2 bis : Statistiques jour par jour -->
+												<a
+													role="menuitem"
+													href="/admin/evenements/{ev.id}/statistiques"
+													onclick={() => (openMenuId = null)}
+													class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-gray-50"
+												>
+													<BarChart3 size={14} class="text-brand-primary" />
+													<span>Statistiques</span>
+												</a>
 
 												<!-- Option 3 : Basculer À la une -->
 												<form
