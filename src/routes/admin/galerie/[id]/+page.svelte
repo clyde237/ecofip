@@ -27,6 +27,7 @@
 	import AlbumFormFields from '../AlbumFormFields.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 	import { compressImage, toUploadFilename, uploadToR2 } from '$lib/utils/r2Upload.js';
+	import { compressVideo } from '$lib/utils/videoCompression.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -153,6 +154,7 @@
 	let externalVideoUrl = $state('');
 	let videoDuration = $state('');
 	let videoProgress = $state(0);
+	let videoPhase = $state<'compress' | 'upload'>('upload');
 	let posterFile = $state<File | null>(null);
 	let posterPreviewUrl = $state<string | null>(null);
 	let posterKey = $state('');
@@ -201,8 +203,14 @@
 	async function uploadVideoFiles(): Promise<boolean> {
 		try {
 			if (videoSource === 'upload' && videoFile && !videoKey) {
-				const result = await uploadToR2(videoFile, {
-					filename: videoFile.name,
+				videoPhase = 'compress';
+				const prepared = await compressVideo(videoFile, {
+					onProgress: (percent) => (videoProgress = percent)
+				});
+				videoPhase = 'upload';
+				videoProgress = 0;
+				const result = await uploadToR2(prepared.file, {
+					filename: prepared.file.name,
 					folder: 'gallery',
 					onProgress: (percent) => (videoProgress = percent)
 				});
@@ -648,7 +656,9 @@
 										style="width: {videoProgress}%"
 									></div>
 								</div>
-								<p class="text-xs text-text-secondary">Envoi vers R2 : {videoProgress}%</p>
+								<p class="text-xs text-text-secondary">
+									{videoPhase === 'compress' ? 'Compression de la vidéo' : 'Envoi vers R2'} : {videoProgress}%
+								</p>
 							{/if}
 						{:else}
 							<div>
