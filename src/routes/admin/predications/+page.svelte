@@ -26,6 +26,7 @@
 		toUploadFilename,
 		uploadToR2
 	} from '$lib/utils/r2Upload.js';
+	import { compressVideo } from '$lib/utils/videoCompression.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -33,7 +34,8 @@
 
 	const FOLDER = 'sermons';
 	// Beaucoup de visiteurs regardent sur données mobiles : on limite le poids des vidéos
-	const MAX_VIDEO_MB = 80;
+	// Les vidéos lourdes sont compressées dans le navigateur avant l'envoi
+	const MAX_VIDEO_MB = 500;
 	const RECOMMENDED_VIDEO_MB = 30;
 	const RECOMMENDED_MAX_SECONDS = 180;
 	const inputClass =
@@ -142,6 +144,8 @@
 	let videoInfo = $state<VideoInfo | null>(null);
 	let videoKey = $state('');
 	let videoProgress = $state(0);
+	// Compression de la vidéo dans le navigateur, puis envoi sur R2
+	let videoPhase = $state<'compress' | 'upload'>('upload');
 	let duration = $state('');
 	let customPoster = $state<File | null>(null);
 	let posterKey = $state('');
@@ -157,7 +161,7 @@
 		if (!videoFile || !videoInfo) return list;
 		if (videoFile.size > RECOMMENDED_VIDEO_MB * 1024 * 1024) {
 			list.push(
-				`Fichier lourd (${(videoFile.size / 1024 / 1024).toFixed(0)} Mo) : visez moins de ${RECOMMENDED_VIDEO_MB} Mo (720×1280, H.264) pour les visiteurs sur données mobiles.`
+				`Fichier lourd (${(videoFile.size / 1024 / 1024).toFixed(0)} Mo) : il sera compressé avant l’envoi (1080p max).`
 			);
 		}
 		if (videoInfo.width > videoInfo.height) {
@@ -234,8 +238,15 @@
 	async function uploadCreateFiles(signal: AbortSignal): Promise<boolean> {
 		try {
 			if (videoFile && !videoKey) {
-				const result = await uploadToR2(videoFile, {
-					filename: videoFile.name,
+				videoPhase = 'compress';
+				const prepared = await compressVideo(videoFile, {
+					onProgress: (percent) => (videoProgress = percent),
+					signal
+				});
+				videoPhase = 'upload';
+				videoProgress = 0;
+				const result = await uploadToR2(prepared.file, {
+					filename: prepared.file.name,
 					folder: FOLDER,
 					onProgress: (percent) => (videoProgress = percent),
 					signal
@@ -736,7 +747,7 @@
 		>
 			{isCreating
 				? videoProgress < 100
-					? `Envoi ${videoProgress} %`
+					? `${videoPhase === 'compress' ? 'Compression' : 'Envoi'} ${videoProgress} %`
 					: 'Enregistrement…'
 				: 'Enregistrer'}
 		</Button>

@@ -20,6 +20,7 @@
 	import Modal from '$lib/design-system/components/Modal.svelte';
 	import { toast } from '$lib/design-system/toast.svelte.js';
 	import { compressImage, toUploadFilename, uploadToR2 } from '$lib/utils/r2Upload.js';
+	import { compressVideo } from '$lib/utils/videoCompression.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -96,6 +97,7 @@
 	let createVideoFile = $state<File | null>(null);
 	let createVideoKey = $state('');
 	let createVideoProgress = $state(0);
+	let createVideoPhase = $state<'compress' | 'upload'>('upload');
 	let createDuration = $state('');
 	let createPosterFile = $state<File | null>(null);
 	let createPosterKey = $state('');
@@ -145,8 +147,14 @@
 			}
 			if (createType === 'video') {
 				if (videoSource === 'upload' && createVideoFile && !createVideoKey) {
-					const result = await uploadToR2(createVideoFile, {
-						filename: createVideoFile.name,
+					createVideoPhase = 'compress';
+					const prepared = await compressVideo(createVideoFile, {
+						onProgress: (percent) => (createVideoProgress = percent)
+					});
+					createVideoPhase = 'upload';
+					createVideoProgress = 0;
+					const result = await uploadToR2(prepared.file, {
+						filename: prepared.file.name,
 						folder: FOLDER,
 						onProgress: (percent) => (createVideoProgress = percent)
 					});
@@ -586,6 +594,9 @@
 								style="width: {createVideoProgress}%"
 							></div>
 						</div>
+						<p class="text-xs text-text-secondary">
+							{createVideoPhase === 'compress' ? 'Compression de la vidéo' : 'Envoi vers R2'} : {createVideoProgress}%
+						</p>
 					{/if}
 				{:else}
 					<div>

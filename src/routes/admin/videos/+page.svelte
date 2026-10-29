@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { compressVideo } from '$lib/utils/videoCompression.js';
 	import { enhance } from '$app/forms';
 	import {
 		Film,
@@ -114,16 +115,26 @@
 
 		isUploadingToR2 = true;
 		uploadProgress = 0;
-		uploadStatusText = 'Obtention de l’autorisation sécurisée Cloudflare R2...';
 
 		try {
+			// 0. Compression dans le navigateur (vidéo d'origine gardée si impossible)
+			uploadStatusText = 'Compression de la vidéo…';
+			const { file: videoToSend } = await compressVideo(selectedVideoFile, {
+				onProgress: (percent) => {
+					uploadProgress = percent;
+					uploadStatusText = `Compression de la vidéo : ${percent}%`;
+				}
+			});
+			uploadProgress = 0;
+			uploadStatusText = 'Obtention de l’autorisation sécurisée Cloudflare R2...';
+
 			// 1. Demander une URL pré-signée à SvelteKit
 			const res = await fetch('/api/upload-url', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					filename: selectedVideoFile.name,
-					contentType: selectedVideoFile.type || 'video/mp4',
+					filename: videoToSend.name,
+					contentType: videoToSend.type || 'video/mp4',
 					folder: 'videos'
 				})
 			});
@@ -142,7 +153,7 @@
 			await new Promise<void>((resolve, reject) => {
 				const xhr = new XMLHttpRequest();
 				xhr.open('PUT', uploadUrl, true);
-				xhr.setRequestHeader('Content-Type', selectedVideoFile!.type || 'video/mp4');
+				xhr.setRequestHeader('Content-Type', videoToSend.type || 'video/mp4');
 
 				xhr.upload.onprogress = (event) => {
 					if (event.lengthComputable) {
@@ -161,7 +172,7 @@
 
 				xhr.onerror = () =>
 					reject(new Error('Erreur réseau lors du transfert vers Cloudflare R2.'));
-				xhr.send(selectedVideoFile);
+				xhr.send(videoToSend);
 			});
 
 			uploadProgress = 100;
