@@ -57,6 +57,7 @@ export type AdminTestimonialFields = AuthorFields & {
 	content: string | null;
 	duration: string | null;
 	isApproved: boolean;
+	showOnHome: boolean;
 };
 
 /**
@@ -86,7 +87,9 @@ export function parseAdminTestimonial(
 			type,
 			content: content || null,
 			duration: type === 'video' ? duration || null : null,
-			isApproved: formData.get('isApproved') === 'on'
+			isApproved: formData.get('isApproved') === 'on',
+			// Seules les vidéos peuvent être mises en avant sur l'accueil
+			showOnHome: type === 'video' && formData.get('showOnHome') === 'on'
 		}
 	};
 }
@@ -149,12 +152,13 @@ function formatPublishedDate(value: Date | null): string {
  * type : limiter aux écrits ou aux vidéos ; limit : nombre maximal.
  */
 export async function loadPublishedTestimonials(
-	options: { type?: 'text' | 'video'; limit?: number } = {}
+	options: { type?: 'text' | 'video'; limit?: number; homeOnly?: boolean } = {}
 ): Promise<PublishedTestimonial[]> {
 	if (!db) return [];
 
 	const conditions = [eq(testimonials.isApproved, true)];
 	if (options.type) conditions.push(eq(testimonials.type, options.type));
+	if (options.homeOnly) conditions.push(eq(testimonials.showOnHome, true));
 
 	const query = db
 		.select()

@@ -341,6 +341,9 @@
 							>
 								{item.isApproved ? 'Publié' : 'À valider'}
 							</span>
+							{#if item.showOnHome}
+								<span class="rounded-full bg-amber-400 px-2.5 py-0.5 text-amber-950">Accueil</span>
+							{/if}
 							<span
 								class="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-text-secondary"
 							>
@@ -663,6 +666,12 @@
 			<input type="checkbox" name="isApproved" checked class="h-4 w-4 rounded-sm" />
 			Publier immédiatement sur le site
 		</label>
+		{#if createType === 'video'}
+			<label class="flex items-center gap-2 text-sm font-semibold text-text-primary">
+				<input type="checkbox" name="showOnHome" class="h-4 w-4 rounded-sm" />
+				Mettre en avant sur la page d’accueil (avant les témoignages écrits)
+			</label>
+		{/if}
 	</form>
 
 	{#snippet actions()}
@@ -823,6 +832,17 @@
 				/>
 				Publié sur le site
 			</label>
+			{#if editing.type === 'video'}
+				<label class="flex items-center gap-2 text-sm font-semibold text-text-primary">
+					<input
+						type="checkbox"
+						name="showOnHome"
+						checked={editing.showOnHome}
+						class="h-4 w-4 rounded-sm"
+					/>
+					Mettre en avant sur la page d’accueil (avant les témoignages écrits)
+				</label>
+			{/if}
 		</form>
 	{/if}
 

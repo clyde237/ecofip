@@ -55,24 +55,36 @@ async function loadHomeArticles(): Promise<ArticleItem[] | null> {
 }
 
 /**
- * Les 3 derniers témoignages écrits publiés (créés par l'admin ou validés).
- * null : base indisponible, la section garde ses témoignages par défaut.
+ * Accueil : d'abord les témoignages vidéo mis en avant, puis les derniers témoignages écrits
+ * publiés, 3 au total. null : base indisponible, la section garde ses témoignages par défaut.
  */
 async function loadHomeTestimonials(): Promise<TestimonialItem[] | null> {
 	if (!isDbConfigured || !db) return null;
 	try {
-		const published = await loadPublishedTestimonials({
-			type: 'text',
+		const videos = await loadPublishedTestimonials({
+			type: 'video',
+			homeOnly: true,
 			limit: HOME_TESTIMONIALS_COUNT
 		});
-		return published.map((item) => ({
+		const texts =
+			videos.length < HOME_TESTIMONIALS_COUNT
+				? await loadPublishedTestimonials({
+						type: 'text',
+						limit: HOME_TESTIMONIALS_COUNT - videos.length
+					})
+				: [];
+		return [...videos, ...texts].map((item) => ({
 			id: item.id,
 			name: item.name,
 			membership: [item.role, item.city].filter(Boolean).join(' · ') || 'Témoignage',
-			quote: `« ${item.quote} »`,
+			quote: item.quote ? `« ${item.quote} »` : '',
 			avatar: item.avatar,
 			verified: true,
-			rating: 5
+			rating: 5,
+			video:
+				item.type === 'video' && item.videoUrl
+					? { url: item.videoUrl, poster: item.posterUrl, duration: item.duration }
+					: null
 		}));
 	} catch (err) {
 		console.error('Erreur chargement témoignages homepage:', err);

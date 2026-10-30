@@ -58,6 +58,8 @@ export const testimonials = pgTable('testimonials', {
 	contactInfo: varchar('contact_info', { length: 150 }),
 	// Publié sur le site (validé par l'admin)
 	isApproved: boolean('is_approved').default(false).notNull(),
+	// Vidéo mise en avant sur l'accueil, avant les témoignages écrits
+	showOnHome: boolean('show_on_home').default(false).notNull(),
 	submittedAt: timestamp('submitted_at').defaultNow().notNull(),
 	approvedAt: timestamp('approved_at'),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
