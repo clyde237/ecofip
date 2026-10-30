@@ -188,7 +188,7 @@
 								controls
 								playsinline
 								preload="none"
-								class="mt-6 aspect-video w-full rounded-xl bg-black object-contain"
+								class="mt-6 aspect-[3/4] w-full rounded-xl bg-black object-cover"
 								aria-label="Témoignage vidéo de {item.name}"
 							></video>
 							{#if item.quote}
