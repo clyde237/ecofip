@@ -489,6 +489,8 @@ export interface TestimonialItem {
 	avatar: string | null;
 	verified?: boolean;
 	rating?: number;
+	/** Témoignage vidéo mis en avant sur l'accueil */
+	video?: { url: string; poster: string | null; duration: string } | null;
 }
 
 export interface TestimonialsSectionProps {

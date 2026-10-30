@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Container from '../components/Container.svelte';
-	import { Quote, Star, CheckCircle2, ArrowRight, MessageSquareQuote } from '@lucide/svelte';
+	import { Quote, Star, CheckCircle2, ArrowRight, MessageSquareQuote, Video } from '@lucide/svelte';
 	import type { TestimonialItem, TestimonialsSectionProps } from '../types.js';
 
 	const defaultTestimonials: TestimonialItem[] = [
@@ -161,7 +161,11 @@
 							<div
 								class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-amber-200 shadow-inner"
 							>
-								<Quote size={20} class="fill-amber-200/40 text-amber-200" aria-hidden="true" />
+								{#if item.video}
+									<Video size={20} class="text-amber-200" aria-hidden="true" />
+								{:else}
+									<Quote size={20} class="fill-amber-200/40 text-amber-200" aria-hidden="true" />
+								{/if}
 							</div>
 
 							<!-- Note 5 étoiles -->
@@ -175,12 +179,31 @@
 							</div>
 						</div>
 
-						<!-- Citation textuelle du témoignage -->
-						<blockquote
-							class="mt-6 font-body text-base leading-relaxed text-white/95 italic sm:text-[17px] sm:leading-relaxed"
-						>
-							{item.quote}
-						</blockquote>
+						{#if item.video}
+							<!-- Témoignage vidéo mis en avant -->
+							<!-- svelte-ignore a11y_media_has_caption -->
+							<video
+								src={item.video.url}
+								poster={item.video.poster ?? undefined}
+								controls
+								playsinline
+								preload="none"
+								class="mt-6 aspect-video w-full rounded-xl bg-black object-contain"
+								aria-label="Témoignage vidéo de {item.name}"
+							></video>
+							{#if item.quote}
+								<p class="mt-4 line-clamp-3 font-body text-sm leading-relaxed text-white/90 italic">
+									{item.quote}
+								</p>
+							{/if}
+						{:else}
+							<!-- Citation textuelle du témoignage -->
+							<blockquote
+								class="mt-6 font-body text-base leading-relaxed text-white/95 italic sm:text-[17px] sm:leading-relaxed"
+							>
+								{item.quote}
+							</blockquote>
+						{/if}
 					</div>
 
 					<!-- Auteur avec Photo Portrait HD, Rôle & Statut vérifié -->
