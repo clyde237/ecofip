@@ -9,6 +9,7 @@
 		VolumeX,
 		Maximize2,
 		RotateCcw,
+		Scan,
 		Film,
 		Globe,
 		Flame,
@@ -69,6 +70,10 @@
 	// États du lecteur vidéo
 	let activeChapterIndex = $state(0);
 	let isPlaying = $state(false);
+	let hasStarted = $state(false);
+	let fitMode = $state<'contain' | 'cover'>('contain');
+	let videoWidth = $state<number | null>(null);
+	let videoHeight = $state<number | null>(null);
 	// Démarre en muet : les navigateurs n'autorisent la lecture automatique que sans le son
 	let isMuted = $state(true);
 	let videoEl: HTMLVideoElement | null = $state(null);
@@ -81,12 +86,24 @@
 	let userPaused = false;
 
 	let activeChapter = $derived(chapters[activeChapterIndex] || defaultChapters[0]);
+	let isVertical = $derived(
+		Boolean(videoWidth && videoHeight && videoHeight > videoWidth * 1.05)
+	);
+
+	function handleLoadedMetadata() {
+		if (!videoEl) return;
+		videoWidth = videoEl.videoWidth;
+		videoHeight = videoEl.videoHeight;
+	}
 
 	function playVideo() {
 		if (!videoEl) return;
 		videoEl
 			.play()
-			.then(() => (isPlaying = true))
+			.then(() => {
+				isPlaying = true;
+				hasStarted = true;
+			})
 			.catch((err: unknown) => {
 				// Lecture avec le son refusée par le navigateur : nouvelle tentative en muet.
 				// Les autres échecs (pause ou changement de source pendant le chargement) sont ignorés.
@@ -96,7 +113,10 @@
 					videoEl.muted = true;
 					videoEl
 						.play()
-						.then(() => (isPlaying = true))
+						.then(() => {
+							isPlaying = true;
+							hasStarted = true;
+						})
 						.catch(() => (isPlaying = false));
 				} else if (videoEl?.paused) {
 					isPlaying = false;
@@ -114,8 +134,15 @@
 		progress = 0;
 		currentTimeFormatted = '00:00';
 		userPaused = false;
+		hasStarted = false;
+		videoWidth = null;
+		videoHeight = null;
+		fitMode = 'contain';
 		// Attendre que la nouvelle source soit appliquée avant de lancer la lecture
 		await tick();
+		if (videoEl) {
+			videoEl.load();
+		}
 		playVideo();
 	}
 
@@ -152,6 +179,16 @@
 		}
 	}
 
+	function handleSeek(e: MouseEvent) {
+		if (!videoEl || !videoEl.duration) return;
+		const target = e.currentTarget as HTMLElement;
+		const rect = target.getBoundingClientRect();
+		const clickX = e.clientX - rect.left;
+		const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+		videoEl.currentTime = ratio * videoEl.duration;
+		progress = ratio * 100;
+	}
+
 	function handleTimeUpdate() {
 		if (!videoEl || !videoEl.duration) return;
 		progress = (videoEl.currentTime / videoEl.duration) * 100;
@@ -168,6 +205,11 @@
 	}
 
 	onMount(() => {
+		if (videoEl && videoEl.videoWidth > 0) {
+			videoWidth = videoEl.videoWidth;
+			videoHeight = videoEl.videoHeight;
+		}
+
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		if (prefersReducedMotion) {
 			// Pas de lecture automatique ni d'animation : le visiteur lance la vidéo lui-même
@@ -276,8 +318,26 @@
 				: 'translate-y-8 opacity-0'}"
 			style="transition-delay: 150ms;"
 		>
-			<!-- Ratio Cinéma 16:9 panoramique -->
-			<div bind:this={playerEl} class="relative aspect-video w-full">
+			<!-- Ratio du lecteur : adaptable sur mobile si la vidéo est verticale pour un affichage immersif -->
+			<div
+				bind:this={playerEl}
+				class="relative w-full overflow-hidden bg-black transition-[aspect-ratio,max-height] duration-500 {isVertical
+					? 'aspect-[9/16] max-h-[72vh] sm:aspect-video sm:max-h-[680px]'
+					: 'aspect-video max-h-[680px]'}"
+			>
+				<!-- Arrière-plan flou d'ambiance scénique (effet Ambilight pour les formats verticaux / bandes latérales) -->
+				<div
+					class="pointer-events-none absolute inset-0 overflow-hidden bg-black"
+					aria-hidden="true"
+				>
+					<img
+						src={activeChapter.thumbnail || mainVideoCover}
+						alt=""
+						class="h-full w-full scale-110 object-cover blur-3xl opacity-35"
+					/>
+					<div class="absolute inset-0 bg-black/40"></div>
+				</div>
+
 				<!-- Lecteur HTML5 Vidéo (actif en lecture) -->
 				<video
 					bind:this={videoEl}
@@ -285,10 +345,15 @@
 						'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'}
 					poster={activeChapter.thumbnail || mainVideoCover}
 					bind:muted={isMuted}
+					onloadedmetadata={handleLoadedMetadata}
 					ontimeupdate={handleTimeUpdate}
 					onended={handleVideoEnded}
+					onclick={togglePlay}
 					playsinline
-					class="h-full w-full object-cover transition-opacity duration-300 {isPlaying
+					preload="metadata"
+					class="relative z-10 mx-auto h-full w-full cursor-pointer {fitMode === 'cover'
+						? 'object-cover'
+						: 'object-contain'} transition-opacity duration-300 {hasStarted
 						? 'opacity-100'
 						: 'opacity-0'}"
 				>
@@ -296,22 +361,32 @@
 				</video>
 
 				<!-- Couverture d'affiche avec overlays cinématiques (visible tant que non lancé) -->
-				{#if !isPlaying}
-					<div class="absolute inset-0 z-10">
+				{#if !hasStarted}
+					<div class="absolute inset-0 z-20 overflow-hidden bg-black">
+						<!-- Arrière-plan d'affiche flouté d'ambiance -->
+						<img
+							src={activeChapter.thumbnail || mainVideoCover}
+							alt=""
+							aria-hidden="true"
+							class="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-3xl opacity-35"
+						/>
+						<!-- Affiche principale nette : object-contain si vertical pour ne jamais couper de visage -->
 						<img
 							src={activeChapter.thumbnail || mainVideoCover}
 							alt={activeChapter.title}
-							class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-102"
+							class="relative z-10 mx-auto h-full w-full {isVertical
+								? 'object-contain'
+								: 'object-cover'} transition-transform duration-700 ease-out group-hover:scale-102"
 						/>
 						<!-- Voile dégradé cinéma -->
 						<div
-							class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30"
+							class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/40 to-black/30"
 							aria-hidden="true"
 						></div>
 
 						<!-- Badge supérieur : 4K UHD & Durée -->
 						<div
-							class="absolute top-4 right-4 left-4 flex items-center justify-between sm:top-6 sm:right-6 sm:left-6"
+							class="absolute top-4 right-4 left-4 z-20 flex items-center justify-between sm:top-6 sm:right-6 sm:left-6"
 						>
 							<div
 								class="flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 py-1.5 text-xs font-bold tracking-wider text-white backdrop-blur-md"
@@ -328,7 +403,7 @@
 						</div>
 
 						<!-- Bouton Play Central Spectaculaire avec Onde Pulsante -->
-						<div class="absolute inset-0 flex flex-col items-center justify-center">
+						<div class="absolute inset-0 z-20 flex flex-col items-center justify-center">
 							<button
 								type="button"
 								onclick={togglePlay}
@@ -363,7 +438,7 @@
 						</div>
 
 						<!-- Descriptif inférieur sur l'affiche -->
-						<div class="absolute right-4 bottom-4 left-4 sm:right-6 sm:bottom-6 sm:left-6">
+						<div class="absolute right-4 bottom-4 left-4 z-20 sm:right-6 sm:bottom-6 sm:left-6">
 							<div class="max-w-2xl">
 								<span
 									class="font-body text-xs font-semibold text-brand-accent uppercase sm:text-sm"
@@ -386,29 +461,60 @@
 					</div>
 				{/if}
 
+				<!-- Bouton central Play lors d'une mise en pause en cours de lecture -->
+				{#if hasStarted && !isPlaying}
+					<div
+						class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-[1px] transition-opacity duration-300"
+					>
+						<button
+							type="button"
+							onclick={togglePlay}
+							class="pointer-events-auto flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-brand-primary text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-brand-primary-hover sm:h-20 sm:w-20"
+							aria-label="Reprendre la lecture"
+						>
+							<Play size={28} class="ml-1 fill-white text-white" />
+						</button>
+					</div>
+				{/if}
+
 				<!-- Invitation à activer le son pendant la lecture automatique muette -->
 				{#if isPlaying && isMuted}
 					<button
 						type="button"
 						onclick={toggleMute}
-						class="absolute top-4 right-4 z-20 inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 py-1.5 font-body text-xs font-bold text-white backdrop-blur-md transition-colors hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:top-6 sm:right-6"
+						class="absolute top-4 right-4 z-30 inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 py-1.5 font-body text-xs font-bold text-white backdrop-blur-md transition-colors hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:top-6 sm:right-6"
 					>
 						<VolumeX size={15} />
 						<span>Activer le son</span>
 					</button>
 				{/if}
 
-				<!-- Barre de Contrôles Personnalisés (visible pendant la lecture) -->
-				{#if isPlaying}
+				<!-- Barre de Contrôles Personnalisés (visible après démarrage) -->
+				{#if hasStarted}
 					<div
-						class="absolute right-0 bottom-0 left-0 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 sm:p-5"
+						class="absolute right-0 bottom-0 left-0 z-30 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-4 transition-opacity duration-300 sm:p-5"
+						aria-label="Contrôles vidéo"
 					>
-						<!-- Barre de progression de la vidéo -->
+						<!-- Barre de progression de la vidéo avec recherche (seek) -->
 						<div
-							class="h-1.5 w-full cursor-pointer overflow-hidden rounded-full bg-white/20 transition-all hover:h-2"
+							class="h-2 w-full cursor-pointer overflow-hidden rounded-full bg-white/25 py-0.5 transition-all hover:h-2.5"
+							onclick={handleSeek}
+							onkeydown={(e) => {
+								if (!videoEl) return;
+								if (e.key === 'ArrowRight')
+									videoEl.currentTime = Math.min(videoEl.duration, videoEl.currentTime + 5);
+								if (e.key === 'ArrowLeft')
+									videoEl.currentTime = Math.max(0, videoEl.currentTime - 5);
+							}}
+							role="slider"
+							aria-valuenow={Math.round(progress)}
+							aria-valuemin="0"
+							aria-valuemax="100"
+							tabindex="0"
+							aria-label="Position de lecture"
 						>
 							<div
-								class="h-full bg-brand-primary transition-all duration-150"
+								class="h-full rounded-full bg-brand-primary transition-all duration-75"
 								style="width: {progress}%;"
 							></div>
 						</div>
@@ -457,9 +563,24 @@
 							</div>
 
 							<div class="flex items-center gap-3">
-								<span class="hidden font-body text-xs font-semibold text-white/80 sm:inline">
+								<span
+									class="hidden max-w-xs truncate font-body text-xs font-semibold text-white/80 md:inline"
+								>
 									{activeChapter.title}
 								</span>
+								<button
+									type="button"
+									onclick={() => (fitMode = fitMode === 'contain' ? 'cover' : 'contain')}
+									class="cursor-pointer rounded-lg p-1 text-white/80 transition-colors hover:text-white"
+									aria-label={fitMode === 'contain'
+										? 'Remplir l’écran'
+										: 'Adapter le format (sans coupure)'}
+									title={fitMode === 'contain'
+										? 'Remplir le cadre'
+										: 'Adapter le format (sans coupure)'}
+								>
+									<Scan size={18} />
+								</button>
 								<button
 									type="button"
 									onclick={toggleFullscreen}
@@ -475,8 +596,8 @@
 			</div>
 		</div>
 
-		<!-- Sélecteur de Chapitres / Temps Forts (3 cartes sous le lecteur) -->
-		<div class="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-3">
+		<!-- Sélecteur de Chapitres / Temps Forts -->
+		<div class="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
 			{#each chapters as chapter, idx (chapter.id)}
 				{@const isActive = idx === activeChapterIndex}
 				<button
