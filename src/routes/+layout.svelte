@@ -2,7 +2,7 @@
 	import { SOCIAL_LINKS } from '$lib/config/social.js';
 	import './layout.css';
 	import { page } from '$app/state';
-	import { Header, Footer, ToastContainer } from '$lib';
+	import { Header, Footer, ToastContainer, BackToTop } from '$lib';
 	import { env } from '$env/dynamic/public';
 	import {
 		LOGO_PATH,
@@ -86,6 +86,7 @@
 			{@render children()}
 		</main>
 		<Footer />
+		<BackToTop />
 		<ToastContainer />
 	</div>
 {/if}
