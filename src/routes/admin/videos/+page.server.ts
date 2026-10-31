@@ -1,6 +1,6 @@
 import { db, isDbConfigured } from '$lib/server/db/index.js';
 import { videos } from '$lib/server/db/schema.js';
-import { eq, desc, asc } from 'drizzle-orm';
+import { eq, desc, asc, and, ne } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
 import { isR2Configured, isR2PublicDomainConfigured, formatMediaUrl } from '$lib/server/r2.js';
@@ -176,6 +176,93 @@ export const actions: Actions = {
 		}
 
 		return { success: true };
+	},
+
+	update: async ({ request }) => {
+		const formData = await request.formData();
+		const id = Number(formData.get('id'));
+
+		if (!id || !Number.isInteger(id) || id <= 0) {
+			return fail(400, { error: 'Identifiant de la vidéo invalide.' });
+		}
+
+		const title = String(formData.get('title') ?? '').trim();
+		const duration = String(formData.get('duration') ?? '03:00').trim();
+		const location = String(formData.get('location') ?? 'Yaoundé, Cameroun').trim();
+		const description = String(formData.get('description') ?? '').trim();
+		const videoUrl = String(formData.get('videoUrl') ?? '').trim();
+		const thumbnailUrl = String(formData.get('thumbnailUrl') ?? '').trim();
+		const isPublished = formData.get('isPublished') === 'on';
+		const isFeatured = formData.get('isFeatured') === 'on';
+		const rawSlug = String(formData.get('slug') ?? '').trim();
+
+		if (!title) {
+			return fail(400, { error: 'Le titre de la vidéo est obligatoire.' });
+		}
+		if (!videoUrl) {
+			return fail(400, {
+				error: 'L’URL ou le fichier de la vidéo est obligatoire.'
+			});
+		}
+
+		const slug = rawSlug
+			? rawSlug
+					.toLowerCase()
+					.normalize('NFD')
+					.replace(/[\u0300-\u036f]/g, '')
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/(^-|-$)+/g, '')
+			: title
+					.toLowerCase()
+					.normalize('NFD')
+					.replace(/[\u0300-\u036f]/g, '')
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/(^-|-$)+/g, '');
+
+		const finalThumbnail = thumbnailUrl || '/video-highlights-cover.jpg';
+
+		if (isDbConfigured && db) {
+			try {
+				const [existing] = await db.select().from(videos).where(eq(videos.id, id)).limit(1);
+				if (!existing) {
+					return fail(404, { error: 'Vidéo introuvable.' });
+				}
+
+				if (isFeatured) {
+					// Une seule vidéo à la une à la fois
+					await db
+						.update(videos)
+						.set({ isFeatured: false })
+						.where(and(eq(videos.isFeatured, true), ne(videos.id, id)));
+				}
+
+				await db
+					.update(videos)
+					.set({
+						title,
+						slug: slug || existing.slug,
+						duration,
+						location,
+						description: description || null,
+						videoUrl,
+						thumbnailUrl: finalThumbnail,
+						isPublished,
+						isFeatured,
+						updatedAt: new Date()
+					})
+					.where(eq(videos.id, id));
+
+				return { success: true, message: 'Vidéo mise à jour avec succès !' };
+			} catch (err: unknown) {
+				const msg = err instanceof Error ? err.message : String(err);
+				return fail(500, { error: `Erreur lors de la mise à jour : ${msg}` });
+			}
+		}
+
+		return {
+			success: true,
+			message: 'Vidéo modifiée (mode démonstration local sans Neon).'
+		};
 	},
 
 	toggleFeatured: async ({ request }) => {
