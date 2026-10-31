@@ -18,6 +18,7 @@
 		Cloud,
 		ExternalLink,
 		Sparkles,
+		Pencil,
 		X
 	} from '@lucide/svelte';
 	import type { PageData, ActionData } from './$types.js';
@@ -248,6 +249,164 @@
 			thumbnail: resolveMediaUrl(video.thumbnail)
 		};
 		previewModalOpen = true;
+	}
+
+	// État pour la modification d'une vidéo
+	let isEditModalOpen = $state(false);
+	let isEditSubmitting = $state(false);
+	let editingVideoId = $state<number | null>(null);
+	let editTitle = $state('');
+	let editSlug = $state('');
+	let editDuration = $state('');
+	let editLocation = $state('');
+	let editDescription = $state('');
+	let editVideoUrl = $state('');
+	let editThumbnailUrl = $state('');
+	let editIsPublished = $state(true);
+	let editIsFeatured = $state(false);
+
+	let isEditUploadingVideo = $state(false);
+	let editUploadProgress = $state(0);
+	let isEditUploadingThumbnail = $state(false);
+
+	function slugify(text: string): string {
+		return text
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/(^-|-$)+/g, '');
+	}
+
+	function openEditModal(video: {
+		id: number;
+		title: string;
+		slug?: string;
+		duration: string;
+		location: string;
+		description?: string | null;
+		videoUrl: string;
+		thumbnailUrl?: string | null;
+		isPublished: boolean;
+		isFeatured: boolean;
+	}) {
+		editingVideoId = video.id;
+		editTitle = video.title;
+		editSlug = video.slug || slugify(video.title);
+		editDuration = video.duration;
+		editLocation = video.location;
+		editDescription = video.description ?? '';
+		editVideoUrl = video.videoUrl;
+		editThumbnailUrl = video.thumbnailUrl ?? '';
+		editIsPublished = video.isPublished;
+		editIsFeatured = video.isFeatured;
+		isEditModalOpen = true;
+	}
+
+	async function handleEditThumbnailChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		try {
+			isEditUploadingThumbnail = true;
+			const formData = new FormData();
+			formData.append('file', file);
+			formData.append('folder', 'thumbnails');
+
+			const res = await fetch('/api/upload', {
+				method: 'POST',
+				body: formData
+			});
+
+			const resData = await res.json();
+			if (res.ok && resData.success && resData.url) {
+				editThumbnailUrl = resData.url;
+				toast.success('Nouvelle miniature uploadée sur Cloudflare R2.', 'Miniature mise à jour');
+			} else {
+				throw new Error(resData.error || 'Erreur upload miniature');
+			}
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			toast.error(msg, 'Erreur');
+		} finally {
+			isEditUploadingThumbnail = false;
+		}
+	}
+
+	async function handleEditVideoChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		try {
+			isEditUploadingVideo = true;
+			editUploadProgress = 0;
+
+			// Compression vidéo client si nécessaire
+			let videoToSend: Blob = file;
+			try {
+				const compressed = await compressVideo(file, {
+					onProgress: (percent) => {
+						editUploadProgress = percent;
+					}
+				});
+				videoToSend = compressed.file;
+			} catch {
+				videoToSend = file;
+			}
+
+			// 1. Demande d'URL pré-signée
+			const res = await fetch('/api/upload-presigned', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					filename: file.name,
+					contentType: videoToSend.type || 'video/mp4',
+					folder: 'videos'
+				})
+			});
+			const resData = await res.json();
+			if (!res.ok || !resData.success) {
+				throw new Error(resData.error || 'Impossible d’obtenir une URL d’upload.');
+			}
+
+			const { uploadUrl, publicUrl } = resData;
+
+			// 2. Upload XHR avec progression
+			await new Promise<void>((resolve, reject) => {
+				const xhr = new XMLHttpRequest();
+				xhr.open('PUT', uploadUrl, true);
+				xhr.setRequestHeader('Content-Type', videoToSend.type || 'video/mp4');
+
+				xhr.upload.onprogress = (evt) => {
+					if (evt.lengthComputable) {
+						editUploadProgress = Math.round((evt.loaded / evt.total) * 100);
+					}
+				};
+
+				xhr.onload = () => {
+					if (xhr.status >= 200 && xhr.status < 300) {
+						resolve();
+					} else {
+						reject(new Error(`Échec de l’envoi vers R2 (code HTTP ${xhr.status})`));
+					}
+				};
+
+				xhr.onerror = () =>
+					reject(new Error('Erreur réseau lors du transfert vers Cloudflare R2.'));
+				xhr.send(videoToSend);
+			});
+
+			editUploadProgress = 100;
+			editVideoUrl = publicUrl;
+			toast.success('Nouvelle vidéo uploadée avec succès sur R2.', 'Vidéo prête');
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			toast.error(msg, 'Échec d’upload');
+		} finally {
+			isEditUploadingVideo = false;
+		}
 	}
 </script>
 
@@ -897,6 +1056,16 @@
 								</button>
 							</form>
 
+							<!-- Modifier les informations -->
+							<button
+								type="button"
+								onclick={() => openEditModal(video)}
+								class="inline-flex cursor-pointer items-center gap-1 font-body text-xs font-semibold text-brand-primary transition-colors hover:text-brand-primary-hover"
+							>
+								<Pencil size={14} />
+								<span>Modifier</span>
+							</button>
+
 							<!-- Supprimer -->
 							<form method="POST" action="?/delete" use:enhance>
 								<input type="hidden" name="id" value={video.id} />
@@ -952,4 +1121,259 @@
 	{#snippet actions()}
 		<Button variant="outline" size="md" onclick={() => (previewModalOpen = false)}>Fermer</Button>
 	{/snippet}
+</Modal>
+
+<!-- Modal de modification d'une vidéo existante -->
+<Modal
+	bind:open={isEditModalOpen}
+	title="Modifier la vidéo"
+	description="Mettez à jour le titre, le lieu, la durée, le résumé ou les fichiers de cette vidéo."
+	class="max-w-2xl"
+>
+	<form
+		method="POST"
+		action="?/update"
+		use:enhance={({ cancel }) => {
+			if (isEditUploadingVideo) {
+				toast.error(
+					'Veuillez attendre la fin du transfert de la vidéo vers R2.',
+					'Upload en cours'
+				);
+				cancel();
+				return;
+			}
+			if (isEditUploadingThumbnail) {
+				toast.error(
+					'Veuillez attendre la fin du transfert de la miniature vers R2.',
+					'Upload en cours'
+				);
+				cancel();
+				return;
+			}
+			isEditSubmitting = true;
+			return async ({ result, update }) => {
+				isEditSubmitting = false;
+				if (result.type === 'success') {
+					toast.success(
+						(result.data as { message?: string })?.message ||
+							'Vidéo mise à jour avec succès !'
+					);
+					isEditModalOpen = false;
+				} else if (result.type === 'failure') {
+					toast.error(
+						(result.data as { error?: string })?.error ||
+							'Erreur lors de la mise à jour.'
+					);
+				}
+				await update({ reset: false });
+			};
+		}}
+		class="space-y-4 p-6"
+	>
+		<input type="hidden" name="id" value={editingVideoId} />
+		<input type="hidden" name="videoUrl" value={editVideoUrl} />
+		<input type="hidden" name="thumbnailUrl" value={editThumbnailUrl} />
+
+		<!-- Titre -->
+		<Input
+			name="title"
+			label="Titre de la vidéo *"
+			bind:value={editTitle}
+			required
+			placeholder="Ex: Grande Croisade & Nuit d'Évangélisation"
+		/>
+
+		<!-- Slug / Identifiant d'adresse -->
+		<div>
+			<label for="editSlug" class="block font-body text-xs font-bold text-text-primary">
+				Identifiant d’adresse (slug)
+			</label>
+			<div class="mt-1 flex items-center gap-2">
+				<input
+					type="text"
+					id="editSlug"
+					name="slug"
+					bind:value={editSlug}
+					class="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 font-mono text-xs text-text-primary placeholder:text-gray-400 focus:border-brand-primary focus:outline-hidden"
+				/>
+				<button
+					type="button"
+					onclick={() => {
+						if (editTitle.trim()) editSlug = slugify(editTitle);
+					}}
+					class="shrink-0 cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-xs font-semibold text-text-secondary hover:border-brand-primary hover:text-brand-primary"
+				>
+					Synchroniser
+				</button>
+			</div>
+		</div>
+
+		<!-- Lieu & Durée -->
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+			<Input
+				name="location"
+				label="Lieu de captation"
+				bind:value={editLocation}
+				placeholder="Ex: Yaoundé · Esplanade Omnisports"
+			/>
+			<Input
+				name="duration"
+				label="Durée affichée (mm:ss)"
+				bind:value={editDuration}
+				placeholder="03:30"
+			/>
+		</div>
+
+		<!-- Description -->
+		<Textarea
+			name="description"
+			label="Description / Résumé court"
+			bind:value={editDescription}
+			rows={3}
+			placeholder="Courte description de l'événement ou de la scène..."
+		/>
+
+		<!-- Aperçu & Remplacement Miniature / Couverture -->
+		<div class="space-y-2.5 rounded-xl border border-gray-200 bg-[#f8fafc] p-3.5">
+			<div class="flex items-center justify-between">
+				<span class="block text-xs font-bold text-text-primary">
+					Image miniature / Affiche de couverture
+				</span>
+				{#if editThumbnailUrl}
+					<span class="max-w-[200px] truncate font-mono text-[10px] text-text-secondary">
+						{editThumbnailUrl}
+					</span>
+				{/if}
+			</div>
+
+			<div class="flex items-center gap-4">
+				<div
+					class="relative h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-black"
+				>
+					<img
+						src={editThumbnailUrl || '/video-highlights-cover.jpg'}
+						alt=""
+						class="h-full w-full object-cover"
+					/>
+				</div>
+				<div class="flex-1 space-y-1.5">
+					<label
+						class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-text-primary shadow-2xs hover:border-brand-primary hover:text-brand-primary"
+					>
+						<UploadCloud size={14} class="text-brand-primary" />
+						<span>{isEditUploadingThumbnail ? 'Upload en cours...' : 'Remplacer l’image'}</span>
+						<input
+							type="file"
+							accept="image/jpeg,image/png,image/webp"
+							class="sr-only"
+							onchange={handleEditThumbnailChange}
+							disabled={isEditUploadingThumbnail}
+						/>
+					</label>
+					<p class="text-[11px] text-text-secondary">
+						Format paysage recommandé (16:9 ou 3:2), max 5 Mo.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Aperçu & Remplacement Fichier Vidéo -->
+		<div class="space-y-2.5 rounded-xl border border-gray-200 bg-[#f8fafc] p-3.5">
+			<div class="flex items-center justify-between">
+				<span class="block text-xs font-bold text-text-primary">
+					Fichier ou URL de la vidéo *
+				</span>
+				{#if isEditUploadingVideo}
+					<span class="animate-pulse text-xs font-bold text-brand-primary">
+						Upload R2 en cours ({editUploadProgress}%)...
+					</span>
+				{/if}
+			</div>
+
+			<div class="space-y-2">
+				<input
+					type="text"
+					bind:value={editVideoUrl}
+					placeholder="https://.../video.mp4"
+					class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs text-text-primary focus:border-brand-primary focus:outline-hidden"
+				/>
+
+				<div class="flex items-center gap-3">
+					<label
+						class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-text-primary shadow-2xs hover:border-brand-primary hover:text-brand-primary"
+					>
+						<FileVideo size={14} class="text-brand-primary" />
+						<span
+							>{isEditUploadingVideo
+								? `Envoi (${editUploadProgress}%)`
+								: 'Uploader une nouvelle vidéo'}</span
+						>
+						<input
+							type="file"
+							accept="video/mp4,video/webm,video/quicktime"
+							class="sr-only"
+							onchange={handleEditVideoChange}
+							disabled={isEditUploadingVideo}
+						/>
+					</label>
+					<span class="text-[11px] text-text-secondary">
+						mp4, webm ou mov sur Cloudflare R2
+					</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Options : Publication & À la une -->
+		<div class="space-y-2 pt-1">
+			<label
+				class="flex cursor-pointer select-none items-center gap-2 text-xs font-semibold text-text-primary"
+			>
+				<input
+					type="checkbox"
+					name="isPublished"
+					bind:checked={editIsPublished}
+					class="h-4 w-4 rounded-sm text-brand-primary focus:ring-brand-primary"
+				/>
+				<span>Afficher cette vidéo sur la page d’accueil</span>
+			</label>
+
+			<label
+				class="flex cursor-pointer select-none items-center gap-2 text-xs font-semibold text-amber-900"
+			>
+				<input
+					type="checkbox"
+					name="isFeatured"
+					bind:checked={editIsFeatured}
+					class="h-4 w-4 rounded-sm text-amber-500 focus:ring-amber-500"
+				/>
+				<Sparkles size={13} class="text-amber-500" />
+				<span>Mettre à la une (lancée en premier dans le lecteur)</span>
+			</label>
+		</div>
+
+		<!-- Boutons d'action -->
+		<div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
+			<Button
+				variant="outline"
+				size="md"
+				type="button"
+				onclick={() => (isEditModalOpen = false)}
+				disabled={isEditSubmitting || isEditUploadingVideo || isEditUploadingThumbnail}
+			>
+				Annuler
+			</Button>
+			<Button
+				variant="primary"
+				size="md"
+				type="submit"
+				disabled={isEditSubmitting ||
+					isEditUploadingVideo ||
+					isEditUploadingThumbnail ||
+					!editTitle.trim() ||
+					!editVideoUrl.trim()}
+			>
+				{isEditSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications'}
+			</Button>
+		</div>
+	</form>
 </Modal>
